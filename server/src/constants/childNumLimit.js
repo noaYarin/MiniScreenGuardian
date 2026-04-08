@@ -1,0 +1,1 @@
+export const MAX_CHILDREN_PER_PARENT = 8;
