@@ -16,7 +16,9 @@ import {
   updateDeviceDailyLimit,
   findDeviceStatusById,
   updateDeviceUsedTodayMinutes,
-  updateDeviceHeartbeat
+  updateDeviceHeartbeat,
+  releaseDevicePolicyBeforeDelete,
+
 } from "../dal/device.dal.js";
 import { getChildrenByParentId } from "../dal/parent.dal.js";
 
@@ -245,6 +247,19 @@ export async function updateDeviceScreenTime(parentId, deviceId, body) {
     console.error("notifyChild failed in updateDeviceScreenTime:", err.message);
   }
 
+  try {
+    await notifyParent({
+      parentId,
+      childId: device.childId,
+      type: NotificationType.SCREEN_TIME_UPDATED,
+      severity: NotificationSeverity.INFO,
+      title: "Screen Time Updated",
+      description: "You updated the screen time settings for your child"
+    });
+  } catch (err) {
+    console.error("notifyParent failed in updateDeviceScreenTime:", err.message);
+  }
+  
   try {
     await sendAuditLog({
       parentId,
@@ -526,7 +541,7 @@ export async function updateDeviceLocation(deviceId, location, parentId, childId
     location: {
       lat: location.lat,
       lng: location.lng,
-      lastUpdated: new Date() 
+      lastUpdated: new Date()
     }
   };
 

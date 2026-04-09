@@ -8,7 +8,7 @@ export async function createDevice(doc) {
 
 export async function updateDevicesIsActiveByParentId(parentId, isActive) {
   return DeviceModel.updateMany(
-    { parentId }, 
+    { parentId },
     { $set: { isActive } }
   ).lean();
 }
@@ -49,6 +49,51 @@ export async function deleteDeviceById(deviceId) {
   return DeviceModel.findByIdAndDelete(deviceId).lean();
 }
 
+export async function releaseDevicePolicyBeforeDelete(deviceId) {
+  assertValidObjectId(deviceId, CommonErrors.INVALID_DEVICE_ID);
+
+  const device = await DeviceModel.findById(deviceId);
+  if (!device) return null;
+
+  device.isLocked = false;
+
+  if (!device.screenTime) {
+    device.screenTime = {};
+  }
+
+  device.screenTime.isLimitEnabled = false;
+  device.screenTime.dailyLimitMinutes = 0;
+  device.screenTime.extraMinutesToday = 0;
+  device.screenTime.usedTodayMinutes = 0;
+  device.screenTime.weeklyLimitMinutes = 0;
+  device.screenTime.usedWeekMinutes = 0;
+  device.screenTime.weeklySchedule = [];
+  device.screenTime.lastDailyResetAt = new Date();
+  device.screenTime.lastWeeklyResetAt = new Date();
+
+  if (Array.isArray(device.applications)) {
+    device.applications.forEach((app) => {
+      app.isBlocked = false;
+
+      if (!app.screenTime) {
+        app.screenTime = {};
+      }
+
+      app.screenTime.isLimitEnabled = false;
+      app.screenTime.dailyLimitMinutes = 0;
+      app.screenTime.extraMinutesToday = 0;
+      app.screenTime.usedTodayMinutes = 0;
+      app.screenTime.weeklyLimitMinutes = 0;
+      app.screenTime.usedWeekMinutes = 0;
+      app.screenTime.weeklySchedule = [];
+      app.screenTime.lastDailyResetAt = new Date();
+      app.screenTime.lastWeeklyResetAt = new Date();
+    });
+  }
+
+  await device.save();
+  return device.toObject();
+}
 
 export async function addExtraMinutesToDevice(deviceId, minutes) {
   assertValidObjectId(deviceId, CommonErrors.INVALID_DEVICE_ID);
@@ -179,8 +224,8 @@ export async function updateDeviceHeartbeat(
       }
     },
     { new: true }
-    ).lean();
-  }
+  ).lean();
+}
 
 
 export async function findDeviceByDeviceId(deviceId) {
@@ -189,15 +234,15 @@ export async function findDeviceByDeviceId(deviceId) {
 
 export async function updateDeviceActivation(deviceId, { childId, parentId, deviceName }) {
   return DeviceModel.findOneAndUpdate(
-    { deviceId }, 
-    { 
-      $set: { 
-        isActive: true, 
-        childId: String(childId), 
+    { deviceId },
+    {
+      $set: {
+        isActive: true,
+        childId: String(childId),
         parentId: String(parentId),
         ...(deviceName && { name: deviceName })
-      } 
+      }
     },
-    { new: true } 
+    { new: true }
   ).lean();
 }
