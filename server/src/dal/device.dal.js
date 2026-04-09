@@ -8,7 +8,7 @@ export async function createDevice(doc) {
 
 export async function updateDevicesIsActiveByParentId(parentId, isActive) {
   return DeviceModel.updateMany(
-    { parentId }, 
+    { parentId },
     { $set: { isActive } }
   ).lean();
 }
@@ -49,6 +49,48 @@ export async function deleteDeviceById(deviceId) {
   return DeviceModel.findByIdAndDelete(deviceId).lean();
 }
 
+
+
+
+export async function deleteDeviceForParent(parentId, childId, deviceId) {
+  const childList = await getChildrenByParentId(parentId);
+  ensureChildBelongsToParent(childList, childId);
+
+  const device = await validateDeviceAccess({ deviceId, parentId, childId });
+
+  const deviceLabel =
+    device?.name != null && String(device.name).trim() !== ""
+      ? String(device.name).trim()
+      : "A device";
+
+  await releaseDevicePolicyBeforeDelete(deviceId);
+
+  await notifyChild({
+    parentId,
+    childId,
+    type: NotificationType.DEVICE_UNLOCKED,
+    severity: NotificationSeverity.INFO,
+    title: "Device Released",
+    description: "This device was removed from parental control"
+  }).catch((err) => {
+    console.error("notifyChild failed in deleteDeviceForParent (release):", err.message);
+  });
+
+  await deleteDeviceById(deviceId);
+
+  try {
+    await notifyParent({
+      parentId,
+      childId,
+      type: NotificationType.DEVICE_DELETED,
+      severity: NotificationSeverity.WARNING,
+      title: "Device Removed",
+      description: `${deviceLabel} was removed from this child profile`
+    });
+  } catch (err) {
+    console.error("notifyParent failed in deleteDeviceForParent:", err.message);
+  }
+}
 
 export async function addExtraMinutesToDevice(deviceId, minutes) {
   assertValidObjectId(deviceId, CommonErrors.INVALID_DEVICE_ID);
@@ -179,8 +221,8 @@ export async function updateDeviceHeartbeat(
       }
     },
     { new: true }
-    ).lean();
-  }
+  ).lean();
+}
 
 
 export async function findDeviceByDeviceId(deviceId) {
@@ -189,15 +231,15 @@ export async function findDeviceByDeviceId(deviceId) {
 
 export async function updateDeviceActivation(deviceId, { childId, parentId, deviceName }) {
   return DeviceModel.findOneAndUpdate(
-    { deviceId }, 
-    { 
-      $set: { 
-        isActive: true, 
-        childId: String(childId), 
+    { deviceId },
+    {
+      $set: {
+        isActive: true,
+        childId: String(childId),
         parentId: String(parentId),
         ...(deviceName && { name: deviceName })
-      } 
+      }
     },
-    { new: true } 
+    { new: true }
   ).lean();
 }
