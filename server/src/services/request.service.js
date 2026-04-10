@@ -9,7 +9,7 @@ import { notifyParent, notifyChild } from "../services/notification.service.js";
 import { addExtraMinutesToDevice, findDeviceById } from "../dal/device.dal.js";
 import { sendAuditLog } from "./audit.service.js";
 import { AuditActionType } from "../constants/auditActionType.js";
-import { validateDeviceAccess, pushPolicyUpdate } from "./device.service.js";
+import { validateDeviceAccess, pushPolicyUpdate, pushDeviceStatusUpdate } from "./device.service.js";
 import { getChildrenByParentId } from "../dal/parent.dal.js";
 
 const MIN_MINUTES = 1;
@@ -151,7 +151,10 @@ export async function decideRequest({ parentId, requestId, decision }) {
 
             // Push the updated policy to the child device in real time after approval
             pushPolicyUpdate(updatedDevice);
-            
+
+            // Push the latest device status to the parent room in real time
+            pushDeviceStatusUpdate(updatedDevice);
+
         }
         try {
             await notifyChild({

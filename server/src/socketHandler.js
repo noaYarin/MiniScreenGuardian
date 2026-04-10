@@ -8,7 +8,8 @@ import {
   FORCE_CHILD_LOGOUT,
   JOIN_PARENT,
   JOIN_CHILD,
-  POLICY_UPDATED
+  POLICY_UPDATED,
+  DEVICE_STATUS_UPDATED
 } from "./constants/socketEvents.js";
 import {NotificationType} from "./constants/notificationType.js";
 import {NotificationSeverity} from "./constants/severity.js";
@@ -129,10 +130,18 @@ export function getIO() {
   return io;
 }
 
-// Emits a real-time policy update to the child device room.
+// Emits a real-time policy update to the child device room
 export function emitPolicyUpdated(childId, policyPayload) {
   if (!io || !childId || !policyPayload) return;
 
   const room = `child_${childId}`;
   io.to(room).emit(POLICY_UPDATED, policyPayload);
+}
+
+// Emits a real-time device status update to the parent room
+export function emitDeviceStatusUpdated(parentId, payload) {
+  if (!io || !parentId || !payload) return;
+
+  const room = `parent_${parentId}`;
+  io.to(room).emit(DEVICE_STATUS_UPDATED, payload);
 }

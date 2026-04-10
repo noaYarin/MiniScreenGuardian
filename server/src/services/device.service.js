@@ -21,7 +21,7 @@ import {
 
 } from "../dal/device.dal.js";
 import { getChildrenByParentId } from "../dal/parent.dal.js";
-import { emitPolicyUpdated } from "../socketHandler.js";
+import { emitPolicyUpdated, emitDeviceStatusUpdated } from "../socketHandler.js";
 
 function assertDailyLimitMinutes(value) {
   const n = Number(value);
@@ -81,6 +81,71 @@ export function pushPolicyUpdate(device) {
   emitPolicyUpdated(String(device.childId), buildPolicyPayload(device));
 }
 
+
+
+// Derives the parent home status from current usage and allowed daily time
+function calculateRealtimeHomeStatus(usedTodayMinutes, totalAllowedMinutes, isLocked) {
+  if (isLocked) {
+    return "bad";
+  }
+
+  if (!totalAllowedMinutes || totalAllowedMinutes <= 0) {
+    return "good";
+  }
+
+  const ratio = usedTodayMinutes / totalAllowedMinutes;
+
+  if (ratio >= 1) {
+    return "bad";
+  }
+
+  if (ratio >= 0.8) {
+    return "warn";
+  }
+
+  return "good";
+}
+
+// Builds a lightweight device status payload for parent-side real-time UI updates
+function buildDeviceStatusPayload(device) {
+  const dailyLimitMinutes = Number(device.screenTime?.dailyLimitMinutes ?? 0);
+  const extraMinutesToday = Number(device.screenTime?.extraMinutesToday ?? 0);
+  const usedTodayMinutes = Number(device.screenTime?.usedTodayMinutes ?? 0);
+  const totalAllowedMinutes = dailyLimitMinutes + extraMinutesToday;
+  const isLocked = device.isLocked ?? false;
+
+  return {
+    parentId: String(device.parentId),
+    childId: String(device.childId),
+    deviceId: String(device._id),
+    isLocked,
+    isActive: device.isActive ?? true,
+    status: calculateRealtimeHomeStatus(
+      usedTodayMinutes,
+      totalAllowedMinutes,
+      isLocked
+    ),
+    usedTodayMinutes,
+    dailyLimitMinutes: totalAllowedMinutes > 0 ? totalAllowedMinutes : null,
+    extraMinutesToday,
+    remainingMinutes:
+      totalAllowedMinutes > 0
+        ? Math.max(totalAllowedMinutes - usedTodayMinutes, 0)
+        : null,
+    lastSeenAt: device.lastSeenAt ?? null,
+    accessibilityEnabled: device.accessibilityEnabled ?? null,
+    usageAccessEnabled: device.usageAccessEnabled ?? null
+  };
+}
+
+
+// Sends the latest device status to the parent room after a device-related change
+export function pushDeviceStatusUpdate(device) {
+  if (!device?.parentId) return;
+  emitDeviceStatusUpdated(String(device.parentId), buildDeviceStatusPayload(device));
+}
+
+
 export async function validateDeviceAccess({ deviceId, parentId, childId, allowInactive = false }) {
   const device = await findDeviceById(deviceId);
 
@@ -98,6 +163,7 @@ export async function validateDeviceAccess({ deviceId, parentId, childId, allowI
 
   return device;
 }
+
 
 function ensureChildBelongsToParent(childList, childId) {
   const belongs = childList.some((child) => String(child._id) === String(childId));
@@ -117,6 +183,9 @@ export async function lockDevice(parentId, deviceId) {
 
   // Push the updated policy to the child device in real time
   pushPolicyUpdate(updatedDevice);
+
+  // Push the latest device status to the parent room in real time
+  pushDeviceStatusUpdate(updatedDevice);
 
   try {
     await notifyChild({
@@ -151,7 +220,10 @@ export async function unlockDevice(parentId, deviceId) {
 
   const device = await validateDeviceAccess({ deviceId, parentId });
   const updatedDevice = await updateDeviceById(deviceId, { isLocked: false });
+
   pushPolicyUpdate(updatedDevice);
+
+  pushDeviceStatusUpdate(updatedDevice);
 
   try {
 
@@ -256,6 +328,8 @@ export async function updateDeviceScreenTime(parentId, deviceId, body) {
   const updatedDevice = await updateDeviceById(deviceId, patch);
 
   pushPolicyUpdate(updatedDevice);
+
+  pushDeviceStatusUpdate(updatedDevice);
 
   try {
     await notifyChild({
@@ -498,6 +572,8 @@ export async function updateDeviceDailyLimitService(parentId, deviceId, body) {
 
   pushPolicyUpdate(updatedDevice);
 
+  pushDeviceStatusUpdate(updatedDevice);
+
   try {
     await notifyChild({
       parentId,
@@ -636,6 +712,7 @@ export async function updateDeviceUsageByChild({
   const previousStatus = buildCurrentStatus(device);
   const updatedDevice = await updateDeviceUsedTodayMinutes(deviceId, n);
 
+  pushDeviceStatusUpdate(updatedDevice);
 
   const currentStatus = buildCurrentStatus(updatedDevice);
 
@@ -670,6 +747,8 @@ export async function updateDeviceUsageByChild({
     const lockedDevice = await updateDeviceById(deviceId, { isLocked: true });
 
     pushPolicyUpdate(lockedDevice);
+
+    pushDeviceStatusUpdate(lockedDevice);
 
     try {
       await notifyParent({
@@ -743,8 +822,8 @@ export async function handleDeviceHeartbeat({
     throw new AppError(CommonErrors.DEVICE_NOT_ACTIVE);
   }
 
-  const wasAccessibilityEnabled = device.accessibilityEnabled ?? true;
-  const wasUsageAccessEnabled = device.usageAccessEnabled ?? true;
+  const wasAccessibilityEnabled = device.accessibilityEnabled;
+  const wasUsageAccessEnabled = device.usageAccessEnabled;
 
   const updatedDevice = await updateDeviceHeartbeat(deviceId, {
     lastSeenAt: new Date(),
@@ -752,9 +831,9 @@ export async function handleDeviceHeartbeat({
     usageAccessEnabled
   });
 
+  pushDeviceStatusUpdate(updatedDevice);
 
-
-  if (wasAccessibilityEnabled && !accessibilityEnabled) {
+  if (wasAccessibilityEnabled === true && accessibilityEnabled === false) {
     try {
       await notifyParent({
         parentId: device.parentId,
@@ -769,25 +848,27 @@ export async function handleDeviceHeartbeat({
     }
   }
 
-  if (wasUsageAccessEnabled && !usageAccessEnabled) {
-    try {
-      await notifyParent({
-        parentId: device.parentId,
-        childId: device.childId,
-        type: NotificationType.BYPASS_ATTEMPT,
-        severity: NotificationSeverity.WARNING,
-        title: "Limited Protection",
-        description: "Usage access permission was turned off"
-      });
-    } catch (err) {
-      console.error("notifyParent failed in handleDeviceHeartbeat (usage):", err.message);
+  if (wasUsageAccessEnabled === true && usageAccessEnabled === false) {
+    {
+      try {
+        await notifyParent({
+          parentId: device.parentId,
+          childId: device.childId,
+          type: NotificationType.BYPASS_ATTEMPT,
+          severity: NotificationSeverity.WARNING,
+          title: "Limited Protection",
+          description: "Usage access permission was turned off"
+        });
+      } catch (err) {
+        console.error("notifyParent failed in handleDeviceHeartbeat (usage):", err.message);
+      }
     }
-  }
 
-  return {
-    deviceId: String(updatedDevice._id),
-    lastSeenAt: updatedDevice.lastSeenAt,
-    accessibilityEnabled: updatedDevice.accessibilityEnabled,
-    usageAccessEnabled: updatedDevice.usageAccessEnabled
-  };
+    return {
+      deviceId: String(updatedDevice._id),
+      lastSeenAt: updatedDevice.lastSeenAt,
+      accessibilityEnabled: updatedDevice.accessibilityEnabled,
+      usageAccessEnabled: updatedDevice.usageAccessEnabled
+    };
+  }
 }

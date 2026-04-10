@@ -5,12 +5,13 @@ import { ScreenTimeSchema } from "./screenTime.schema.js"
 import { DevicePlatform } from "../constants/devicePlatform.js";
 
 export const DeviceSchema = new mongoose.Schema(
-    {   deviceId: { 
-        type: String, 
-        required: true, 
-        unique: true,
-        index: true
-    },
+    {
+        deviceId: {
+            type: String,
+            required: true,
+            unique: true,
+            index: true
+        },
         name: { type: String, default: "Child Device" },
         type: { type: String, enum: Object.values(DeviceType), default: DeviceType.OTHER },
         platform: { type: String, enum: Object.values(DevicePlatform), default: DevicePlatform.OTHER },
@@ -24,8 +25,8 @@ export const DeviceSchema = new mongoose.Schema(
         },
         barcodeToken: { type: String, default: "" },
         lastSeenAt: { type: Date, default: null },
-        accessibilityEnabled: { type: Boolean, default: true },
-        usageAccessEnabled: { type: Boolean, default: true },
+        accessibilityEnabled: { type: Boolean, default: null },
+        usageAccessEnabled: { type: Boolean, default: null },
         parentId: { type: mongoose.Schema.Types.ObjectId, ref: "Parent", required: true },
         childId: { type: mongoose.Schema.Types.ObjectId, required: true },
         applications: { type: [ApplicationSchema], default: [] },
