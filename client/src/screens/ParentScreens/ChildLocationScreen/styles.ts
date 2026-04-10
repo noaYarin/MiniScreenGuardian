@@ -156,10 +156,6 @@ export const styles = StyleSheet.create({
     paddingVertical: 8,
   },
 
-  cityPillRtl: {
-    alignSelf: "flex-start",
-  },
-
   cityPillText: {
     fontSize: 14,
     color: "#243447",
@@ -321,6 +317,7 @@ export const styles = StyleSheet.create({
   },
 
   infoLabelRow: {
+    flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
@@ -370,6 +367,7 @@ export const styles = StyleSheet.create({
   },
 
   buttonContent: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
@@ -383,6 +381,47 @@ export const styles = StyleSheet.create({
   secondaryButtonText: {
     fontSize: 16,
     color: "#2A63E8",
+  },
+
+  emptyState: {
+    marginTop: 32,
+    borderRadius: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 28,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    alignItems: "center",
+    gap: 12,
+  },
+
+  emptyTitle: {
+    fontSize: 20,
+    color: "#243447",
+    textAlign: "center",
+  },
+
+  emptySubtitle: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: "#667085",
+    textAlign: "center",
+  },
+
+  emptyActionButton: {
+    minHeight: 48,
+    borderRadius: 16,
+    backgroundColor: "#4C7CF0",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    marginTop: 8,
+  },
+
+  emptyActionButtonText: {
+    fontSize: 15,
+    color: "#FFFFFF",
   },
 
   buttonPressed: {

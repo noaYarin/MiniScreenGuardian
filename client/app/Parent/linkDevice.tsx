@@ -1,10 +1,8 @@
 import React from "react";
-import { useTranslation } from "react-i18next";
 import { Stack } from "expo-router";
 import LinkDeviceScreen from "@/src/screens/ParentScreens/LinkDeviceScreen/LinkDeviceScreen";
 
 export default function LinkDeviceRoute() {
-  const { t } = useTranslation();
   return (
     <>
       <Stack.Screen
@@ -12,7 +10,7 @@ export default function LinkDeviceRoute() {
           headerShown: true,
           headerTitleAlign: "center",
           headerShadowVisible: false,
-          title: t("linkDevice.title"),
+          title: "link Device",
         }}
       />
       <LinkDeviceScreen />

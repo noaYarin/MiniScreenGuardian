@@ -2,19 +2,18 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   ScrollView,
- RefreshControl,
+  RefreshControl,
   useWindowDimensions,
   ActivityIndicator,
+  Pressable,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { router, useLocalSearchParams } from "expo-router";
-import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
+
 import ChildDeviceSelector from "../../../components/ChildDeviceSelector/ChildDeviceSelector";
 import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
 import AppText from "../../../components/AppText/AppText";
-import { useLocaleLayout } from "../../../../hooks/use-locale-layout";
-import { useChildProfileLabels } from "../../../../hooks/use-child-profile-labels";
 import { RootState, AppDispatch } from "@/src/redux/store/types";
 import { getMyChildrenThunk } from "@/src/redux/thunks/childrenThunks";
 import {
@@ -33,9 +32,39 @@ import { showAppToast } from "@/src/utils/appToast";
 import { emitEvent } from "@/src/services/socket";
 import { DELETE_DEVICE } from "@/src/constants/socketEvents";
 
+type SelectedChildLike = {
+  _id?: string;
+  id?: string;
+  name?: string;
+  img?: string | null;
+  birthDate?: string | Date | null;
+  gender?: string | null;
+};
+
+function formatBirthDateLabel(value?: string | Date | null) {
+  if (!value) return "—";
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
+
+function formatGenderLabel(value?: string | null) {
+  const normalized = String(value ?? "").trim().toLowerCase();
+
+  if (normalized === "boy" || normalized === "male") return "Boy";
+  if (normalized === "girl" || normalized === "female") return "Girl";
+  if (normalized === "other") return "Other";
+
+  return "—";
+}
+
 export default function ChildDetailsScreen() {
-  const { t } = useTranslation();
-  const { row, text } = useLocaleLayout();
   const { width } = useWindowDimensions();
   const params = useLocalSearchParams<{ id?: string; deviceId?: string | string[] }>();
   const dispatch = useDispatch<AppDispatch>();
@@ -44,6 +73,7 @@ export default function ChildDetailsScreen() {
     () => parseRouteParam(params.deviceId),
     [params.deviceId]
   );
+
   const paramChildIdFromRoute = useMemo(
     () => parseRouteParam(params.id),
     [params.id]
@@ -138,14 +168,16 @@ export default function ChildDetailsScreen() {
 
   const selectedChild = useMemo(
     () =>
-      children.find((c) => String(c._id) === String(effectiveChildId)) ?? null,
+      (children.find((c) => String(c._id) === String(effectiveChildId)) ??
+        null) as SelectedChildLike | null,
     [children, effectiveChildId]
   );
 
-  const { childName, birthDateLabel, genderLabel } =
-    useChildProfileLabels(selectedChild);
+  const childName = selectedChild?.name?.trim() || "Child";
+  const birthDateLabel = formatBirthDateLabel(selectedChild?.birthDate ?? null);
+  const genderLabel = formatGenderLabel(selectedChild?.gender ?? null);
 
-  const deviceRows = useMemo(() => mapDevicesToRows(devices, t), [devices, t]);
+  const deviceRows = useMemo(() => mapDevicesToRows(devices), [devices]);
 
   const handleConnectDevice = useCallback(() => {
     if (!effectiveChildId) return;
@@ -190,11 +222,11 @@ export default function ChildDetailsScreen() {
 
       emitEvent(DELETE_DEVICE, { deviceId, childId: effectiveChildId });
     } catch {
-      showAppToast(t("childDetails.delete_device_error"), t("common.error"));
+      showAppToast("Could not remove the device. Please try again.", "Error");
     } finally {
       setDeletingDeviceId(null);
     }
-  }, [dispatch, effectiveChildId, deviceDeleteDialog, deletingDeviceId, t]);
+  }, [dispatch, effectiveChildId, deviceDeleteDialog, deletingDeviceId]);
 
   const handleSetDeviceLocked = useCallback(
     async (deviceId: string, locked: boolean) => {
@@ -210,15 +242,13 @@ export default function ChildDetailsScreen() {
         ).unwrap();
 
         showAppToast(
-          locked
-            ? t("childDetails.device_locked_success")
-            : t("childDetails.device_unlocked_success")
+          locked ? "Device locked successfully" : "Device unlocked successfully"
         );
       } catch {
-        showAppToast(t("childDetails.lock_error"), t("common.error"));
+        showAppToast("Failed to update device lock state", "Error");
       }
     },
-    [dispatch, effectiveChildId, deletingDeviceId, t]
+    [dispatch, effectiveChildId, deletingDeviceId]
   );
 
   const handleRenameDevice = useCallback(
@@ -236,32 +266,25 @@ export default function ChildDetailsScreen() {
           })
         ).unwrap();
       } catch {
-        showAppToast(t("childDetails.rename_device_error"), t("common.error"));
+        showAppToast("Could not update the device name. Please try again.", "Error");
         throw new Error("rename_failed");
       }
     },
-    [dispatch, effectiveChildId, t]
+    [dispatch, effectiveChildId]
   );
 
   const showFullScreenLoader = isLoading && children.length === 0;
-
   const showChildrenFetchError =
     Boolean(childrenError) && !isLoading && children.length === 0;
-
   const showEmptyState = !isLoading && children.length === 0 && !childrenError;
-
-  const errorMessage = childrenError
-    ? t(childrenError, { defaultValue: childrenError })
-    : "";
+  const errorMessage = childrenError ? String(childrenError) : "";
 
   if (showFullScreenLoader) {
     return (
       <ScreenLayout scrollable={false}>
         <View style={[styles.container, { alignItems: "center", paddingTop: 40 }]}>
           <ActivityIndicator />
-          <AppText style={[styles.loadingHint, text]}>
-            {t("childDetails.loading_children")}
-          </AppText>
+          <AppText style={styles.loadingHint}>Loading children…</AppText>
         </View>
       </ScreenLayout>
     );
@@ -271,14 +294,16 @@ export default function ChildDetailsScreen() {
     return (
       <ScreenLayout>
         <View style={[styles.container, { paddingTop: 24 }]}>
-          <AppText style={[styles.childMeta, text]}>{errorMessage}</AppText>
+          <AppText style={styles.childMeta}>{errorMessage || "Could not load children."}</AppText>
+
           <View style={{ marginTop: 12 }}>
-            <AppText
-              style={[styles.childMeta, text]}
+            <Pressable
               onPress={refreshChildrenList}
+              accessibilityRole="button"
+              accessibilityLabel="Try loading children again"
             >
-              {t("common.retry")}
-            </AppText>
+              <AppText style={styles.childMeta}>Try again</AppText>
+            </Pressable>
           </View>
         </View>
       </ScreenLayout>
@@ -289,8 +314,8 @@ export default function ChildDetailsScreen() {
     return (
       <ScreenLayout>
         <View style={[styles.container, { paddingTop: 24 }]}>
-          <AppText style={[styles.childMeta, text]}>
-            {t("homeParent.no_children")}
+          <AppText style={styles.childMeta}>
+            No children yet. Add a child to get started
           </AppText>
         </View>
       </ScreenLayout>
@@ -303,16 +328,12 @@ export default function ChildDetailsScreen() {
         visible={deviceDeleteDialog != null}
         title={
           deviceDeleteDialog
-            ? t("childDetails.delete_device_title", {
-                device: deviceDeleteDialog.displayName,
-              })
+            ? `Remove ${deviceDeleteDialog.displayName}?`
             : ""
         }
-        message={t("childDetails.delete_device_message", {
-          child: childName.trim() || t("childDetails.devices_title"),
-        })}
-        cancelLabel={t("childDetails.delete_device_cancel")}
-        confirmLabel={t("childDetails.delete_device_confirm")}
+        message={`The device will be unlinked from ${childName}. This cannot be undone.`}
+        cancelLabel="Cancel"
+        confirmLabel="Remove"
         destructive
         onCancel={() => setDeviceDeleteDialog(null)}
         onConfirm={confirmDeleteDevice}
@@ -343,8 +364,8 @@ export default function ChildDetailsScreen() {
             birthDateLabel={birthDateLabel}
             genderLabel={genderLabel}
             profileImg={selectedChild?.img}
-            row={row}
-            text={text}
+            row={{ flexDirection: "row" }}
+            text={undefined}
             onOpenProfile={handleOpenChildProfile}
           />
 
@@ -354,8 +375,8 @@ export default function ChildDetailsScreen() {
             onAddDevice={handleConnectDevice}
             devicesLoading={devicesLoading}
             rows={deviceRows}
-            row={row}
-            text={text}
+            row={{ flexDirection: "row" }}
+            text={undefined}
             deletingDeviceId={deletingDeviceId}
             onDeleteDevice={handleDeleteDevice}
             onSetDeviceLocked={handleSetDeviceLocked}

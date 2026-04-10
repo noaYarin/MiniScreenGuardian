@@ -186,10 +186,7 @@ export const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
 
-  infoChipRtl: {
-    flexDirection: "row-reverse",
-    alignSelf: "flex-end",
-  },
+
 
   infoChipText: {
     fontSize: 13,
@@ -229,11 +226,7 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
 
-  remainingRowRtl: {
-    flexDirection: "row-reverse",
-    alignItems: "center",
-    gap: 8,
-  },
+
 
   remainingText: {
     fontSize: 13,
@@ -246,12 +239,7 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
 
-  timeRowRtl: {
-    flexDirection: "row-reverse",
-    alignItems: "center",
-    gap: 8,
-  },
-
+ 
   timeText: {
     fontSize: 13,
     color: "#8A94A6",

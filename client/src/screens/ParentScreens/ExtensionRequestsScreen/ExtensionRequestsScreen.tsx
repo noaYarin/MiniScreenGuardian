@@ -7,7 +7,6 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { Stack } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -18,9 +17,6 @@ import ChildDeviceSelector, {
   type DeviceType,
 } from "../../../components/ChildDeviceSelector/ChildDeviceSelector";
 import { styles } from "./styles";
-
-import { useTranslation } from "../../../../hooks/use-translation";
-import { useLocaleLayout } from "../../../../hooks/use-locale-layout";
 
 import type { AppDispatch, RootState } from "@/src/redux/store/types";
 import { getMyChildrenThunk } from "@/src/redux/thunks/childrenThunks";
@@ -53,8 +49,6 @@ function getRemainingMinutes(device: any | null) {
 }
 
 export default function ExtensionRequestsScreen() {
-  const { t } = useTranslation();
-  const { text, row, isRTL } = useLocaleLayout();
   const { width } = useWindowDimensions();
   const dispatch = useDispatch<AppDispatch>();
 
@@ -110,12 +104,7 @@ export default function ExtensionRequestsScreen() {
   }, [dispatch, selectedChildId]);
 
   const selectedChild = useMemo(() => {
-    if (!selectedChildId) return null;
-
-    return (
-      children.find((child) => String(child._id) === String(selectedChildId)) ??
-      null
-    );
+    return children.find((c) => String(c._id) === selectedChildId) ?? null;
   }, [children, selectedChildId]);
 
   const selectedDevice = useMemo(() => {
@@ -123,48 +112,25 @@ export default function ExtensionRequestsScreen() {
       return {
         _id: ALL_DEVICE_ID,
         type: "phone" as DeviceType,
-        name: t("childDeviceSelector.allDevices"),
+        name: "All devices",
       };
     }
 
-    if (!selectedChild) {
-      return {
-        _id: ALL_DEVICE_ID,
-        type: "phone" as DeviceType,
-        name: t("childDeviceSelector.allDevices"),
-      };
-    }
+    if (!selectedChild) return null;
 
-    const childDevices = devicesByChild[String(selectedChild._id)] ?? [];
+    const list = devicesByChild[String(selectedChild._id)] ?? [];
 
-    return (
-      childDevices.find(
-        (device) => String(device._id) === String(selectedDeviceId)
-      ) ?? null
-    );
-  }, [devicesByChild, selectedChild, selectedDeviceId, t]);
-
-  const selectedChildLabel = selectedChild?.name ?? "";
+    return list.find((d) => String(d._id) === selectedDeviceId) ?? null;
+  }, [devicesByChild, selectedChild, selectedDeviceId]);
 
   const visibleRequests = useMemo(() => {
-    return pendingRequests.filter((request) => {
-      const matchesDevice =
+    return pendingRequests.filter((r) => {
+      return (
         selectedDeviceId === ALL_DEVICE_ID ||
-        String(request.deviceId) === String(selectedDeviceId);
-
-      return matchesDevice;
+        String(r.deviceId) === selectedDeviceId
+      );
     });
   }, [pendingRequests, selectedDeviceId]);
-
-  const getChildName = (childId: string) => {
-    const child = children.find((c) => String(c._id) === String(childId));
-    return child?.name ?? "";
-  };
-
-  const getDeviceByIds = (childId: string, deviceId: string) => {
-    const list = devicesByChild[String(childId)] ?? [];
-    return list.find((d) => String(d._id) === String(deviceId)) ?? null;
-  };
 
   const handleApprove = async (requestId: string) => {
     try {
@@ -175,19 +141,9 @@ export default function ExtensionRequestsScreen() {
         })
       ).unwrap();
 
-      if (selectedChildId) {
-        await dispatch(fetchDevicesByChild(selectedChildId));
-      }
-
-      Alert.alert(
-        t("common.success"),
-        t("extensionRequests.requestApproved")
-      );
-    } catch (error) {
-      Alert.alert(
-        t("common.error"),
-        (error as Error)?.message ?? t("api.generic_error")
-      );
+      Alert.alert("Success", "Request approved");
+    } catch (error: any) {
+      Alert.alert("Error", error?.message ?? "Something went wrong");
     }
   };
 
@@ -200,319 +156,91 @@ export default function ExtensionRequestsScreen() {
         })
       ).unwrap();
 
-      if (selectedChildId) {
-        await dispatch(fetchDevicesByChild(selectedChildId));
-      }
-
-      Alert.alert(
-        t("common.success"),
-        t("extensionRequests.requestDeclined")
-      );
-    } catch (error) {
-      Alert.alert(
-        t("common.error"),
-        (error as Error)?.message ?? t("api.generic_error")
-      );
+      Alert.alert("Success", "Request declined");
+    } catch (error: any) {
+      Alert.alert("Error", error?.message ?? "Something went wrong");
     }
   };
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: t("extensionRequests.title"),
-          headerTitleAlign: "center",
-          headerShadowVisible: false,
-        }}
-      />
+    <ScreenLayout>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.container}>
+          <View style={styles.heroCard}>
+            <AppText weight="extraBold" style={styles.heroTitle}>
+              Extension Requests
+            </AppText>
 
-      <ScreenLayout>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.container}>
-            <View style={styles.heroCard}>
-              <View style={styles.heroGlow} />
-
-              <AppText weight="extraBold" style={[styles.heroTitle, text]}>
-                {t("extensionRequests.heading")}
-              </AppText>
-
-              <AppText weight="medium" style={[styles.heroSubtitle, text]}>
-                {t("extensionRequests.subtitle")}
-              </AppText>
-
-              <View
-                style={[
-                  styles.heroMetaRow,
-                  row,
-                  isWide ? styles.heroMetaRowWide : undefined,
-                ]}
-              >
-                <View style={styles.heroMetaChip}>
-                  <MaterialCommunityIcons
-                    name="account-child-outline"
-                    size={18}
-                    color="#315BFF"
-                  />
-                  <AppText weight="bold" style={[styles.heroMetaText, text]}>
-                    {selectedChildLabel}
-                  </AppText>
-                </View>
-
-                <View style={styles.heroMetaChip}>
-                  <MaterialCommunityIcons
-                    name={
-                      selectedDeviceId === ALL_DEVICE_ID
-                        ? "devices"
-                        : getDeviceIconName(selectedDevice?.type ?? "phone")
-                    }
-                    size={18}
-                    color="#315BFF"
-                  />
-                  <AppText weight="bold" style={[styles.heroMetaText, text]}>
-                    {selectedDevice?.name ?? t("childDeviceSelector.allDevices")}
-                  </AppText>
-                </View>
-              </View>
-            </View>
-
-            {!!selectedChildId && (
-              <ChildDeviceSelector
-                selectedChildId={selectedChildId}
-                selectedDeviceId={selectedDeviceId}
-                onSelectChild={(childId) => {
-                  setSelectedChildId(childId);
-                  setSelectedDeviceId(ALL_DEVICE_ID);
-                }}
-                onSelectDevice={setSelectedDeviceId}
-                showDevices
-                includeAllDevicesOption
-              />
-            )}
-
-            <View
-              style={[
-                styles.sectionHeader,
-                { alignItems: isRTL ? "flex-end" : "flex-start" },
-              ]}
-            >
-              <View style={[styles.sectionTitleRow, row]}>
-                <AppText weight="extraBold" style={[styles.sectionTitle, text]}>
-                  {t("extensionRequests.pendingSectionTitle")}
-                </AppText>
-
-                <View style={styles.countBadge}>
-                  <AppText weight="extraBold" style={styles.countBadgeText}>
-                    {visibleRequests.length}
-                  </AppText>
-                </View>
-              </View>
-
-              <AppText weight="medium" style={[styles.sectionSubtitle, text]}>
-                {t("extensionRequests.pendingSectionSubtitle")}
-              </AppText>
-            </View>
-
-            {requestsStatus === "loading" ? (
-              <View style={styles.emptyCard}>
-                <ActivityIndicator />
-              </View>
-            ) : requestsError ? (
-              <View style={styles.emptyCard}>
-                <AppText weight="extraBold" style={[styles.emptyTitle, text]}>
-                  {t("common.error")}
-                </AppText>
-                <AppText weight="medium" style={[styles.emptySubtitle, text]}>
-                  {requestsError}
-                </AppText>
-              </View>
-            ) : visibleRequests.length === 0 ? (
-              <View style={styles.emptyCard}>
-                <MaterialCommunityIcons
-                  name="check-decagram-outline"
-                  size={34}
-                  color="#7A8599"
-                />
-                <AppText weight="extraBold" style={[styles.emptyTitle, text]}>
-                  {t("extensionRequests.empty.title")}
-                </AppText>
-                <AppText weight="medium" style={[styles.emptySubtitle, text]}>
-                  {t("extensionRequests.empty.subtitle")}
-                </AppText>
-              </View>
-            ) : (
-              <View
-                style={[styles.cardsWrap, isWide ? styles.cardsWrapWide : undefined]}
-              >
-                {visibleRequests.map((request) => {
-                  const childName = getChildName(request.childId);
-                  const device = getDeviceByIds(request.childId, request.deviceId);
-                  const deviceName =
-                    device?.name ?? t("childDeviceSelector.allDevices");
-                  const deviceType = (device?.type as DeviceType) ?? "phone";
-                  const remaining = getRemainingMinutes(device);
-
-                  return (
-                    <View
-                      key={request._id}
-                      style={[
-                        styles.requestCard,
-                        isWide ? styles.requestCardWide : undefined,
-                      ]}
-                    >
-                      <View style={[styles.cardTopRow, row]}>
-                        <View style={styles.deviceBadge}>
-                          <MaterialCommunityIcons
-                            name={getDeviceIconName(deviceType)}
-                            size={24}
-                            color="#315BFF"
-                          />
-                        </View>
-
-                        <View style={styles.cardTopTextWrap}>
-                          <AppText weight="extraBold" style={[styles.deviceName, text]}>
-                            {deviceName}
-                          </AppText>
-
-                          <AppText weight="medium" style={[styles.childName, text]}>
-                            {childName}
-                          </AppText>
-                        </View>
-                      </View>
-
-                      <View style={styles.infoGrid}>
-                        <View
-                          style={[
-                            styles.infoChip,
-                            isRTL ? styles.infoChipRtl : styles.infoChipLtr,
-                          ]}
-                        >
-                          <MaterialCommunityIcons
-                            name="clock-plus-outline"
-                            size={16}
-                            color="#315BFF"
-                          />
-
-                          <AppText weight="bold" style={[styles.infoChipText, text]}>
-                            {t("extensionRequests.requestedMinutesLabel", {
-                              minutes: request.requestedMinutes,
-                            })}
-                          </AppText>
-                        </View>
-                      </View>
-
-                      <View style={styles.reasonBox}>
-                        <AppText weight="bold" style={[styles.reasonLabel, text]}>
-                          {t("extensionRequests.reasonLabel")}
-                        </AppText>
-
-                        <AppText weight="medium" style={[styles.reasonText, text]}>
-                          {request.reason}
-                        </AppText>
-                      </View>
-
-                      <View style={styles.remainingBox}>
-                        <View
-                          style={
-                            isRTL ? styles.remainingRowRtl : styles.remainingRowLtr
-                          }
-                        >
-                          <MaterialCommunityIcons
-                            name="timer-sand"
-                            size={16}
-                            color="#7A8599"
-                          />
-                          <AppText
-                            weight="medium"
-                            style={[styles.remainingText, text]}
-                          >
-                            {remaining === "UNLIMITED"
-                              ? t("extensionRequests.unlimited")
-                              : remaining !== null
-                              ? t("extensionRequests.remainingMinutes", {
-                                  minutes: remaining,
-                                })
-                              : t("extensionRequests.remainingInfoUnavailable")}
-                          </AppText>
-                        </View>
-                      </View>
-
-                      <View style={isRTL ? styles.timeRowRtl : styles.timeRowLtr}>
-                        <MaterialCommunityIcons
-                          name="history"
-                          size={16}
-                          color="#8A94A6"
-                        />
-                        <AppText weight="medium" style={[styles.timeText, text]}>
-                          {request.createdAt
-                            ? new Date(request.createdAt).toLocaleString()
-                            : ""}
-                        </AppText>
-                      </View>
-
-                      <View style={[styles.actionsRow, row]}>
-                        <Pressable
-                          onPress={() => handleDecline(request._id)}
-                          accessibilityRole="button"
-                          accessibilityLabel={t(
-                            "extensionRequests.a11y.declineRequest",
-                            {
-                              childName,
-                              deviceName,
-                            }
-                          )}
-                          style={({ pressed }) => [
-                            styles.actionButton,
-                            styles.declineButton,
-                            pressed && styles.actionButtonPressed,
-                          ]}
-                        >
-                          <MaterialCommunityIcons
-                            name="close"
-                            size={18}
-                            color="#FFFFFF"
-                          />
-                          <AppText weight="extraBold" style={styles.actionButtonText}>
-                            {t("extensionRequests.decline")}
-                          </AppText>
-                        </Pressable>
-
-                        <Pressable
-                          onPress={() => handleApprove(request._id)}
-                          accessibilityRole="button"
-                          accessibilityLabel={t(
-                            "extensionRequests.a11y.approveRequest",
-                            {
-                              childName,
-                              deviceName,
-                            }
-                          )}
-                          style={({ pressed }) => [
-                            styles.actionButton,
-                            styles.approveButton,
-                            pressed && styles.actionButtonPressed,
-                          ]}
-                        >
-                          <MaterialCommunityIcons
-                            name="check"
-                            size={18}
-                            color="#FFFFFF"
-                          />
-                          <AppText weight="extraBold" style={styles.actionButtonText}>
-                            {t("extensionRequests.approve")}
-                          </AppText>
-                        </Pressable>
-                      </View>
-                    </View>
-                  );
-                })}
-              </View>
-            )}
+            <AppText weight="medium" style={styles.heroSubtitle}>
+              Manage pending requests from your children
+            </AppText>
           </View>
-        </ScrollView>
-      </ScreenLayout>
-    </>
+
+          {!!selectedChildId && (
+            <ChildDeviceSelector
+              selectedChildId={selectedChildId}
+              selectedDeviceId={selectedDeviceId}
+              onSelectChild={(id) => {
+                setSelectedChildId(id);
+                setSelectedDeviceId(ALL_DEVICE_ID);
+              }}
+              onSelectDevice={setSelectedDeviceId}
+              showDevices
+              includeAllDevicesOption
+            />
+          )}
+
+          {requestsStatus === "loading" ? (
+            <ActivityIndicator />
+          ) : requestsError ? (
+            <AppText>Error: {requestsError}</AppText>
+          ) : visibleRequests.length === 0 ? (
+            <AppText>No pending requests</AppText>
+          ) : (
+            <View style={styles.cardsWrap}>
+              {visibleRequests.map((request) => {
+                const device = devicesByChild[String(request.childId)]?.find(
+                  (d) => String(d._id) === String(request.deviceId)
+                );
+
+                return (
+                  <View key={request._id} style={styles.requestCard}>
+                    <AppText weight="bold">
+                      {device?.name ?? "Device"}
+                    </AppText>
+
+                    <AppText>
+                      Requested: {request.requestedMinutes} minutes
+                    </AppText>
+
+                    <AppText>{request.reason}</AppText>
+
+                    <View style={styles.actionsRow}>
+                      <Pressable
+                        onPress={() => handleDecline(request._id)}
+                        style={styles.declineButton}
+                      >
+                        <AppText style={styles.actionButtonText}>
+                          Decline
+                        </AppText>
+                      </Pressable>
+
+                      <Pressable
+                        onPress={() => handleApprove(request._id)}
+                        style={styles.approveButton}
+                      >
+                        <AppText style={styles.actionButtonText}>
+                          Approve
+                        </AppText>
+                      </Pressable>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+        </View>
+      </ScrollView>
+    </ScreenLayout>
   );
 }

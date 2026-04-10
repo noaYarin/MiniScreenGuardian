@@ -1,27 +1,5 @@
 package com.screenguardianmobile
 
-/**
- * MainActivity
- *
- * This is the main Android entry Activity for the React Native application.
- * It serves as the native host for the JavaScript app and is responsible for
- * bootstrapping the main React component.
- *
- * Main responsibilities:
- * - Launch the React Native app inside the Android activity.
- * - Apply the app theme before Activity creation.
- * - Provide the name of the root React component ("main").
- * - Create the ReactActivityDelegate used by React Native / Expo.
- * - Handle Android back button behavior in a way that matches system expectations.
- *
- * Architecture notes:
- * - This class extends ReactActivity, which is the standard Android entry point
- *   for React Native apps.
- * - It uses ReactActivityDelegateWrapper because the project is based on Expo modules.
- * - It supports React Native New Architecture through BuildConfig and fabricEnabled.
-
- */
-
 import android.os.Build
 import android.os.Bundle
 
@@ -31,7 +9,6 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnable
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 
 import expo.modules.ReactActivityDelegateWrapper
-
 
 class MainActivity : ReactActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {

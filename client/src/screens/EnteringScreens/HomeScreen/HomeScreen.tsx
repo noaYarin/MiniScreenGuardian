@@ -1,53 +1,45 @@
-import { useRouter } from 'expo-router';
-import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
-import { useDispatch } from 'react-redux';
-import { Image } from 'expo-image';
-import { LanguageToggle } from '../../../components/LanguageToggle';
-import { useTranslation } from '../../../../hooks/use-translation';
-import type { SupportedLanguage } from '../../../locales/i18n';
-import { setLanguage } from '../../../redux/slices/language-slice';
-import { styles } from './home.styles';
+import { useRouter } from "expo-router";
+import React from "react";
+import { TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
+
+import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
+import AppText from "../../../components/AppText/AppText";
+import { styles } from "./styles";
 
 export const HomeScreen: React.FC = () => {
-  const { t, currentLanguage } = useTranslation();
-  const dispatch = useDispatch();
   const router = useRouter();
 
-  const toggleLanguage = () => {
-    const nextLang: SupportedLanguage =
-      currentLanguage === 'en' ? 'he' : 'en';
-    dispatch(setLanguage(nextLang));
-  };
-
   const handleStartOnboarding = () => {
-    router.replace('/Entering/onboardingRoute');
+    router.replace("/Entering/onboardingRoute");
   };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require('../../../../assets/images/homeImg.webp')}
-        style={styles.homeImg}
-      />
-      <Text style={styles.title}>{t('app_name')}</Text>
-
-      <View style={styles.buttonRow}>
-        <LanguageToggle
-          currentLanguage={currentLanguage}
-          onToggle={toggleLanguage}
+    <ScreenLayout>
+      <View style={styles.container}>
+        <Image
+          source={require("../../../../assets/images/homeImg.webp")}
+          style={styles.homeImg}
+          contentFit="contain"
         />
 
-        <TouchableOpacity
-          style={styles.nextButton}
-          onPress={handleStartOnboarding}
-        >
-          <Text style={styles.buttonText}>
-            {t('onboarding.startOnboarding')}
-          </Text>
-        </TouchableOpacity>
+        <AppText weight="extraBold" style={styles.title}>
+          ScreenTime Guardian
+        </AppText>
+
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
+            style={styles.nextButton}
+            onPress={handleStartOnboarding}
+            accessibilityRole="button"
+            accessibilityLabel="Start onboarding"
+          >
+            <AppText weight="bold" style={styles.buttonText}>
+              Start
+            </AppText>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </ScreenLayout>
   );
 };
-

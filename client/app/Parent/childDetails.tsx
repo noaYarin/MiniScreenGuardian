@@ -1,20 +1,19 @@
 import React from "react";
 import { Stack } from "expo-router";
 
-import HomeScreen from "@/src/screens/ChildrenScreens/HomeScreenChild/HomeScreen";
+import ChildDetailsScreen from "@/src/screens/ParentScreens/ChildDetailsScreen/ChildDetailsScreen";
 
-export default function ChildHomeRoute() {
+export default function ChildDetailsRoute() {
   return (
     <>
       <Stack.Screen
         options={{
-          title: "Home",
+          title: "Child Details",
           headerTitleAlign: "center",
           headerShadowVisible: false,
-          headerBackVisible: false,
         }}
       />
-      <HomeScreen />
+      <ChildDetailsScreen />
     </>
   );
 }

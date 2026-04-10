@@ -107,6 +107,7 @@ export const styles = StyleSheet.create({
 
   agePickerHintRow: {
     marginTop: 8,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 4,
@@ -128,6 +129,7 @@ export const styles = StyleSheet.create({
   },
 
   rangeHeaderRow: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 10,
@@ -163,6 +165,7 @@ export const styles = StyleSheet.create({
 
   trackLabelsRow: {
     marginTop: 8,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },

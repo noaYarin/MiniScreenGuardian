@@ -17,5 +17,5 @@ export type ChildLocationItem = {
 export type DeviceLocationSnapshot = {
   latitude: number;
   longitude: number;
-  lastUpdated: string | number | Date; 
+  lastUpdated: string | number | Date;
 };

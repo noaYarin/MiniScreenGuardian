@@ -7,8 +7,6 @@ import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
 import AppText from "../../../components/AppText/AppText";
 import { styles } from "./styles";
 
-import { useTranslation } from "../../../../hooks/use-translation";
-import { useLocaleLayout } from "../../../../hooks/use-locale-layout";
 import {
   getPreLoginRecommendation,
   type ScreenTimeRecommendation,
@@ -24,8 +22,6 @@ const AGE_OPTIONS = Array.from(
 );
 
 export default function ChooseChildAgeScreen() {
-  const { t } = useTranslation();
-  const { text, row, isRTL } = useLocaleLayout();
   const { width } = useWindowDimensions();
 
   const [selectedAge, setSelectedAge] = useState<number>(DEFAULT_AGE);
@@ -87,7 +83,7 @@ export default function ChooseChildAgeScreen() {
         <View style={[styles.container, isTablet && styles.containerTablet]}>
           <View style={styles.heroCard}>
             <AppText weight="extraBold" style={styles.title}>
-              {t("chooseChildAge.heading")}
+              What is the child's age?
             </AppText>
 
             <View
@@ -97,7 +93,6 @@ export default function ChooseChildAgeScreen() {
               ]}
             >
               <View style={styles.controlsCenter}>
-
                 <Pressable
                   onPress={handleOpenAgeModal}
                   accessibilityRole="button"
@@ -111,29 +106,29 @@ export default function ChooseChildAgeScreen() {
                   </View>
                 </Pressable>
 
-                <AppText weight="bold" style={[styles.ageLabel, text]}>
-                  {t("chooseChildAge.selectedAgeLabel")}
+                <AppText weight="bold" style={styles.ageLabel}>
+                  Selected age
                 </AppText>
 
                 <Pressable
                   onPress={handleOpenAgeModal}
                   accessibilityRole="button"
+                  accessibilityLabel="Open age picker"
                 >
-                  <View style={[styles.agePickerHintRow, row]}>
+                  <View style={styles.agePickerHintRow}>
                     <MaterialCommunityIcons name="chevron-down" size={18} color="#6A7C92" />
-                    <AppText style={[styles.agePickerHintText, text]}>
+                    <AppText style={styles.agePickerHintText}>
                       Tap to choose age
                     </AppText>
                   </View>
                 </Pressable>
-
               </View>
-              <View style={styles.rangeCard}>
-                <View style={[styles.rangeHeaderRow, row]}>
-                  <AppText weight="bold" style={[styles.rangeTitle, text]}>
-                    {t("chooseChildAge.rangeTitle")}
-                  </AppText>
 
+              <View style={styles.rangeCard}>
+                <View style={styles.rangeHeaderRow}>
+                  <AppText weight="bold" style={styles.rangeTitle}>
+                    Supported range
+                  </AppText>
                 </View>
 
                 <View style={styles.track}>
@@ -142,13 +137,13 @@ export default function ChooseChildAgeScreen() {
                       styles.trackFill,
                       {
                         width: `${((selectedAge - MIN_AGE) / (MAX_AGE - MIN_AGE)) * 100}%`,
-                        ...(isRTL ? { right: 0 } : { left: 0 }),
+                        left: 0,
                       },
                     ]}
                   />
                 </View>
 
-                <View style={[styles.trackLabelsRow, row]}>
+                <View style={styles.trackLabelsRow}>
                   <AppText weight="medium" style={styles.trackEdgeLabel}>
                     {MIN_AGE}
                   </AppText>
@@ -162,13 +157,14 @@ export default function ChooseChildAgeScreen() {
                 onPress={handleCheckRecommendation}
                 disabled={isRecommendationLoading}
                 accessibilityRole="button"
+                accessibilityLabel="Check recommendation"
                 style={[
                   styles.recommendationButton,
                   isRecommendationLoading && styles.recommendationButtonDisabled,
                 ]}
               >
                 <AppText weight="bold" style={styles.recommendationButtonText}>
-                  {isRecommendationLoading ? "Loading..." : "Check Recommendation "}
+                  {isRecommendationLoading ? "Loading..." : "Check Recommendation"}
                 </AppText>
               </Pressable>
 
@@ -185,21 +181,20 @@ export default function ChooseChildAgeScreen() {
                     weight="bold"
                     style={[
                       styles.recommendationTitle,
-                      text,
                       recommendationVariant === "young" && styles.recommendationTitleYoung,
                       recommendationVariant === "middle" && styles.recommendationTitleMiddle,
                       recommendationVariant === "teen" && styles.recommendationTitleTeen,
                     ]}
                   >
-                   Recommended Screen Time
+                    Recommended Screen Time
                   </AppText>
 
                   {isRecommendationLoading ? (
-                    <AppText style={[styles.recommendationLoading, text]}>
-                      טוען המלצה...
+                    <AppText style={styles.recommendationLoading}>
+                      Loading recommendation...
                     </AppText>
                   ) : recommendationError ? (
-                    <AppText style={[styles.recommendationError, text]}>
+                    <AppText style={styles.recommendationError}>
                       {recommendationError}
                     </AppText>
                   ) : recommendation ? (
@@ -208,7 +203,6 @@ export default function ChooseChildAgeScreen() {
                         weight="extraBold"
                         style={[
                           styles.recommendationMinutes,
-                          text,
                           recommendationVariant === "young" && styles.recommendationMinutesYoung,
                           recommendationVariant === "middle" && styles.recommendationMinutesMiddle,
                           recommendationVariant === "teen" && styles.recommendationMinutesTeen,
@@ -217,7 +211,7 @@ export default function ChooseChildAgeScreen() {
                         {recommendation.recommendedMinutes} Minutes
                       </AppText>
 
-                      <AppText style={[styles.recommendationText, text]}>
+                      <AppText style={styles.recommendationText}>
                         {recommendation.message}
                       </AppText>
                     </>
@@ -230,11 +224,11 @@ export default function ChooseChildAgeScreen() {
           <Pressable
             onPress={handleContinue}
             accessibilityRole="button"
-            accessibilityLabel={t("chooseChildAge.continue_a11y")}
+            accessibilityLabel="Continue to the next step"
             style={styles.continueButton}
           >
             <AppText weight="bold" style={styles.continueButtonText}>
-              {t("chooseChildAge.continue")}
+              Continue
             </AppText>
           </Pressable>
         </View>
@@ -247,15 +241,16 @@ export default function ChooseChildAgeScreen() {
         onRequestClose={handleCloseAgeModal}
       >
         <Pressable style={styles.modalOverlay} onPress={handleCloseAgeModal}>
-          <Pressable style={styles.modalCard} onPress={() => { }}>
+          <Pressable style={styles.modalCard} onPress={() => {}}>
             <View style={styles.modalHeader}>
               <AppText weight="extraBold" style={styles.modalTitle}>
-                בחר גיל
+                Choose Age
               </AppText>
 
               <Pressable
                 onPress={handleCloseAgeModal}
                 accessibilityRole="button"
+                accessibilityLabel="Close age picker"
                 style={styles.modalCloseButton}
               >
                 <MaterialCommunityIcons name="close" size={22} color="#243447" />
@@ -273,6 +268,8 @@ export default function ChooseChildAgeScreen() {
                   <Pressable
                     key={age}
                     onPress={() => handleSelectAge(age)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Select age ${age}`}
                     style={[
                       styles.ageOption,
                       isSelected && styles.ageOptionSelected,

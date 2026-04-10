@@ -89,16 +89,9 @@ export const styles = StyleSheet.create({
 
   genderRow: {
     width: "100%",
+    flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
-  },
-
-  genderRowLtr: {
-    flexDirection: "row",
-  },
-
-  genderRowRtl: {
-    flexDirection: "row-reverse",
   },
 
   genderChip: {
@@ -210,21 +203,15 @@ export const styles = StyleSheet.create({
   },
 
   dateFieldContent: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
   },
 
-  dateFieldContentLtr: {
-    flexDirection: "row",
-  },
-
-  dateFieldContentRtl: {
-    flexDirection: "row-reverse",
-  },
-
   dateFieldLeft: {
     flex: 1,
+    flexDirection: "row",
     alignItems: "center",
     gap: 12,
   },
@@ -282,4 +269,3 @@ export const styles = StyleSheet.create({
     color: "#2C6FD6",
   },
 });
-

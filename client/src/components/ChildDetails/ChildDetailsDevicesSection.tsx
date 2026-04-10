@@ -7,7 +7,6 @@ import {
   ViewStyle,
   TextStyle,
 } from "react-native";
-import { useTranslation } from "react-i18next";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import AppText from "@/src/components/AppText/AppText";
@@ -25,7 +24,6 @@ type Props = {
   text: StyleProp<TextStyle>;
   deletingDeviceId: string | null;
   onDeleteDevice: (deviceId: string, displayName: string) => void;
-  /** Local-only lock toggle (no server); wired to Redux `setDeviceLockLocal`. */
   onSetDeviceLocked: (deviceId: string, locked: boolean) => void;
   onRenameDevice: (deviceId: string, newName: string) => Promise<void>;
 };
@@ -43,7 +41,6 @@ export function ChildDetailsDevicesSection({
   onSetDeviceLocked,
   onRenameDevice,
 }: Props) {
-  const { t } = useTranslation();
   const deleteBusy = deletingDeviceId !== null;
 
   return (
@@ -52,7 +49,7 @@ export function ChildDetailsDevicesSection({
         <Pressable
           onPress={onToggleExpanded}
           accessibilityRole="button"
-          accessibilityLabel={t("childDetails.toggle_devices_a11y")}
+          accessibilityLabel="Expand or collapse devices list"
           style={({ pressed }) => [
             styles.devicesToggleButton,
             pressed && styles.devicesToggleButtonPressed,
@@ -60,7 +57,7 @@ export function ChildDetailsDevicesSection({
         >
           <View style={[styles.devicesToggleInner, row]}>
             <AppText weight="extraBold" style={[styles.sectionTitle, text]}>
-              {t("childDetails.devices_title")}
+              Devices
             </AppText>
             <MaterialCommunityIcons
               name={expanded ? "chevron-down" : "chevron-up"}
@@ -74,11 +71,11 @@ export function ChildDetailsDevicesSection({
           style={styles.addDeviceButton}
           onPress={onAddDevice}
           accessibilityRole="button"
-          accessibilityLabel={t("childDetails.add_device_a11y")}
+          accessibilityLabel="Add a new device for this child"
         >
           <MaterialCommunityIcons name="plus" size={18} color="#FFFFFF" />
           <AppText weight="extraBold" style={styles.addDeviceButtonText}>
-            {t("childDetails.add_device")}
+            Add device
           </AppText>
         </Pressable>
       </View>

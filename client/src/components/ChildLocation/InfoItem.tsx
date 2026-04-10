@@ -1,5 +1,5 @@
 import React from "react";
-import { View, type TextStyle, type ViewStyle } from "react-native";
+import { View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import AppText from "../AppText/AppText";
@@ -11,8 +11,6 @@ type Props = {
   label: string;
   value: string;
   hint?: string;
-  row: ViewStyle;
-  text: TextStyle;
 };
 
 export default function InfoItem({
@@ -21,24 +19,23 @@ export default function InfoItem({
   label,
   value,
   hint,
-  row,
-  text,
 }: Props) {
   return (
     <View style={styles.infoItem}>
-      <View style={[styles.infoLabelRow, row]}>
+      <View style={styles.infoLabelRow}>
         <MaterialCommunityIcons name={iconName} size={16} color={iconColor} />
-        <AppText weight="medium" style={[styles.infoLabel, text]}>
+
+        <AppText weight="medium" style={styles.infoLabel}>
           {label}
         </AppText>
       </View>
 
-      <AppText weight="bold" style={[styles.infoValue, text]}>
+      <AppText weight="bold" style={styles.infoValue}>
         {value}
       </AppText>
 
       {hint ? (
-        <AppText weight="regular" style={[styles.infoHint, text]}>
+        <AppText weight="regular" style={styles.infoHint}>
           {hint}
         </AppText>
       ) : null}

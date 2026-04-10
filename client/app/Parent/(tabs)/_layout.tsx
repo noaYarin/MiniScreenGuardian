@@ -1,29 +1,21 @@
 import React from "react";
 import { Tabs } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useTranslation } from "react-i18next";
 import { COLORS } from "@/constants/theme";
 
-const TAB_ROUTES = new Set([
-  "home",
-  "children",
-  "limits",
-  "reports",
-  "settings",
-]);
+const TAB_LABELS: Record<string, string> = {
+  home: "Home",
+  children: "Children",
+  limits: "Limits",
+  extensionRequests: "Requests",
+  settings: "Settings",
+};
 
 export default function ParentTabsLayout() {
-  const { t } = useTranslation();
-
   return (
     <Tabs
       screenOptions={({ route }) => {
-        const title =
-          route.name === "home"
-            ? t("homeParent.title")
-            : TAB_ROUTES.has(route.name)
-            ? t(`tabs.${route.name}`)
-            : undefined;
+        const title = TAB_LABELS[route.name];
 
         return {
           sceneContainerStyle: {
@@ -55,7 +47,7 @@ export default function ParentTabsLayout() {
       <Tabs.Screen
         name="children"
         options={{
-          tabBarLabel: t("tabs.children"),
+          tabBarLabel: "Children",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
               name="account-group-outline"
@@ -69,7 +61,7 @@ export default function ParentTabsLayout() {
       <Tabs.Screen
         name="limits"
         options={{
-          tabBarLabel: t("tabs.limits"),
+          tabBarLabel: "Limits",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
               name="clock-outline"
@@ -83,7 +75,7 @@ export default function ParentTabsLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          tabBarLabel: t("tabs.home"),
+          tabBarLabel: "Home",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
               name="home-outline"
@@ -95,12 +87,12 @@ export default function ParentTabsLayout() {
       />
 
       <Tabs.Screen
-        name="reports"
+        name="extensionRequests"
         options={{
-          tabBarLabel: t("tabs.reports"),
+          tabBarLabel: "Requests",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
-              name="chart-bar"
+              name="clock-check-outline"
               size={size}
               color={color}
             />
@@ -111,7 +103,7 @@ export default function ParentTabsLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          tabBarLabel: t("tabs.settings"),
+          tabBarLabel: "Settings",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
               name="cog-outline"

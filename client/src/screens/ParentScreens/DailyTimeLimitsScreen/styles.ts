@@ -31,6 +31,7 @@ export const styles = StyleSheet.create({
   },
 
   heroHeader: {
+    flexDirection: "row",
     alignItems: "center",
     gap: 14,
   },
@@ -91,6 +92,7 @@ export const styles = StyleSheet.create({
   },
 
   limitTopRow: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
@@ -122,6 +124,7 @@ export const styles = StyleSheet.create({
   },
 
   timePillsRow: {
+    flexDirection: "row",
     justifyContent: "space-between",
     gap: 10,
     marginBottom: 16,
@@ -149,18 +152,11 @@ export const styles = StyleSheet.create({
     textAlign: "left",
   },
 
-  timePillValueRtl: {
-    textAlign: "right",
-  },
-
   progressMetaRow: {
+    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8,
-  },
-
-  progressMetaRowRtl: {
-    flexDirection: "row-reverse",
   },
 
   progressMetaText: {
@@ -187,16 +183,9 @@ export const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     bottom: 0,
+    left: 0,
     borderRadius: 999,
     backgroundColor: "#3D6BF2",
-  },
-
-  progressFillLtr: {
-    left: 0,
-  },
-
-  progressFillRtl: {
-    right: 0,
   },
 
   summaryText: {
@@ -231,6 +220,7 @@ export const styles = StyleSheet.create({
   statusChipTextReached: {
     color: "#DC2626",
   },
+
   statusChipWarning: {
     backgroundColor: "#FFF4E5",
   },
@@ -256,6 +246,7 @@ export const styles = StyleSheet.create({
     minHeight: 52,
     borderRadius: 16,
     backgroundColor: "#3D6BF2",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
@@ -288,6 +279,7 @@ export const styles = StyleSheet.create({
   },
 
   editorHeaderRow: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
@@ -298,43 +290,22 @@ export const styles = StyleSheet.create({
     color: "#1F2A44",
   },
 
-  doneButton: {
-    minHeight: 34,
-    borderRadius: 999,
-    backgroundColor: "#EAF1FF",
-    paddingHorizontal: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  doneButtonPressed: {
-    opacity: 0.8,
-  },
-
-  doneButtonText: {
-    fontSize: 13,
-    color: "#3D6BF2",
-  },
-
   editorControlsRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "stretch",
     gap: 10,
-  },
-
-  editorControlsRowRtl: {
-    flexDirection: "row-reverse",
   },
 
   stepButton: {
     minWidth: 76,
-    minHeight: 48,
+    minHeight: 54,
     borderRadius: 16,
     paddingHorizontal: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
+    alignSelf: "center",
   },
 
   stepButtonPrimary: {
@@ -371,7 +342,6 @@ export const styles = StyleSheet.create({
 
   currentValueBox: {
     flex: 1,
-    minHeight: 48,
     borderRadius: 16,
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
@@ -379,13 +349,14 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
 
   currentValueLabel: {
     fontSize: 11,
     color: "#7B879C",
     marginBottom: 3,
+    textAlign: "center",
   },
 
   currentValueText: {
@@ -393,6 +364,26 @@ export const styles = StyleSheet.create({
     color: "#1F2A44",
     textAlign: "center",
   },
+
+  manualInput: {
+    width: "100%",
+    minHeight: 46,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#D9E2F2",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    color: "#1F2A44",
+    textAlign: "center",
+  },
+
+  manualInputDisabled: {
+    backgroundColor: "#F3F4F6",
+    color: "#9CA3AF",
+  },
+
   emptyState: {
     width: "100%",
     alignItems: "center",
@@ -420,6 +411,7 @@ export const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 18,
   },
+
   switchRow: {
     flexDirection: "row",
     justifyContent: "space-between",

@@ -38,6 +38,7 @@ export default function AuthFormCard({
   submitButtonAccessibilityLabel,
 }: AuthFormCardProps) {
   const { width } = useWindowDimensions();
+
   const cardWidth = useMemo(
     () => Math.min(width - SIDE_PADDING * 2, MAX_CARD_WIDTH),
     [width]
