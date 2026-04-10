@@ -1,4 +1,54 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<!--
+    AndroidManifest.xml
+
+    This file defines the main Android app configuration, including:
+    - Required permissions
+    - Declared activities
+    - Declared services
+    - Application-level settings
+
+    Main responsibilities:
+    - Register the app entry point (MainActivity)
+    - Register the blocking screen activity (BlockScreenActivity)
+    - Register the AccessibilityService used for parental control enforcement
+    - Declare permissions needed for networking, usage stats, and device behavior
+
+    Key components:
+
+    1. Permissions
+       - INTERNET:
+         Required for communication with the backend server.
+       - PACKAGE_USAGE_STATS:
+         Required to read app usage statistics for screen-time tracking.
+       - SYSTEM_ALERT_WINDOW / VIBRATE / storage permissions:
+         Declared as optional here, but should only remain if actually used.
+
+    2. MainActivity
+       - Main launcher activity of the React Native / Expo app.
+       - Exported because Android must be able to launch it from the launcher.
+
+    3. BlockScreenActivity
+       - Full-screen activity shown when the device is blocked.
+       - Not exported because it is only used internally by the app.
+       - Excluded from recents to prevent user confusion and avoid exposing internal lock flow.
+
+    4. ScreenGuardianAccessibilityService
+       - Core native enforcement service of the app.
+       - Monitors foreground app changes and enforces screen-time restrictions.
+       - Requires BIND_ACCESSIBILITY_SERVICE permission.
+       - Uses accessibility_service_config.xml for Android accessibility service settings.
+
+    Security notes:
+    - Sensitive internal components should not be exported unless necessary.
+    - PACKAGE_USAGE_STATS is a protected permission and must also be manually granted by the user in system settings.
+
+    Important:
+    - This manifest is critical for connecting React Native UI, native Android logic,
+      and background enforcement behavior into one working application.
+-->
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
   <uses-permission android:name="android.permission.INTERNET"/>
   <!-- OPTIONAL PERMISSIONS, REMOVE WHATEVER YOU DO NOT NEED -->
@@ -7,7 +57,12 @@
   <!-- These require runtime permissions on M -->
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+  <uses-permission
+      android:name="android.permission.PACKAGE_USAGE_STATS"
+      tools:ignore="ProtectedPermissions" />
   <!-- END OPTIONAL PERMISSIONS -->
+
 
   <queries>
     <!-- Support checking for http(s) links via the Linking API -->
@@ -25,5 +80,26 @@
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity>
+
+    <activity
+    android:name=".BlockScreenActivity"
+    android:exported="false"
+    android:excludeFromRecents="true"
+    android:launchMode="singleTask"
+    android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
+<service
+    android:name=".ScreenGuardianAccessibilityService"
+    android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+    android:exported="false">
+    <intent-filter>
+        <action android:name="android.accessibilityservice.AccessibilityService" />
+    </intent-filter>
+
+    <meta-data
+        android:name="android.accessibilityservice"
+        android:resource="@xml/accessibility_service_config" />
+</service>
+
   </application>
 </manifest>
