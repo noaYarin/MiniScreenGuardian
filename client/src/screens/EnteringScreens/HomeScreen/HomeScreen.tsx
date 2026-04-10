@@ -15,7 +15,7 @@ export const HomeScreen: React.FC = () => {
   };
 
   return (
-    <ScreenLayout>
+    <ScreenLayout scrollable={false}>
       <View style={styles.container}>
         <Image
           source={require("../../../../assets/images/homeImg.webp")}

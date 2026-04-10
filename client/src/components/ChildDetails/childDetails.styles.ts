@@ -258,7 +258,7 @@ export const childDetailsStyles = StyleSheet.create({
     marginTop: 12,
     borderRadius: 14,
     backgroundColor: "#FFFFFF",
-    paddingHorizontal: 16,
+  
     paddingVertical: 14,
     alignItems: "stretch",
   },

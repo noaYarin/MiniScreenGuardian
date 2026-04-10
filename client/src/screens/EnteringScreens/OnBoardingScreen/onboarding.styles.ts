@@ -5,11 +5,22 @@ export const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: COLORS.light.background,
-    justifyContent: "center",
+    justifyContent: "space-between",
+  },
+
+  slideWrapper: {
+    flex: 1,
+    width: "100%",
+    position: "relative",
+  },
+
+  slideScroll: {
+    flex: 1,
   },
 
   slideContainer: {
-    width: SIZES.width,
+    flex: 1,
+    width: "100%",
     alignItems: "center",
     justifyContent: "center",
     padding: SIZES.padding,
@@ -31,6 +42,7 @@ export const styles = StyleSheet.create({
   },
 
   iconContainer: {
+    backgroundColor: COLORS.light.primary,
     borderRadius: 20,
     padding: 24,
     alignItems: "center",
