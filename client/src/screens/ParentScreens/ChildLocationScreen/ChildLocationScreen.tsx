@@ -65,7 +65,7 @@ export default function ChildLocationScreen() {
 
   // Navigate to the location of the child open maps
   const onNavigate = async () => {
-    if (!deviceSnapshot) {
+    if (!deviceSnapshot || !deviceSnapshot.latitude || !deviceSnapshot.longitude) {
       Toast.show(
         `${t("childLocation.navigateNoCoordsTitle")}\n${t("childLocation.navigateNoCoordsMessage")}`,
         {
@@ -76,26 +76,29 @@ export default function ChildLocationScreen() {
       return;
     }
   
-    //Points on the map 
     const { latitude, longitude } = deviceSnapshot;
     const label = selectedChild?.name || "Child";
   
     const url = Platform.select({
       ios: `maps://app?q=${label}&ll=${latitude},${longitude}`,
       android: `geo:${latitude},${longitude}?q=${latitude},${longitude}(${label})`,
-      default: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
+      default: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}` // fallback
     });
   
     try {
-      const supported = await Linking.canOpenURL(url);
-      if (supported) {
-        await Linking.openURL(url);
-      } else {
-        const browserUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
-        await Linking.openURL(browserUrl);
+      if (url) {
+        const supported = await Linking.canOpenURL(url);
+        if (supported) {
+          await Linking.openURL(url);
+        } else {
+          // Using https for the fallback in case the maps app is not installed
+          await Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`);
+        }
       }
     } catch (err) {
-      Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`);
+      console.error("Navigation error:", err);
+      const fallbackUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+      Linking.openURL(fallbackUrl);
     }
   };
 

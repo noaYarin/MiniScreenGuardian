@@ -1,27 +1,3 @@
-<!--
-    Block Screen Layout (block_screen.xml)
-
-    This layout is displayed when the device is locked due to:
-    - Daily screen time limit reached
-    - Manual lock by parent
-    - Server-triggered lock
-
-    Main components:
-    - iconText: visual indicator (hourglass / lock)
-    - titleText: main message (e.g. "Screen time ended")
-    - messageText: explanation of the lock reason
-    - timeDetailsText: usage summary (used vs limit)
-    - hintText: additional guidance for the user
-
-    Behavior:
-    - Text values are updated dynamically from BlockScreenActivity
-    - Different lock reasons may change title/message/hint
-
-    Accessibility:
-    - All text should be readable and high contrast
-    - Future improvement: support TalkBack labels
--->
-
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
