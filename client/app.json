@@ -25,11 +25,6 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "config": {
-        "googleMaps": {
-            "apiKey": "AIzaSyCb55IMFtYh6m-4nj-vlGPiFA3hfruE1Qk"
-        }
-      },  
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.screenguardianmobile",
