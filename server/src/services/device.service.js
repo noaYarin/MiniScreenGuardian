@@ -21,7 +21,7 @@ import {
 
 } from "../dal/device.dal.js";
 import { getChildrenByParentId } from "../dal/parent.dal.js";
-
+import { emitPolicyUpdated } from "../socketHandler.js";
 
 function assertDailyLimitMinutes(value) {
   const n = Number(value);
@@ -43,7 +43,7 @@ function isSameDay(date1, date2) {
 }
 
 
-
+// Builds a lightweight current status object for the device based on daily screen-time data
 function buildCurrentStatus(device) {
   const dailyLimitMinutes = Number(device.screenTime?.dailyLimitMinutes ?? 0);
   const extraMinutesToday = Number(device.screenTime?.extraMinutesToday ?? 0);
@@ -63,6 +63,23 @@ function buildCurrentStatus(device) {
   };
 }
 
+// Builds the minimal policy payload sent to the child device for real-time enforcement updates
+function buildPolicyPayload(device) {
+  return {
+    isLocked: device.isLocked ?? false,
+    screenTime: {
+      isLimitEnabled: device.screenTime?.isLimitEnabled ?? false,
+      dailyLimitMinutes: Number(device.screenTime?.dailyLimitMinutes ?? 0),
+      extraMinutesToday: Number(device.screenTime?.extraMinutesToday ?? 0)
+    }
+  };
+}
+
+// Sends a real-time policy update to the linked child room after a policy-related device change
+export function pushPolicyUpdate(device) {
+  if (!device?.childId) return;
+  emitPolicyUpdated(String(device.childId), buildPolicyPayload(device));
+}
 
 export async function validateDeviceAccess({ deviceId, parentId, childId, allowInactive = false }) {
   const device = await findDeviceById(deviceId);
@@ -98,6 +115,9 @@ export async function lockDevice(parentId, deviceId) {
 
   const updatedDevice = await updateDeviceById(deviceId, { isLocked: true });
 
+  // Push the updated policy to the child device in real time
+  pushPolicyUpdate(updatedDevice);
+
   try {
     await notifyChild({
       parentId,
@@ -131,6 +151,7 @@ export async function unlockDevice(parentId, deviceId) {
 
   const device = await validateDeviceAccess({ deviceId, parentId });
   const updatedDevice = await updateDeviceById(deviceId, { isLocked: false });
+  pushPolicyUpdate(updatedDevice);
 
   try {
 
@@ -234,6 +255,8 @@ export async function updateDeviceScreenTime(parentId, deviceId, body) {
 
   const updatedDevice = await updateDeviceById(deviceId, patch);
 
+  pushPolicyUpdate(updatedDevice);
+
   try {
     await notifyChild({
       parentId,
@@ -259,7 +282,7 @@ export async function updateDeviceScreenTime(parentId, deviceId, body) {
   } catch (err) {
     console.error("notifyParent failed in updateDeviceScreenTime:", err.message);
   }
-  
+
   try {
     await sendAuditLog({
       parentId,
@@ -388,6 +411,8 @@ export async function blockApplication(parentId, deviceId, packageName) {
 
   const updatedDevice = await updateApplicationBlockStatus(deviceId, packageName, true);
 
+  pushPolicyUpdate(updatedDevice);
+
   const updatedApp = updatedDevice.applications?.find(
     (application) => application.packageName === packageName
   );
@@ -408,6 +433,8 @@ export async function unblockApplication(parentId, deviceId, packageName) {
   }
 
   const updatedDevice = await updateApplicationBlockStatus(deviceId, packageName, false);
+
+  pushPolicyUpdate(updatedDevice);
 
   const updatedApp = updatedDevice.applications?.find(
     (application) => application.packageName === packageName
@@ -468,6 +495,8 @@ export async function updateDeviceDailyLimitService(parentId, deviceId, body) {
     isLimitEnabled,
     dailyLimitMinutes
   });
+
+  pushPolicyUpdate(updatedDevice);
 
   try {
     await notifyChild({
@@ -606,6 +635,8 @@ export async function updateDeviceUsageByChild({
 
   const previousStatus = buildCurrentStatus(device);
   const updatedDevice = await updateDeviceUsedTodayMinutes(deviceId, n);
+
+
   const currentStatus = buildCurrentStatus(updatedDevice);
 
   const crossedEndingThreshold =
@@ -637,6 +668,8 @@ export async function updateDeviceUsageByChild({
 
   if (crossedEndedThreshold) {
     const lockedDevice = await updateDeviceById(deviceId, { isLocked: true });
+
+    pushPolicyUpdate(lockedDevice);
 
     try {
       await notifyParent({
