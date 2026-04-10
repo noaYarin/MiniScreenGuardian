@@ -1,11 +1,10 @@
 import React from "react";
-import { Pressable, View, ActivityIndicator, type ViewStyle } from "react-native";
+import { Pressable, View, ActivityIndicator } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AppText from "../AppText/AppText";
 import { styles } from "../../screens/ParentScreens/ChildLocationScreen/styles";
 
 type Props = {
-  row: ViewStyle;
   refreshA11y: string;
   refreshButtonText: string;
   navigateA11y: string;
@@ -16,7 +15,6 @@ type Props = {
 };
 
 export default function LocationActions({
-  row,
   refreshA11y,
   refreshButtonText,
   navigateA11y,
@@ -35,12 +33,16 @@ export default function LocationActions({
         style={({ pressed }) => [
           styles.primaryButton,
           (pressed || isLoading) && styles.buttonPressed,
-          isLoading && { opacity: 0.8 }
+          isLoading && { opacity: 0.8 },
         ]}
       >
-        <View style={[styles.buttonContent, row]}>
-          {isLoading ? <ActivityIndicator color="#FFF" size="small" style={{ marginRight: 8 }} /> : 
-          <MaterialCommunityIcons name="refresh" size={22} color="#FFF" />}
+        <View style={styles.buttonContent}>
+          {isLoading ? (
+            <ActivityIndicator color="#FFF" size="small" />
+          ) : (
+            <MaterialCommunityIcons name="refresh" size={22} color="#FFF" />
+          )}
+
           <AppText weight="bold" style={styles.primaryButtonText}>
             {refreshButtonText}
           </AppText>
@@ -51,10 +53,18 @@ export default function LocationActions({
         onPress={onNavigateToLocation}
         accessibilityRole="button"
         accessibilityLabel={navigateA11y}
-        style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
+        style={({ pressed }) => [
+          styles.secondaryButton,
+          pressed && styles.buttonPressed,
+        ]}
       >
-        <View style={[styles.buttonContent, row]}>
-          <MaterialCommunityIcons name="navigation-variant-outline" size={22} color="#2A63E8" />
+        <View style={styles.buttonContent}>
+          <MaterialCommunityIcons
+            name="navigation-variant-outline"
+            size={22}
+            color="#2A63E8"
+          />
+
           <AppText weight="bold" style={styles.secondaryButtonText}>
             {navigateButtonText}
           </AppText>

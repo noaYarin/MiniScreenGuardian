@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import {
   addChildThunk,
   getMyChildrenThunk,
@@ -9,7 +9,6 @@ import {
 } from "../thunks/childrenThunks";
 
 export type ChildGender = "boy" | "girl" | "other";
-
 export type ChildRole = "CHILD" | "PARENT";
 
 export type ChildAvatar = {
@@ -71,7 +70,7 @@ const childrenSlice = createSlice({
       })
       .addCase(addChildThunk.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = (action.payload as string) || "children.add_failed";
+        state.error = (action.payload as string) || "Could not add the child.";
       })
 
       .addCase(getMyChildrenThunk.pending, (state) => {
@@ -84,7 +83,7 @@ const childrenSlice = createSlice({
       })
       .addCase(getMyChildrenThunk.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = (action.payload as string) || "children.fetch_failed";
+        state.error = (action.payload as string) || "Could not load children.";
       })
 
       .addCase(deleteChildThunk.pending, (state) => {
@@ -100,10 +99,9 @@ const childrenSlice = createSlice({
       })
       .addCase(deleteChildThunk.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = (action.payload as string) || "children.delete_failed";
+        state.error = (action.payload as string) || "Could not delete the child.";
       })
 
-      // Fetch current child profile for child home screen
       .addCase(fetchCurrentChildProfileThunk.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -114,6 +112,7 @@ const childrenSlice = createSlice({
         const idx = state.childrenList.findIndex(
           (c) => String(c._id) === String(child._id)
         );
+
         if (idx >= 0) {
           state.childrenList[idx] = child as Child;
         } else {
@@ -122,7 +121,7 @@ const childrenSlice = createSlice({
       })
       .addCase(fetchCurrentChildProfileThunk.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = (action.payload as string) || "children.profile_failed";
+        state.error = (action.payload as string) || "Could not load the child profile.";
       })
 
       .addCase(updateCurrentChildProfileThunk.pending, (state) => {
@@ -142,7 +141,7 @@ const childrenSlice = createSlice({
         state.error =
           (action.payload as string) ||
           action.error.message ||
-          "Update failed";
+          "Could not update the child profile.";
       })
 
       .addCase(updateChildProfileImageThunk.fulfilled, (state, action) => {
@@ -150,9 +149,11 @@ const childrenSlice = createSlice({
         state.childrenList = state.childrenList.map((c) =>
           String(c._id) === String(updatedChild._id) ? updatedChild : c
         );
-      })
+      });
   },
 });
 
-export const { setChildrenError, clearChildrenError, clearChildrenList } = childrenSlice.actions;
+export const { setChildrenError, clearChildrenError, clearChildrenList } =
+  childrenSlice.actions;
+
 export default childrenSlice.reducer;

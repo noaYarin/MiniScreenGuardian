@@ -85,10 +85,10 @@ export const styles = StyleSheet.create({
 
   genderRow: {
     width: "100%",
+    flexDirection: "row",
     flexWrap: "wrap",
-    gap: 5,
+    gap: 8,
     justifyContent: "center",
-
   },
 
   genderButton: {
@@ -136,69 +136,64 @@ export const styles = StyleSheet.create({
   bottomSpacer: {
     height: 20,
   },
+
   dateFieldButton: {
-  borderRadius: 18,
-  borderWidth: 1,
-  borderColor: "#DCE3F1",
-  backgroundColor: "#F8FAFC",
-  paddingHorizontal: 14,
-  paddingVertical: 14,
-},
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#DCE3F1",
+    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
 
-dateFieldButtonPressed: {
-  opacity: 0.9,
-},
+  dateFieldButtonPressed: {
+    opacity: 0.9,
+  },
 
-dateFieldContent: {
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 12,
-},
+  dateFieldContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
 
-dateFieldContentRtl: {
-  flexDirection: "row-reverse",
-},
+  dateFieldLeft: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
 
-dateFieldContentLtr: {
-  flexDirection: "row",
-},
+  dateIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: "#E0E7FF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-dateFieldLeft: {
-  flex: 1,
-  alignItems: "center",
-  gap: 12,
-},
+  dateIconEmoji: {
+    fontSize: 18,
+  },
 
-dateIconWrap: {
-  width: 40,
-  height: 40,
-  borderRadius: 12,
-  backgroundColor: "#E0E7FF",
-  alignItems: "center",
-  justifyContent: "center",
-},
+  dateTextWrap: {
+    flex: 1,
+    gap: 4,
+  },
 
-dateIconEmoji: {
-  fontSize: 18,
-},
+  dateFieldLabel: {
+    fontSize: 13,
+    color: "#64748B",
+  },
 
-dateTextWrap: {
-  flex: 1,
-  gap: 4,
-},
+  dateFieldValue: {
+    fontSize: 16,
+    color: "#0F172A",
+  },
 
-dateFieldLabel: {
-  fontSize: 13,
-  color: "#64748B",
-},
-
-dateFieldValue: {
-  fontSize: 16,
-  color: "#0F172A",
-},
-
-dateFieldChangeText: {
-  fontSize: 13,
-  color: "#2563EB",
-},
+  dateFieldChangeText: {
+    fontSize: 13,
+    color: "#2563EB",
+  },
 });

@@ -22,14 +22,7 @@ export const styles = StyleSheet.create({
   childrenRow: {
     gap: 10,
     paddingHorizontal: 4,
-  },
-
-  childrenRowLtr: {
     flexDirection: "row",
-  },
-
-  childrenRowRtl: {
-    flexDirection: "row-reverse",
   },
 
   childrenRowCentered: {
@@ -101,19 +94,12 @@ export const styles = StyleSheet.create({
   selectedBadge: {
     position: "absolute",
     top: 10,
+    right: 10,
     width: 24,
     height: 24,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-  },
-
-  selectedBadgeLtr: {
-    right: 10,
-  },
-
-  selectedBadgeRtl: {
-    left: 10,
   },
 
   devicesViewport: {
@@ -123,14 +109,7 @@ export const styles = StyleSheet.create({
   devicesRow: {
     gap: 10,
     paddingHorizontal: 4,
-  },
-
-  devicesRowLtr: {
     flexDirection: "row",
-  },
-
-  devicesRowRtl: {
-    flexDirection: "row-reverse",
   },
 
   devicesRowCentered: {
@@ -142,7 +121,7 @@ export const styles = StyleSheet.create({
     maxWidth: 200,
     borderRadius: 16,
     paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     backgroundColor: "#FFFFFF",
     borderWidth: 1.5,
     borderColor: "#E7ECF4",
@@ -162,6 +141,7 @@ export const styles = StyleSheet.create({
     backgroundColor: "#EEF4FF",
     alignItems: "center",
     justifyContent: "center",
+    flexShrink: 0,
   },
 
   deviceIconWrapSelected: {
@@ -169,7 +149,8 @@ export const styles = StyleSheet.create({
   },
 
   deviceTextWrap: {
-    flexShrink: 1,
+    flex: 1,
+    minWidth: 0,
     justifyContent: "center",
   },
 

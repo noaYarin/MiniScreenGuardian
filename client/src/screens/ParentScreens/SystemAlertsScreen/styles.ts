@@ -47,7 +47,7 @@ export const styles = StyleSheet.create({
   },
 
   heroTopRow: {
-    flexDirection: "row",
+    flexDirection: "row", // ✅ תיקון
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
@@ -79,6 +79,7 @@ export const styles = StyleSheet.create({
   },
 
   statsRow: {
+    flexDirection: "row", // ✅ תיקון קריטי
     gap: 10,
   },
 
@@ -111,6 +112,7 @@ export const styles = StyleSheet.create({
   },
 
   listTitleRow: {
+    flexDirection: "row", // ✅ תיקון
     width: "100%",
     alignItems: "center",
     justifyContent: "space-between",
@@ -146,6 +148,7 @@ export const styles = StyleSheet.create({
   },
 
   alertUnreadDotRow: {
+    flexDirection: "row", // ✅ תיקון
     width: "100%",
     alignItems: "flex-start",
     marginBottom: 8,
@@ -156,13 +159,13 @@ export const styles = StyleSheet.create({
     minWidth: 0,
   },
 
-  /** Same width as delete control so the unread dot lines up above the trash. */
   alertTrashTrack: {
     width: 38,
     alignItems: "center",
   },
 
   alertCardMainPressable: {
+    flexDirection: "row", // ✅ תיקון קריטי
     width: "100%",
     alignItems: "flex-start",
     gap: 14,
@@ -180,6 +183,7 @@ export const styles = StyleSheet.create({
   },
 
   alertFooterMetaGroup: {
+    flexDirection: "row", // ✅ תיקון קריטי
     flex: 1,
     flexWrap: "wrap",
     gap: 8,
@@ -193,6 +197,7 @@ export const styles = StyleSheet.create({
   },
 
   filtersRow: {
+    flexDirection: "row", // ✅ תיקון
     flexWrap: "wrap",
     gap: 10,
   },
@@ -291,6 +296,7 @@ export const styles = StyleSheet.create({
   },
 
   alertFooterRow: {
+    flexDirection: "row", // ✅ תיקון קריטי
     alignItems: "center",
     width: "100%",
   },

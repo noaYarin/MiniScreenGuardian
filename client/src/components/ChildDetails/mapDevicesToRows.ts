@@ -1,4 +1,3 @@
-import type { TFunction } from "i18next";
 import type { Device } from "@/src/api/device";
 
 export type ChildDetailsDeviceRow = {
@@ -11,39 +10,38 @@ export type ChildDetailsDeviceRow = {
   isLocked: boolean;
 };
 
-function translateDeviceType(t: TFunction, raw: string | undefined): string {
+function translateDeviceType(raw: string | undefined): string {
   const key = (raw ?? "").toUpperCase();
-  if (key === "PHONE") return t("childDetails.device_type.phone");
-  if (key === "TABLET") return t("childDetails.device_type.tablet");
-  return t("childDetails.device_type.other");
+  if (key === "PHONE") return "Phone";
+  if (key === "TABLET") return "Tablet";
+  return "Other";
 }
 
-function translateDevicePlatform(t: TFunction, raw: string | undefined): string {
+function translateDevicePlatform(raw: string | undefined): string {
   const key = (raw ?? "").toUpperCase();
-  if (key === "ANDROID") return t("childDetails.device_platform.android");
-  if (key === "IOS") return t("childDetails.device_platform.ios");
-  return t("childDetails.device_platform.other");
+  if (key === "ANDROID") return "Android";
+  if (key === "IOS") return "IOS";
+  return "Other";
 }
 
-export function mapDevicesToRows(
-  devices: Device[],
-  t: TFunction
-): ChildDetailsDeviceRow[] {
+export function mapDevicesToRows(devices: Device[]): ChildDetailsDeviceRow[] {
   return devices.map((d) => {
     const name = d.name?.trim() ? d.name : "—";
     const lat = typeof d.location?.lat === "number" ? d.location.lat : 0;
     const lng = typeof d.location?.lng === "number" ? d.location.lng : 0;
+
     const loc =
       Number.isFinite(lat) &&
       Number.isFinite(lng) &&
       (lat !== 0 || lng !== 0)
         ? `${lat.toFixed(5)}, ${lng.toFixed(5)}`
-        : t("childDetails.location_unknown");
+        : "Unknown";
+
     return {
       id: String(d._id),
       name,
-      typeLabel: translateDeviceType(t, d.type),
-      platformLabel: translateDevicePlatform(t, d.platform),
+      typeLabel: translateDeviceType(d.type),
+      platformLabel: translateDevicePlatform(d.platform),
       active: Boolean(d.isActive),
       locationText: loc,
       isLocked: Boolean(d.isLocked),

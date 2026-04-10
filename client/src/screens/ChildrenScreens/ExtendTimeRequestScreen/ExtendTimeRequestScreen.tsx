@@ -2,21 +2,20 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Pressable,
-  TextInput,
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ScrollView,
 } from "react-native";
-import { Stack, router } from "expo-router";
-import { useTranslation } from "react-i18next";
+import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { NativeModules } from "react-native";
+import { Button, Surface, TextInput as PaperTextInput } from "react-native-paper";
+
 import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
 import AppText from "../../../components/AppText/AppText";
 import { styles } from "./styles";
-import { useLocaleLayout } from "../../../../hooks/use-locale-layout";
-import { pickRTL } from "../../../locales/rtl";
 
 import type { AppDispatch, RootState } from "@/src/redux/store/types";
 import {
@@ -29,12 +28,10 @@ const { DeviceControl } = NativeModules;
 type MinuteOption = {
   minutes: number;
   icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
-  tile: "blue" | "purple" | "green";
+  tile: "blue" | "green";
 };
 
 export default function ExtendTimeRequestScreen() {
-  const { t } = useTranslation();
-  const { isRTL, row, text } = useLocaleLayout();
   const dispatch = useDispatch<AppDispatch>();
 
   const { activeChildId, deviceId } = useSelector(
@@ -57,15 +54,12 @@ export default function ExtendTimeRequestScreen() {
   const minuteOptions: MinuteOption[] = useMemo(
     () => [
       { minutes: 10, icon: "clock-outline", tile: "blue" },
-      { minutes: 5, icon: "clock-outline", tile: "purple" },
-      { minutes: 15, icon: "clock-outline", tile: "green" },
+      { minutes: 30, icon: "clock-outline", tile: "green" },
     ],
     []
   );
 
-  const [selectedMinutes, setSelectedMinutes] = useState<number>(
-    minuteOptions[0]?.minutes ?? 5
-  );
+  const [selectedMinutes, setSelectedMinutes] = useState<number>(10);
   const [customMinutes, setCustomMinutes] = useState<number>(5);
   const [message, setMessage] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -80,30 +74,27 @@ export default function ExtendTimeRequestScreen() {
       request.status === "PENDING"
   );
 
-  const selectPreset = (m: number) => setSelectedMinutes(m);
+  const selectPreset = (minutes: number) => setSelectedMinutes(minutes);
 
-  const selectCustom = (m: number) => {
-    setCustomMinutes(m);
-    setSelectedMinutes(m);
+  const selectCustom = (minutes: number) => {
+    setCustomMinutes(minutes);
+    setSelectedMinutes(minutes);
   };
 
   const incCustom = () => selectCustom(Math.min(120, customMinutes + 1));
   const decCustom = () => selectCustom(Math.max(1, customMinutes - 1));
 
   const getErrorMessage = (msg?: string) => {
-    if (!msg) return t("api.generic_error");
+    if (!msg) return "Something went wrong. Please try again.";
 
     const lower = msg.toLowerCase();
 
     if (lower.includes("already")) {
-      return t(
-        "extendTime.alreadyRequested",
-        "A pending extension request already exists for this device"
-      );
+      return "A pending extension request already exists for this device";
     }
 
     if (lower.includes("invalid")) {
-      return t("extendTime.invalidMinutes", "Invalid number of minutes");
+      return "Invalid number of minutes";
     }
 
     return msg;
@@ -114,23 +105,22 @@ export default function ExtendTimeRequestScreen() {
 
     try {
       if (!deviceId) {
-        Alert.alert(
-          t("common.error"),
-          t("extendTime.noDevice", "No linked device found")
-        );
+        Alert.alert("Error", "No linked device found");
         return;
       }
 
       if (!selectedMinutes || selectedMinutes < 1 || selectedMinutes > 120) {
-        Alert.alert(
-          t("common.error"),
-          t("extendTime.invalidMinutes", "Invalid number of minutes")
-        );
+        Alert.alert("Error", "Invalid number of minutes");
         return;
       }
 
-      await DeviceControl.syncPolicyNow();
-      const nativeState = await DeviceControl.getRemainingTime();
+      if (!DeviceControl?.getRemainingTime || !DeviceControl?.syncPolicyNow) {
+  Alert.alert("Error", "Device control is not available on this device");
+  return;
+}
+
+await DeviceControl.syncPolicyNow();
+const nativeState = await DeviceControl.getRemainingTime();
 
       const hasActiveLimit =
         !!nativeState?.limitEnabled &&
@@ -138,22 +128,16 @@ export default function ExtendTimeRequestScreen() {
 
       if (!hasActiveLimit) {
         Alert.alert(
-          t("common.error"),
-          t(
-            "extendTime.noActiveLimit",
-            "There is no active screen-time limit on this device"
-          )
+          "Error",
+          "There is no active screen-time limit on this device"
         );
         return;
       }
 
       if (hasPendingRequestForThisDevice) {
         Alert.alert(
-          t("common.error"),
-          t(
-            "extendTime.alreadyRequested",
-            "A pending extension request already exists for this device"
-          )
+          "Error",
+          "A pending extension request already exists for this device"
         );
         return;
       }
@@ -168,91 +152,66 @@ export default function ExtendTimeRequestScreen() {
         })
       ).unwrap();
 
-      Alert.alert(
-        t("common.success"),
-        t("extendTime.requestSent", "Extension request sent successfully")
-      );
+      Alert.alert("Success", "Extension request sent successfully");
 
       router.back();
     } catch (error) {
-      Alert.alert(
-        t("common.error"),
-        getErrorMessage((error as Error)?.message)
-      );
+      Alert.alert("Error", getErrorMessage((error as Error)?.message));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const firstControlAction = pickRTL(isRTL, incCustom, decCustom);
-  const secondControlAction = pickRTL(isRTL, decCustom, incCustom);
-
-  const firstControlIcon = pickRTL<
-    React.ComponentProps<typeof MaterialCommunityIcons>["name"]
-  >(isRTL, "plus", "minus");
-
-  const secondControlIcon = pickRTL<
-    React.ComponentProps<typeof MaterialCommunityIcons>["name"]
-  >(isRTL, "minus", "plus");
-
-  const firstControlA11y = pickRTL(
-    isRTL,
-    t("extendTime.customPlus_a11y"),
-    t("extendTime.customMinus_a11y")
-  );
-
-  const secondControlA11y = pickRTL(
-    isRTL,
-    t("extendTime.customMinus_a11y"),
-    t("extendTime.customPlus_a11y")
-  );
-
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: t("extendTime.title"),
-          headerTitleAlign: "center",
-          headerShadowVisible: false,
-        }}
-      />
-
-      <ScreenLayout>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          style={styles.flex}
+    <ScreenLayout>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.flex}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           <View style={styles.outer}>
-            <View style={styles.container}>
-              <View style={[styles.subTitleRow, row]}>
-                <View style={styles.subTitleIconBadge}>
-                  <MaterialCommunityIcons
-                    name="trending-up"
-                    size={16}
-                    color="#2F6DEB"
-                  />
+            <Surface style={styles.heroSurface} elevation={0}>
+              <View style={styles.heroAccentTop} />
+              <View style={styles.heroAccentBottom} />
+
+              <View style={styles.headerBlock}>
+                <View style={styles.subTitleRow}>
+                  <View style={styles.subTitleIconBadge}>
+                    <MaterialCommunityIcons
+                      name="clock-plus-outline"
+                      size={16}
+                      color="#2F6DEB"
+                    />
+                  </View>
+
+                  <AppText weight="bold" style={styles.subTitle}>
+                    Extension Request
+                  </AppText>
                 </View>
-                <AppText weight="bold" style={styles.subTitle}>
-                  {t("extendTime.subTitle")}
+
+                <AppText weight="extraBold" style={styles.question}>
+                  How much time to request?
+                </AppText>
+
+                <AppText weight="medium" style={styles.helperText}>
+                  Choose a quick option or set your own amount.
                 </AppText>
               </View>
 
-              <AppText weight="extraBold" style={styles.question}>
-                {t("extendTime.question")}
-              </AppText>
-
               <View style={styles.grid}>
-                <View style={styles.row}>
+                <View style={styles.rowTwo}>
                   <MinuteCard
                     minutes={minuteOptions[0].minutes}
                     iconName={minuteOptions[0].icon}
                     active={selectedMinutes === minuteOptions[0].minutes}
                     tile={minuteOptions[0].tile}
                     onPress={() => selectPreset(minuteOptions[0].minutes)}
-                    a11y={t("extendTime.option_a11y", {
-                      minutes: minuteOptions[0].minutes,
-                    })}
-                    minutesLabel={t("extendTime.minutes")}
+                    a11y={`Select ${minuteOptions[0].minutes} extra minutes`}
+                    minutesLabel="minutes"
                   />
 
                   <MinuteCard
@@ -261,18 +220,15 @@ export default function ExtendTimeRequestScreen() {
                     active={selectedMinutes === minuteOptions[1].minutes}
                     tile={minuteOptions[1].tile}
                     onPress={() => selectPreset(minuteOptions[1].minutes)}
-                    a11y={t("extendTime.option_a11y", {
-                      minutes: minuteOptions[1].minutes,
-                    })}
-                    minutesLabel={t("extendTime.minutes")}
+                    a11y={`Select ${minuteOptions[1].minutes} extra minutes`}
+                    minutesLabel="minutes"
                   />
                 </View>
 
-                <View style={styles.row}>
+                <View style={styles.customRow}>
                   <View
                     style={[
-                      styles.cardBase,
-                      styles.tileOrange,
+                      styles.customCard,
                       selectedMinutes === customMinutes ? styles.cardActive : null,
                     ]}
                     accessible={false}
@@ -280,7 +236,7 @@ export default function ExtendTimeRequestScreen() {
                     <Pressable
                       onPress={() => selectCustom(customMinutes)}
                       accessibilityRole="button"
-                      accessibilityLabel={t("extendTime.custom_a11y")}
+                      accessibilityLabel="Select a custom amount"
                       style={({ pressed }) => [
                         styles.cardOverlayPressable,
                         pressed ? styles.cardPressed : null,
@@ -290,7 +246,7 @@ export default function ExtendTimeRequestScreen() {
                     <View style={styles.customTopRow}>
                       <View style={styles.orangeBadge}>
                         <MaterialCommunityIcons
-                          name="clock-outline"
+                          name="pencil-outline"
                           size={18}
                           color="#B46B00"
                         />
@@ -298,14 +254,14 @@ export default function ExtendTimeRequestScreen() {
                     </View>
 
                     <AppText weight="extraBold" style={styles.customLabel}>
-                      {t("extendTime.customTitle")}
+                      Custom
                     </AppText>
 
-                    <View style={[styles.customValueRow, row]}>
+                    <View style={styles.customValueRow}>
                       <Pressable
-                        onPress={firstControlAction}
+                        onPress={decCustom}
                         accessibilityRole="button"
-                        accessibilityLabel={firstControlA11y}
+                        accessibilityLabel="Decrease minutes"
                         hitSlop={10}
                         style={({ pressed }) => [
                           styles.customControlBtn,
@@ -313,7 +269,7 @@ export default function ExtendTimeRequestScreen() {
                         ]}
                       >
                         <MaterialCommunityIcons
-                          name={firstControlIcon}
+                          name="minus"
                           size={18}
                           color="#B46B00"
                         />
@@ -324,9 +280,9 @@ export default function ExtendTimeRequestScreen() {
                       </AppText>
 
                       <Pressable
-                        onPress={secondControlAction}
+                        onPress={incCustom}
                         accessibilityRole="button"
-                        accessibilityLabel={secondControlA11y}
+                        accessibilityLabel="Increase minutes"
                         hitSlop={10}
                         style={({ pressed }) => [
                           styles.customControlBtn,
@@ -334,29 +290,15 @@ export default function ExtendTimeRequestScreen() {
                         ]}
                       >
                         <MaterialCommunityIcons
-                          name={secondControlIcon}
+                          name="plus"
                           size={18}
                           color="#B46B00"
                         />
                       </Pressable>
                     </View>
 
-                    <AppText style={styles.customUnit}>
-                      {t("extendTime.minutes")}
-                    </AppText>
+                    <AppText style={styles.customUnit}>minutes</AppText>
                   </View>
-
-                  <MinuteCard
-                    minutes={minuteOptions[2].minutes}
-                    iconName={minuteOptions[2].icon}
-                    active={selectedMinutes === minuteOptions[2].minutes}
-                    tile={minuteOptions[2].tile}
-                    onPress={() => selectPreset(minuteOptions[2].minutes)}
-                    a11y={t("extendTime.option_a11y", {
-                      minutes: minuteOptions[2].minutes,
-                    })}
-                    minutesLabel={t("extendTime.minutes")}
-                  />
                 </View>
               </View>
 
@@ -368,59 +310,61 @@ export default function ExtendTimeRequestScreen() {
                     color="#0F8A5F"
                   />
                 </View>
+
                 <AppText weight="extraBold" style={styles.summaryText}>
-                  {t("extendTime.requestedLabel")}{" "}
-                  {t("extendTime.plusMinutes", { minutes: selectedMinutes })}
+                  Requested: +{selectedMinutes} minutes
                 </AppText>
               </View>
 
               <View style={styles.messageBlock}>
-                <AppText weight="bold" style={[styles.messageLabel, text]}>
-                  {t("extendTime.messageLabel")}
+                <AppText weight="bold" style={styles.messageLabel}>
+                  Message to parent (optional)
                 </AppText>
-                <TextInput
+
+                <PaperTextInput
+                  mode="outlined"
                   value={message}
                   onChangeText={setMessage}
-                  placeholder={t("extendTime.messagePlaceholder")}
-                  placeholderTextColor="#8A8A8A"
-                  style={[styles.messageInput, text]}
+                  placeholder="I want to finish watching the movie..."
                   multiline
-                  accessibilityLabel={t("extendTime.message_a11y")}
+                  numberOfLines={4}
+                  accessibilityLabel="Message field"
+                  style={styles.messageInput}
+                  contentStyle={styles.messageInputContent}
+                  outlineStyle={styles.messageInputOutline}
+                  theme={{
+                    roundness: 18,
+                    colors: {
+                      primary: "#2F6DEB",
+                      outline: "#D6E6FF",
+                      background: "#FFFFFF",
+                      onSurfaceVariant: "#8A8A8A",
+                    },
+                  }}
                 />
               </View>
 
-              <Pressable
+              <Button
+                mode="contained"
                 onPress={onSend}
                 disabled={isSubmitting || hasPendingRequestForThisDevice}
-                accessibilityRole="button"
-                accessibilityLabel={t("extendTime.send_a11y")}
-                style={({ pressed }) => [
-                  styles.sendBtn,
-                  pressed ? styles.sendBtnPressed : null,
-                  (isSubmitting || hasPendingRequestForThisDevice) && {
-                    opacity: 0.6,
-                  },
-                ]}
+                accessibilityLabel="Send extension request"
+                style={styles.sendBtn}
+                contentStyle={styles.sendBtnContent}
+                labelStyle={styles.sendBtnText}
+                icon="send"
               >
-                <View style={styles.sendIconBadge}>
-                  <MaterialCommunityIcons name="send" size={16} color="#FFFFFF" />
-                </View>
-                <AppText weight="extraBold" style={styles.sendBtnText}>
-                  {hasPendingRequestForThisDevice
-                    ? t(
-                      "extendTime.alreadyRequested",
-                      "A pending extension request already exists for this device"
-                    )
-                    : isSubmitting
-                      ? t("extendTime.sending", "Sending...")
-                      : t("extendTime.send")}
-                </AppText>
-              </Pressable>
-            </View>
+                {hasPendingRequestForThisDevice
+                  ? "A pending extension request already exists for this device"
+                  : isSubmitting
+                    ? "Sending..."
+                    : "Send request to parent"}
+              </Button>
+            </Surface>
           </View>
-        </KeyboardAvoidingView>
-      </ScreenLayout>
-    </>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ScreenLayout>
   );
 }
 
@@ -436,20 +380,13 @@ function MinuteCard({
   minutes: number;
   iconName: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
   active: boolean;
-  tile: "blue" | "purple" | "green";
+  tile: "blue" | "green";
   onPress: () => void;
   a11y: string;
   minutesLabel: string;
 }) {
-  const tileStyle =
-    tile === "blue"
-      ? styles.tileBlue
-      : tile === "purple"
-        ? styles.tilePurple
-        : styles.tileGreen;
-
-  const iconColor =
-    tile === "blue" ? "#2F6DEB" : tile === "purple" ? "#6D28D9" : "#0F8A5F";
+  const tileStyle = tile === "blue" ? styles.tileBlue : styles.tileGreen;
+  const iconColor = tile === "blue" ? "#2F6DEB" : "#0F8A5F";
 
   return (
     <Pressable
@@ -457,7 +394,7 @@ function MinuteCard({
       accessibilityRole="button"
       accessibilityLabel={a11y}
       style={({ pressed }) => [
-        styles.cardBase,
+        styles.minuteCard,
         tileStyle,
         active ? styles.cardActive : null,
         pressed ? styles.cardPressed : null,

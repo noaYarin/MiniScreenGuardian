@@ -1,7 +1,12 @@
 import React, { useState } from "react";
-import { View, TextInput, Pressable, KeyboardAvoidingView, Platform } from "react-native";
+import {
+  View,
+  TextInput,
+  Pressable,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { useTranslation } from "react-i18next";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
@@ -20,7 +25,6 @@ const ICON = {
 } as const;
 
 export default function ResetPasswordScreen() {
-  const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const { email } = useLocalSearchParams<{ email?: string }>();
 
@@ -28,17 +32,22 @@ export default function ResetPasswordScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const { isLoading, error } = useSelector((state: { auth: { isLoading: boolean; error: string | null } }) => state.auth);
+
+  const { isLoading, error } = useSelector(
+    (state: { auth: { isLoading: boolean; error: string | null } }) => state.auth
+  );
 
   const onSubmit = async () => {
     try {
       dispatch(setError(null));
+
       const errorKey = validateResetPassword(
         typeof email === "string" ? email : "",
         verificationCode,
         password,
         confirmPassword
       );
+
       if (errorKey) {
         dispatch(setError(errorKey));
         return;
@@ -52,8 +61,13 @@ export default function ResetPasswordScreen() {
         })
       ).unwrap();
 
-      showAppToast(t("resetPassword.success_message"), t("resetPassword.success_title"));
+      showAppToast(
+        "Your password has been reset successfully.",
+        "Password updated"
+      );
+
       dispatch(setError(null));
+
       setTimeout(() => {
         router.replace("/Entering/loginParent" as any);
       }, 600);
@@ -71,23 +85,25 @@ export default function ResetPasswordScreen() {
         <AuthFormCard
           iconName={ICON.lock}
           iconGradientColors={["#6366f1", "#4f46e5"]}
-          title={t("resetPassword.heading")}
-          subtitle={t("resetPassword.subheading")}
-          error={error ? t(error) : null}
-          submitLabel={t("resetPassword.submit_btn")}
+          title="Reset password"
+          subtitle="Enter the code you received and choose a new password"
+          error={error}
+          submitLabel="Submit"
           onSubmit={onSubmit}
           isLoading={isLoading}
+          submitButtonAccessibilityLabel="Submit reset password"
         >
           <View style={styles.input}>
             <MaterialCommunityIcons name="numeric" size={20} color="#6B7280" />
             <TextInput
               value={verificationCode}
               onChangeText={setVerificationCode}
-              placeholder={t("resetPassword.code_placeholder") || "Verification code"}
+              placeholder="Verification code"
               placeholderTextColor="#9CA3AF"
               keyboardType="number-pad"
               maxLength={6}
               style={styles.inputText}
+              accessibilityLabel="Verification code"
             />
           </View>
 
@@ -96,12 +112,19 @@ export default function ResetPasswordScreen() {
             <TextInput
               value={password}
               onChangeText={setPassword}
-              placeholder={t("resetPassword.new_password_placeholder")}
+              placeholder="New password"
               placeholderTextColor="#9CA3AF"
               secureTextEntry={!showPassword}
               style={styles.inputText}
+              accessibilityLabel="New password"
             />
-            <Pressable onPress={() => setShowPassword(!showPassword)}>
+            <Pressable
+              onPress={() => setShowPassword(!showPassword)}
+              accessibilityRole="button"
+              accessibilityLabel="Show or hide password"
+              hitSlop={10}
+              style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
+            >
               <MaterialCommunityIcons
                 name={showPassword ? ICON.eyeOff : ICON.eye}
                 size={22}
@@ -115,10 +138,11 @@ export default function ResetPasswordScreen() {
             <TextInput
               value={confirmPassword}
               onChangeText={setConfirmPassword}
-              placeholder={t("resetPassword.confirm_password_placeholder")}
+              placeholder="Confirm new password"
               placeholderTextColor="#9CA3AF"
               secureTextEntry={!showPassword}
               style={styles.inputText}
+              accessibilityLabel="Confirm new password"
             />
           </View>
         </AuthFormCard>

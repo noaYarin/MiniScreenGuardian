@@ -7,7 +7,7 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { Stack, router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
@@ -17,68 +17,58 @@ import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
 import AppText from "../../../components/AppText/AppText";
 import { styles } from "./styles";
 
-import { useTranslation } from "../../../../hooks/use-translation";
-import { useLocaleLayout } from "../../../../hooks/use-locale-layout";
 import { getAgeInFullYearsFromBirthDate } from "../../../../hooks/use-child-profile-labels";
 import { parseRouteParam } from "../ChildDetailsScreen/childDetailsRouteParams";
 import type { AppDispatch, RootState } from "@/src/redux/store/types";
-import { deleteChildThunk, updateChildProfileImageThunk } from "@/src/redux/thunks/childrenThunks";
+import {
+  deleteChildThunk,
+  updateChildProfileImageThunk,
+} from "@/src/redux/thunks/childrenThunks";
 import ConfirmDialog from "@/src/components/ConfirmDialog/ConfirmDialog";
 import { showAppToast } from "@/src/utils/appToast";
 import { getChildProfileImageUri } from "@/src/utils/childProfileImage";
 
 type ActionCard = {
   key: string;
-  titleKey: string;
-  subtitleKey: string;
+  title: string;
+  subtitle: string;
+  accessibilityLabel: string;
   icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
   route: string;
 };
 
 const ACTIONS: ActionCard[] = [
   {
-    key: "apps",
-    titleKey: "childProfile.actions.apps.title",
-    subtitleKey: "childProfile.actions.apps.subtitle",
-    icon: "cellphone",
-    route: "/Parent/child-apps",
-  },
-  {
     key: "limits",
-    titleKey: "childProfile.actions.limits.title",
-    subtitleKey: "childProfile.actions.limits.subtitle",
+    title: "Screen Time Limits",
+    subtitle: "View limits",
+    accessibilityLabel: "Go to screen time limits screen",
     icon: "clock-outline",
-    route: "/Parent/child-limits",
-  },
-  {
-    key: "reports",
-    titleKey: "childProfile.actions.reports.title",
-    subtitleKey: "childProfile.actions.reports.subtitle",
-    icon: "chart-bar",
-    route: "/Parent/child-reports",
+    route: "/Parent/limits",
   },
   {
     key: "location",
-    titleKey: "childProfile.actions.location.title",
-    subtitleKey: "childProfile.actions.location.subtitle",
+    title: "Location",
+    subtitle: "Track location",
+    accessibilityLabel: "Go to child location screen",
     icon: "map-marker-outline",
     route: "/Parent/childLocation",
   },
   {
     key: "requests",
-    titleKey: "childProfile.actions.requests.title",
-    subtitleKey: "childProfile.actions.requests.subtitle",
+    title: "Extension Requests",
+    subtitle: "Manage requests",
+    accessibilityLabel: "Go to extension requests screen",
     icon: "message-outline",
-    route: "/Parent/extension-requests",
+    route: "/Parent/extensionRequests",
   },
 ];
 
 export default function ChildProfileScreen() {
-  const { t } = useTranslation();
   const { width } = useWindowDimensions();
-  const { isRTL, text } = useLocaleLayout();
   const dispatch = useDispatch<AppDispatch>();
   const params = useLocalSearchParams<{ id?: string; name?: string }>();
+
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -93,10 +83,7 @@ export default function ChildProfileScreen() {
     return childrenList.find((c) => String(c._id) === String(childId)) || null;
   }, [childrenList, childId]);
 
-  const displayName =
-    (child?.name && child.name.trim()) ||
-    nameFromRoute ||
-    t("childProfile.name_fallback");
+  const displayName = (child?.name && child.name.trim()) || nameFromRoute || "Child";
 
   const ageYears = useMemo(
     () => getAgeInFullYearsFromBirthDate(child?.birthDate),
@@ -106,21 +93,19 @@ export default function ChildProfileScreen() {
   const isTablet = width >= 900;
   const contentMaxWidth = width >= 1200 ? 980 : width >= 900 ? 840 : undefined;
 
-  const avatarUri = useMemo(
-    () => getChildProfileImageUri(child?.img),
-    [child?.img]
-  );
+  const avatarUri = useMemo(() => getChildProfileImageUri(child?.img), [child?.img]);
 
   const launchAvatarPicker = useCallback(
     async (mode: "camera" | "library") => {
       if (!childId || uploadingAvatar) return;
+
       try {
         if (mode === "camera") {
           const cam = await ImagePicker.requestCameraPermissionsAsync();
           if (cam.status !== "granted") {
             showAppToast(
-              t("childProfile.photo_permission_denied"),
-              t("common.error")
+              "Permission is required to use the camera or photo library.",
+              "Error"
             );
             return;
           }
@@ -128,8 +113,8 @@ export default function ChildProfileScreen() {
           const lib = await ImagePicker.requestMediaLibraryPermissionsAsync();
           if (lib.status !== "granted") {
             showAppToast(
-              t("childProfile.photo_permission_denied"),
-              t("common.error")
+              "Permission is required to use the camera or photo library.",
+              "Error"
             );
             return;
           }
@@ -143,7 +128,6 @@ export default function ChildProfileScreen() {
           base64: true,
         };
 
-        // Launch the camera or image library
         const result =
           mode === "camera"
             ? await ImagePicker.launchCameraAsync(options)
@@ -153,17 +137,17 @@ export default function ChildProfileScreen() {
 
         const asset = result.assets[0];
         const mime = asset.mimeType ?? "image/jpeg";
+
         if (!asset.base64) {
-          showAppToast(t("childProfile.photo_no_data"), t("common.error"));
+          showAppToast("Could not read the image. Try another photo.", "Error");
           return;
         }
 
         const dataUrl = `data:${mime};base64,${asset.base64}`;
+
         setUploadingAvatar(true);
-        await dispatch(
-          updateChildProfileImageThunk({ childId, img: dataUrl })
-        ).unwrap();
-        showAppToast(t("childProfile.photo_updated"));
+        await dispatch(updateChildProfileImageThunk({ childId, img: dataUrl })).unwrap();
+        showAppToast("Profile photo updated");
       } catch (err: unknown) {
         const rejected =
           typeof err === "string"
@@ -171,40 +155,38 @@ export default function ChildProfileScreen() {
             : err instanceof Error
               ? err.message
               : "";
-        const toastKey =
+
+        const message =
           rejected === "children.profile_image_update_failed"
-            ? "children.profile_image_update_failed"
-            : "childProfile.photo_upload_failed";
-        showAppToast(t(toastKey), t("common.error"));
+            ? "Could not update the profile photo."
+            : "Could not upload the photo";
+
+        showAppToast(message, "Error");
       } finally {
         setUploadingAvatar(false);
       }
     },
-    [childId, uploadingAvatar, dispatch, t]
+    [childId, uploadingAvatar, dispatch]
   );
 
-  // Click on the pen to change the avatar
   const onPressChangeAvatar = useCallback(() => {
     if (!childId || uploadingAvatar) return;
-    Alert.alert(
-      t("childProfile.change_photo"),
-      t("childProfile.change_photo_message"),
-      [
-        { text: t("common.cancel"), style: "cancel" },
-        {
-          text: t("childProfile.take_photo"),
-          onPress: () => {
-            void launchAvatarPicker("camera");
-          },
+
+    Alert.alert("Profile photo", "Choose how to add a photo", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Take photo",
+        onPress: () => {
+          void launchAvatarPicker("camera");
         },
-        {
-          text: t("childProfile.choose_from_library"),
-          onPress: () => {
-            void launchAvatarPicker("library");
-          },
+      },
+      {
+        text: "Choose from library",
+        onPress: () => {
+          void launchAvatarPicker("library");
         },
-      ]
-    );
+      },
+    ]);
   }, [childId, uploadingAvatar, launchAvatarPicker]);
 
   const onPressDeleteChild = () => {
@@ -214,17 +196,15 @@ export default function ChildProfileScreen() {
 
   const confirmDeleteChild = async () => {
     if (!childId || isDeleting) return;
+
     setDeleteConfirmVisible(false);
+
     try {
       setIsDeleting(true);
       await dispatch(deleteChildThunk(childId)).unwrap();
       router.replace("/Parent/(tabs)/children");
     } catch (error: any) {
-      showAppToast(
-        error?.message ||
-          t("childProfile.delete_error_message", "Could not delete the child."),
-        t("common.error", "Error")
-      );
+      showAppToast(error?.message || "Could not delete the child.", "Error");
     } finally {
       setIsDeleting(false);
     }
@@ -234,23 +214,13 @@ export default function ChildProfileScreen() {
     <>
       <ConfirmDialog
         visible={deleteConfirmVisible}
-        title={t("childProfile.delete_confirm_title", "Delete child")}
-        message={t(
-          "childProfile.delete_confirm_message",
-          "Are you sure you want to delete this child? This action cannot be undone."
-        )}
-        cancelLabel={t("common.cancel", "Cancel")}
-        confirmLabel={t("common.delete", "Delete")}
+        title="Delete child"
+        message="Are you sure you want to delete this child? This action cannot be undone."
+        cancelLabel="Cancel"
+        confirmLabel="Delete"
         destructive
         onCancel={() => setDeleteConfirmVisible(false)}
         onConfirm={confirmDeleteChild}
-      />
-      <Stack.Screen
-        options={{
-          title: t("childProfile.title"),
-          headerTitleAlign: "center",
-          headerShadowVisible: false,
-        }}
       />
 
       <ScreenLayout>
@@ -269,7 +239,7 @@ export default function ChildProfileScreen() {
                 onPress={onPressChangeAvatar}
                 disabled={!childId || uploadingAvatar}
                 accessibilityRole="button"
-                accessibilityLabel={t("childProfile.photo_edit_a11y")}
+                accessibilityLabel="Change profile photo"
                 style={({ pressed }) => [
                   styles.avatarTouchable,
                   pressed && !uploadingAvatar && { opacity: 0.92 },
@@ -290,43 +260,30 @@ export default function ChildProfileScreen() {
                       color="#4F93D2"
                     />
                   )}
+
                   {uploadingAvatar ? (
                     <View style={styles.avatarUploadingOverlay}>
                       <ActivityIndicator color="#315AEF" />
                     </View>
                   ) : null}
                 </View>
-                <View
-                  style={[
-                    styles.avatarEditBadge,
-                    isRTL && styles.avatarEditBadgeRtl,
-                  ]}
-                  pointerEvents="none"
-                >
-                  <MaterialCommunityIcons
-                    name="pencil"
-                    size={18}
-                    color="#FFFFFF"
-                  />
+
+                <View style={styles.avatarEditBadge} pointerEvents="none">
+                  <MaterialCommunityIcons name="pencil" size={18} color="#FFFFFF" />
                 </View>
               </Pressable>
 
-              <AppText weight="extraBold" style={[styles.childName, text]}>
+              <AppText weight="extraBold" style={styles.childName}>
                 {displayName}
               </AppText>
 
               {ageYears != null ? (
-                <AppText weight="medium" style={[styles.childMeta, text]}>
-                  {t("childProfile.age", { age: ageYears })}
+                <AppText weight="medium" style={styles.childMeta}>
+                  {`Age ${ageYears}`}
                 </AppText>
               ) : null}
 
-              <View
-                style={[
-                  styles.profileActionsRow,
-                  isRTL ? styles.profileActionsRowRtl : styles.profileActionsRowLtr,
-                ]}
-              >
+              <View style={styles.profileActionsRow}>
                 <Pressable
                   onPress={() =>
                     router.push({
@@ -335,7 +292,7 @@ export default function ChildProfileScreen() {
                     } as never)
                   }
                   accessibilityRole="button"
-                  accessibilityLabel={t("childProfile.edit_a11y")}
+                  accessibilityLabel="Edit child details"
                   style={({ pressed }) => [
                     styles.editButton,
                     pressed && styles.pressedSoft,
@@ -348,7 +305,7 @@ export default function ChildProfileScreen() {
                       color="#3B5B7A"
                     />
                     <AppText weight="bold" style={styles.editButtonText}>
-                      {t("childProfile.edit")}
+                      Edit Details
                     </AppText>
                   </View>
                 </Pressable>
@@ -357,10 +314,7 @@ export default function ChildProfileScreen() {
                   onPress={onPressDeleteChild}
                   disabled={isDeleting}
                   accessibilityRole="button"
-                  accessibilityLabel={t(
-                    "childProfile.delete_a11y",
-                    "Delete child"
-                  )}
+                  accessibilityLabel="Delete child"
                   style={({ pressed }) => [
                     styles.deleteButton,
                     pressed && styles.pressedSoft,
@@ -374,9 +328,7 @@ export default function ChildProfileScreen() {
                       color="#B42318"
                     />
                     <AppText weight="bold" style={styles.deleteButtonText}>
-                      {isDeleting
-                        ? t("common.deleting", "Deleting...")
-                        : t("common.delete", "Delete")}
+                      {isDeleting ? "Deleting..." : "Delete"}
                     </AppText>
                   </View>
                 </Pressable>
@@ -387,21 +339,21 @@ export default function ChildProfileScreen() {
               {ACTIONS.map((item) => (
                 <Pressable
                   key={item.key}
-                  onPress={() => router.push(item.route as never)}
+                  onPress={() =>
+                    router.push({
+                      pathname: item.route as never,
+                      params: { childId, id: childId, name: displayName },
+                    })
+                  }
                   accessibilityRole="button"
-                  accessibilityLabel={t(`childProfile.actions.${item.key}.a11y`)}
+                  accessibilityLabel={item.accessibilityLabel}
                   style={({ pressed }) => [
                     styles.actionCard,
                     isTablet && styles.actionCardTablet,
                     pressed && styles.pressedCard,
                   ]}
                 >
-                  <View
-                    style={[
-                      styles.actionContent,
-                      isRTL ? styles.actionContentRtl : styles.actionContentLtr,
-                    ]}
-                  >
+                  <View style={styles.actionContent}>
                     <View style={styles.iconBubble}>
                       <MaterialCommunityIcons
                         name={item.icon}
@@ -411,18 +363,18 @@ export default function ChildProfileScreen() {
                     </View>
 
                     <View style={styles.actionTextWrap}>
-                      <AppText weight="extraBold" style={[styles.actionTitle, text]}>
-                        {t(item.titleKey)}
+                      <AppText weight="extraBold" style={styles.actionTitle}>
+                        {item.title}
                       </AppText>
 
-                      <AppText weight="medium" style={[styles.actionSubtitle, text]}>
-                        {t(item.subtitleKey)}
+                      <AppText weight="medium" style={styles.actionSubtitle}>
+                        {item.subtitle}
                       </AppText>
                     </View>
 
                     <View style={styles.chevronWrap}>
                       <MaterialCommunityIcons
-                        name={isRTL ? "chevron-left" : "chevron-right"}
+                        name="chevron-right"
                         size={22}
                         color="#A7B3C2"
                       />

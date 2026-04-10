@@ -1,44 +1,65 @@
 import React, { useEffect, useState } from "react";
-import { View, Pressable, useWindowDimensions, Image, ActivityIndicator } from "react-native";
+import {
+  View,
+  Pressable,
+  useWindowDimensions,
+  Image,
+  ActivityIndicator,
+} from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { useTranslation } from "react-i18next";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useDispatch, useSelector } from "react-redux";
+
 import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
 import AppText from "../../../components/AppText/AppText";
 import { styles } from "./linkDeviceScreen.styles";
 import { generateCodeForPairingChild } from "@/src/redux/thunks/authThunks";
 import { setError } from "@/src/redux/slices/auth-slice";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState, AppDispatch } from "@/src/redux/store/types";
+import type { RootState, AppDispatch } from "@/src/redux/store/types";
 
 type Mode = "barcode" | "code";
 
-// Generate a QR code image URL from a given token
 const qrImageUrlForToken = (token: string) =>
   `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(token)}`;
 
+function getErrorMessage(error: string | null): string {
+  switch (error) {
+    case "linkChildren.invalid_child_selection":
+      return "Invalid child selected. Please go back and choose the child again.";
+    case "linkChildren.error_generic":
+      return "Failed to link device, please try again.";
+    case "api.generic_error":
+      return "Something went wrong. Please try again.";
+    case "api.unauthorized":
+      return "Session expired. Please log in again.";
+    default:
+      return error ?? "";
+  }
+}
+
 export default function LinkDeviceScreen() {
-  const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const dispatch = useDispatch<AppDispatch>();
+
   const parentId = useSelector((state: RootState) => state.auth.parentId);
   const authError = useSelector((state: RootState) => state.auth.error);
   const childrenList = useSelector((state: RootState) => state.children.childrenList);
+
   const children = Array.isArray(childrenList) ? childrenList : [];
   const params = useLocalSearchParams<{ id?: string }>();
+
   const targetChildId =
     typeof params.id === "string" && params.id.trim().length > 0 ? params.id : null;
 
   const childSelectionInvalid =
     !targetChildId ||
-    (children.length > 0 && !children.some((c) => c._id === targetChildId));
+    (children.length > 0 && !children.some((child) => child._id === targetChildId));
 
-  // Barcode or Code
   const [mode, setMode] = useState<Mode>("barcode");
   const [code, setCode] = useState("");
   const [barcodeToken, setBarcodeToken] = useState("");
-  const isBarcode = mode === "barcode";
 
+  const isBarcode = mode === "barcode";
   const qrImageUri = barcodeToken ? qrImageUrlForToken(barcodeToken) : "";
   const cardMaxWidth = width >= 900 ? 520 : width >= 650 ? 480 : 420;
 
@@ -51,9 +72,9 @@ export default function LinkDeviceScreen() {
     }
 
     dispatch(setError(null));
+
     if (!parentId || !targetChildId) return;
 
-    // If parent dont want the pairing, we will ignore the result
     let ignoreResult = false;
 
     dispatch(generateCodeForPairingChild({ parentId, childId: targetChildId }))
@@ -66,7 +87,9 @@ export default function LinkDeviceScreen() {
       .catch((error) => {
         const message = error instanceof Error ? error.message : String(error);
         console.error(message);
-        if (!ignoreResult) dispatch(setError(message));
+        if (!ignoreResult) {
+          dispatch(setError(message));
+        }
       });
 
     return () => {
@@ -74,9 +97,7 @@ export default function LinkDeviceScreen() {
     };
   }, [childSelectionInvalid, dispatch, parentId, targetChildId]);
 
-  const errorLine = authError ? (
-    <AppText style={styles.errorText}>{t(authError)}</AppText>
-  ) : null;
+  const errorMessage = getErrorMessage(authError);
 
   return (
     <ScreenLayout>
@@ -87,7 +108,7 @@ export default function LinkDeviceScreen() {
               onPress={() => setMode("barcode")}
               accessibilityRole="tab"
               accessibilityState={{ selected: isBarcode }}
-              accessibilityLabel={t("linkChildren.tab_barcode_a11y")}
+              accessibilityLabel="Switch to barcode mode"
               style={[
                 styles.segmentBtn,
                 isBarcode ? styles.segmentActive : styles.segmentInactive,
@@ -101,7 +122,7 @@ export default function LinkDeviceScreen() {
                 ]}
                 numberOfLines={1}
               >
-                {t("linkChildren.tab_barcode")}
+                Barcode
               </AppText>
             </Pressable>
 
@@ -109,7 +130,7 @@ export default function LinkDeviceScreen() {
               onPress={() => setMode("code")}
               accessibilityRole="tab"
               accessibilityState={{ selected: !isBarcode }}
-              accessibilityLabel={t("linkChildren.tab_code_a11y")}
+              accessibilityLabel="Switch to code mode"
               style={[
                 styles.segmentBtn,
                 !isBarcode ? styles.segmentActive : styles.segmentInactive,
@@ -123,7 +144,7 @@ export default function LinkDeviceScreen() {
                 ]}
                 numberOfLines={1}
               >
-                {t("linkChildren.tab_code")}
+                Code
               </AppText>
             </Pressable>
           </View>
@@ -137,7 +158,13 @@ export default function LinkDeviceScreen() {
           </View>
 
           <AppText weight="extraBold" style={styles.title} numberOfLines={2}>
-            {t("linkChildren.heading")}
+            Connect to Parent Account
+          </AppText>
+
+          <AppText weight="medium" style={styles.subtitle}>
+            {isBarcode
+              ? "Ask your parent to scan the barcode on their screen."
+              : "Use this code on the parent device to connect this child."}
           </AppText>
 
           {isBarcode ? (
@@ -147,14 +174,14 @@ export default function LinkDeviceScreen() {
                   <Image
                     source={{ uri: qrImageUri }}
                     style={styles.qrImage}
-                    accessibilityLabel={t("linkChildren.tab_barcode_a11y")}
+                    accessibilityLabel="Pairing barcode"
                   />
                 ) : (
                   <ActivityIndicator size="large" color="#1E3A8A" />
                 )}
               </View>
 
-              {errorLine}
+              {!!errorMessage && <AppText style={styles.errorText}>{errorMessage}</AppText>}
             </View>
           ) : (
             <View style={styles.codeArea}>
@@ -169,7 +196,8 @@ export default function LinkDeviceScreen() {
                   </AppText>
                 </View>
               </View>
-              {errorLine}
+
+              {!!errorMessage && <AppText style={styles.errorText}>{errorMessage}</AppText>}
             </View>
           )}
         </View>

@@ -66,20 +66,12 @@ export const enteringFormStyles = StyleSheet.create({
     marginBottom: 12,
   },
 
-  inputRTL: {
-    flexDirection: "row-reverse",
-  },
-
   inputText: {
     flex: 1,
     fontSize: 15,
     color: "#111827",
     paddingVertical: 0,
-  },
-
-  inputTextRTL: {
-    textAlign: "right",
-    writingDirection: "rtl",
+    textAlign: "left",
   },
 
   errorText: {

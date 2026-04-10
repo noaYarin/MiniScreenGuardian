@@ -16,7 +16,7 @@ export const styles = StyleSheet.create({
     padding: 18,
     backgroundColor: "#DCEBFF",
     minHeight: 700,
-    },
+  },
 
   segmentWrap: {
     width: "100%",
@@ -43,6 +43,7 @@ export const styles = StyleSheet.create({
   segmentActive: {
     backgroundColor: "#0B4DFF",
   },
+
   segmentInactive: {
     backgroundColor: "transparent",
   },
@@ -50,9 +51,11 @@ export const styles = StyleSheet.create({
   segmentText: {
     fontSize: 16,
   },
+
   segmentTextActive: {
     color: "#FFFFFF",
   },
+
   segmentTextInactive: {
     color: "#4B5563",
   },
@@ -80,6 +83,7 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     color: "#334155",
     marginBottom: 10,
+    marginTop: 8,
   },
 
   qrCard: {
@@ -89,7 +93,7 @@ export const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     padding: 16,
     shadowColor: "#000",
-    shadowOpacity: 0.10,
+    shadowOpacity: 0.1,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
     elevation: 3,
@@ -123,7 +127,7 @@ export const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     padding: 16,
     shadowColor: "#000",
-    shadowOpacity: 0.10,
+    shadowOpacity: 0.1,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
     elevation: 3,
@@ -163,5 +167,4 @@ export const styles = StyleSheet.create({
     marginTop: 10,
     color: "#EF4444",
   },
-
 });

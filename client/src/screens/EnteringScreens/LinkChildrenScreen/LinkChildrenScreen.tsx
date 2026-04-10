@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, Pressable, TextInput, useWindowDimensions } from "react-native";
 import { router } from "expo-router";
-import { useTranslation } from "react-i18next";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
@@ -13,7 +12,7 @@ import { hydrateChildSession } from "../../../redux/slices/auth-slice";
 import type { AppDispatch } from "../../../redux/store/types";
 import { styles } from "./styles";
 import { NativeModules } from "react-native";
-import * as Location from "expo-location";  
+import * as Location from "expo-location";
 import { updateDeviceLocation } from "../../../redux/thunks/deviceThunks";
 import { showAppToast } from "@/src/utils/appToast";
 
@@ -23,7 +22,6 @@ const ERROR_RELEASE_DELAY = 750;
 type Mode = "barcode" | "code";
 
 export default function LinkChildrenScreen() {
-  const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const dispatch = useDispatch<AppDispatch>();
 
@@ -37,7 +35,6 @@ export default function LinkChildrenScreen() {
 
   const cardMaxWidth = width >= 900 ? 520 : width >= 650 ? 480 : 420;
 
-  // Resets the linking state and releases the lock.
   const finishLink = () => {
     linkInFlightRef.current = false;
     setIsSubmitting(false);
@@ -50,7 +47,6 @@ export default function LinkChildrenScreen() {
     return true;
   };
 
-  // Prevents the camera from immediately re-scanning the same QR after an error.
   const scheduleFinishLinkAfterError = () => {
     if (finishLinkErrorTimeoutRef.current) {
       clearTimeout(finishLinkErrorTimeoutRef.current);
@@ -63,10 +59,13 @@ export default function LinkChildrenScreen() {
 
   const runDeviceLink = async (params: { code: string; barcodeToken: string }) => {
     if (!tryBeginLink()) return;
-    try {
-      const res = await apiLinkDevice({ ...params, ...(await buildDeviceConnectionPayload()) });
 
-      // After successful pairing, save config in native storage so the device can send heartbeat
+    try {
+      const res = await apiLinkDevice({
+        ...params,
+        ...(await buildDeviceConnectionPayload()),
+      });
+
       try {
         await NativeModules.DeviceControl.saveHeartbeatConfig(
           process.env.EXPO_PUBLIC_API_URL,
@@ -84,6 +83,7 @@ export default function LinkChildrenScreen() {
       }
 
       const dbDeviceId = res.deviceId;
+
       dispatch(
         hydrateChildSession({
           childToken: res.childToken,
@@ -95,40 +95,39 @@ export default function LinkChildrenScreen() {
       );
 
       finishLink();
+
       router.replace({
         pathname: "/Child/home",
-        params: { initialName: res.childName ?? "" }
+        params: { initialName: res.childName ?? "" },
       });
-    } catch(err: any) {
+    } catch (err: any) {
       showAppToast(
-        err?.error?.message ?? t("common.error_message"),
-        t("linkChildren.error_title")
+        err?.error?.message ?? "The action failed. Please try again.",
+        "Something went wrong"
       );
       scheduleFinishLinkAfterError();
       router.replace("Entering/roleSelectionRoute" as any);
     }
   };
 
-  // Request camera permission on mount when the hook has not resolved yet.
   useEffect(() => {
     if (!permission) requestPermission();
   }, [permission, requestPermission]);
 
-  useEffect(
-    () => () => {
-      if (finishLinkErrorTimeoutRef.current) clearTimeout(finishLinkErrorTimeoutRef.current);
-    },
-    []
-  );
+  useEffect(() => {
+    return () => {
+      if (finishLinkErrorTimeoutRef.current) {
+        clearTimeout(finishLinkErrorTimeoutRef.current);
+      }
+    };
+  }, []);
 
-  // code from parent
   const pairingBtn = async () => {
     const trimmed = code.trim();
     if (!trimmed) return;
     await runDeviceLink({ code: trimmed, barcodeToken: "" });
   };
 
-  // QR payload from parent device
   const handleBarcodeScanned = async (result: { data?: string }) => {
     const token = result?.data?.trim();
     if (!token) return;
@@ -146,7 +145,7 @@ export default function LinkChildrenScreen() {
               onPress={() => setMode("barcode")}
               accessibilityRole="tab"
               accessibilityState={{ selected: isBarcode }}
-              accessibilityLabel={t("linkChildren.tab_barcode_a11y")}
+              accessibilityLabel="Switch to barcode mode"
               style={[
                 styles.segmentBtn,
                 isBarcode ? styles.segmentActive : styles.segmentInactive,
@@ -160,7 +159,7 @@ export default function LinkChildrenScreen() {
                 ]}
                 numberOfLines={1}
               >
-                {t("linkChildren.tab_barcode")}
+                Barcode
               </AppText>
             </Pressable>
 
@@ -168,7 +167,7 @@ export default function LinkChildrenScreen() {
               onPress={() => setMode("code")}
               accessibilityRole="tab"
               accessibilityState={{ selected: !isBarcode }}
-              accessibilityLabel={t("linkChildren.tab_code_a11y")}
+              accessibilityLabel="Switch to code mode"
               style={[
                 styles.segmentBtn,
                 !isBarcode ? styles.segmentActive : styles.segmentInactive,
@@ -183,7 +182,7 @@ export default function LinkChildrenScreen() {
                   ]}
                   numberOfLines={1}
                 >
-                  {t("linkChildren.tab_code")}
+                  Code
                 </AppText>
               </View>
             </Pressable>
@@ -194,7 +193,13 @@ export default function LinkChildrenScreen() {
           </View>
 
           <AppText weight="extraBold" style={styles.title} numberOfLines={2}>
-            {t("linkChildren.heading")}
+            Connect to Parent Account
+          </AppText>
+
+          <AppText style={styles.subtitle}>
+            {isBarcode
+              ? "Ask your parent to scan the barcode on their screen."
+              : "Enter the code your parent gave you."}
           </AppText>
 
           {isBarcode ? (
@@ -209,7 +214,7 @@ export default function LinkChildrenScreen() {
                 ) : (
                   <View style={styles.cameraFallback}>
                     <AppText style={styles.subtitle}>
-                      {t("linkChildren.camera_denied_message")}
+                      Camera permission is required to scan the barcode.
                     </AppText>
                   </View>
                 )}
@@ -218,7 +223,7 @@ export default function LinkChildrenScreen() {
               <Pressable
                 onPress={requestPermission}
                 accessibilityRole="button"
-                accessibilityLabel={t("linkChildren.scan_a11y")}
+                accessibilityLabel="Start scanning barcode"
                 style={({ pressed }) => [
                   styles.primaryBtn,
                   { opacity: pressed || isSubmitting ? 0.75 : 1 },
@@ -226,26 +231,27 @@ export default function LinkChildrenScreen() {
                 disabled={isSubmitting}
               >
                 <AppText weight="extraBold" style={styles.primaryBtnText}>
-                  {t("linkChildren.scan")}
+                  Scan barcode
                 </AppText>
               </Pressable>
             </View>
           ) : (
             <View style={styles.codeArea}>
               <AppText style={styles.subtitle} numberOfLines={3}>
-                {t("linkChildren.sub_code")}
+                Enter the code your parent gave you.
               </AppText>
+
               <View style={styles.inputWrap}>
                 <TextInput
                   value={code}
                   onChangeText={setCode}
-                  placeholder={t("linkChildren.code_placeholder")}
+                  placeholder="Enter code"
                   autoComplete="off"
                   autoFocus
                   keyboardType="numeric"
                   maxLength={6}
                   style={styles.input}
-                  accessibilityLabel={t("linkChildren.code_input_a11y")}
+                  accessibilityLabel="Code input"
                 />
               </View>
 
@@ -253,7 +259,7 @@ export default function LinkChildrenScreen() {
                 onPress={pairingBtn}
                 disabled={!code.trim() || isSubmitting}
                 accessibilityRole="button"
-                accessibilityLabel={t("linkChildren.submit_a11y")}
+                accessibilityLabel="Connect button"
                 style={({ pressed }) => [
                   styles.primaryBtn,
                   !code.trim() ? styles.primaryBtnDisabled : null,
@@ -261,7 +267,7 @@ export default function LinkChildrenScreen() {
                 ]}
               >
                 <AppText weight="extraBold" style={styles.primaryBtnText}>
-                  {t("linkChildren.connect")}
+                  Connect
                 </AppText>
               </Pressable>
             </View>

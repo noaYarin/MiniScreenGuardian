@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 import { View, Pressable, StyleProp, ViewStyle, TextStyle } from "react-native";
-import { useTranslation } from "react-i18next";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 
@@ -27,7 +26,6 @@ export function ChildDetailsProfileCard({
   text,
   onOpenProfile,
 }: Props) {
-  const { t } = useTranslation();
   const avatarUri = useMemo(() => getChildProfileImageUri(profileImg), [profileImg]);
 
   return (
@@ -59,16 +57,14 @@ export function ChildDetailsProfileCard({
             ]}
             onPress={onOpenProfile}
             accessibilityRole="button"
-            accessibilityLabel={t("childDetails.child_profile_a11y", {
-              name: childName,
-            })}
+            accessibilityLabel={`Open profile for ${childName}`}
           >
             <AppText
               weight="bold"
               style={styles.childProfileButtonText}
               numberOfLines={1}
             >
-              {t("childDetails.child_profile")}
+              Child profile
             </AppText>
           </Pressable>
         </View>
@@ -83,11 +79,11 @@ export function ChildDetailsProfileCard({
           </AppText>
 
           <AppText style={[styles.childMeta, text]} numberOfLines={1}>
-            {t("childDetails.birthdate_value", { value: birthDateLabel })}
+            {`Birth date: ${birthDateLabel}`}
           </AppText>
 
           <AppText style={[styles.childMeta, text]} numberOfLines={1}>
-            {t("childDetails.gender_value", { value: genderLabel })}
+            {`Gender: ${genderLabel}`}
           </AppText>
         </View>
       </View>

@@ -1,21 +1,23 @@
 import React, { useMemo } from "react";
-import { View, Pressable, ScrollView, useWindowDimensions } from "react-native";
+import {
+  View,
+  Pressable,
+  ScrollView,
+  useWindowDimensions,
+} from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import { useSelector } from "react-redux";
 
 import { getChildProfileImageUri } from "@/src/utils/childProfileImage";
-
 import { CHILD_ACCENT_COLORS } from "../../../../client/constants/childAccentColors";
 
 import AppText from "../AppText/AppText";
 import { styles } from "./styles";
 
-import { useTranslation } from "../../../hooks/use-translation";
-import { useLocaleLayout } from "../../../hooks/use-locale-layout";
 import type { RootState } from "@/src/redux/store/types";
-import { useSelector } from "react-redux";
 
-// Get accent color for child id using the sum of the character codes
+// Accent color generator
 function accentColorForChildId(childId: string): string {
   const sum = [...childId].reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return CHILD_ACCENT_COLORS[sum % CHILD_ACCENT_COLORS.length];
@@ -38,11 +40,9 @@ type Props = {
 export default function ChildSelector({
   selectedChildId,
   onSelectChild,
-  childSectionTitleKey = "childSelector.childrenSectionTitle",
 }: Props) {
-  const { t } = useTranslation();
-  const { isRTL, text } = useLocaleLayout();
   const { width } = useWindowDimensions();
+
   const childrenOptions = useSelector(
     (state: RootState) => state.children.childrenList ?? []
   );
@@ -60,8 +60,8 @@ export default function ChildSelector({
   return (
     <View style={styles.wrapper}>
       <View style={styles.section}>
-        <AppText weight="bold" style={[styles.sectionTitle, text]}>
-          {t(childSectionTitleKey)}
+        <AppText weight="bold" style={styles.sectionTitle}>
+          Select Child
         </AppText>
 
         <View style={styles.childrenViewport}>
@@ -70,8 +70,7 @@ export default function ChildSelector({
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={[
               styles.childrenRow,
-              isRTL ? styles.childrenRowRtl : styles.childrenRowLtr,
-              shouldCenter && styles.childrenRowCentered, 
+              shouldCenter && styles.childrenRowCentered,
             ]}
           >
             {childrenOptions.map((child) => {
@@ -82,6 +81,7 @@ export default function ChildSelector({
                 childName.trim().length > 0
                   ? (Array.from(childName.trim())[0] ?? "")
                   : "";
+
               const avatarUri = getChildProfileImageUri(child.img);
               const isSelected = childId === selectedChildId;
 
@@ -89,9 +89,11 @@ export default function ChildSelector({
                 <Pressable
                   key={childId}
                   onPress={() => onSelectChild(childId)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select child ${childName}`}
                   style={({ pressed }) => [
                     styles.childCard,
-                    { width: cardWidth }, 
+                    { width: cardWidth },
                     isSelected && [
                       styles.childCardSelected,
                       {
@@ -138,16 +140,13 @@ export default function ChildSelector({
                     style={styles.childName}
                     numberOfLines={1}
                   >
-                  {childName}
+                    {childName}
                   </AppText>
 
                   {isSelected && (
                     <View
                       style={[
                         styles.selectedBadge,
-                        isRTL
-                          ? styles.selectedBadgeRtl
-                          : styles.selectedBadgeLtr,
                         { backgroundColor: accentColor },
                       ]}
                     >

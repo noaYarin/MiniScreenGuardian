@@ -72,11 +72,6 @@ export const styles = StyleSheet.create({
     borderColor: "#FFFFFF",
   },
 
-  avatarEditBadgeRtl: {
-    right: undefined,
-    left: 4,
-  },
-
   avatarUploadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(255,255,255,0.65)",
@@ -96,23 +91,14 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  // 🔥 שורת כפתורים (עריכה + מחיקה)
   profileActionsRow: {
     width: "100%",
     marginTop: 14,
     gap: 10,
     alignItems: "stretch",
-  },
-
-  profileActionsRowLtr: {
     flexDirection: "row",
   },
 
-  profileActionsRowRtl: {
-    flexDirection: "row-reverse",
-  },
-
-  // ✏️ כפתור עריכה (מתוקן!)
   editButton: {
     flex: 1,
     minHeight: 46,
@@ -137,7 +123,6 @@ export const styles = StyleSheet.create({
     color: "#3B5B7A",
   },
 
-  // 🗑️ כפתור מחיקה
   deleteButton: {
     flex: 1,
     minHeight: 46,
@@ -166,7 +151,6 @@ export const styles = StyleSheet.create({
     fontSize: 15,
   },
 
-  // 📦 גריד כרטיסים
   cardsGrid: {
     width: "100%",
     gap: 14,
@@ -204,14 +188,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     gap: 14,
-  },
-
-  actionContentLtr: {
     flexDirection: "row",
-  },
-
-  actionContentRtl: {
-    flexDirection: "row-reverse",
   },
 
   actionTextWrap: {
@@ -249,7 +226,6 @@ export const styles = StyleSheet.create({
     flexShrink: 0,
   },
 
-  // ✨ מצבי לחיצה
   pressed: {
     opacity: 0.72,
   },
