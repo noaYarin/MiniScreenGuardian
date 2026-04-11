@@ -10,12 +10,13 @@ namespace ScreenGuardianAPI.Repositories
 
         public PreLoginRecommendationRepository(IConfiguration configuration)
         {
-            connectionString = configuration.GetConnectionString("DefaultConnection");
+            connectionString = configuration.GetConnectionString("DefaultConnection")
+                          ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
         }
 
-        public PreLoginRecommendation GetRecommendationByAge(int age)
+        public PreLoginRecommendation? GetRecommendationByAge(int age)
         {
-            PreLoginRecommendation recommendation = null;
+            PreLoginRecommendation? recommendation = null;
 
             SqlConnection con = new SqlConnection(connectionString);
             SqlCommand cmd = new SqlCommand("SP_SG_GetPreLoginRecommendationByAge", con);
@@ -34,7 +35,9 @@ namespace ScreenGuardianAPI.Repositories
                 recommendation.MinAge = Convert.ToInt32(reader["minAge"]);
                 recommendation.MaxAge = Convert.ToInt32(reader["maxAge"]);
                 recommendation.RecommendedMinutes = Convert.ToInt32(reader["recommendedMinutes"]);
-                recommendation.Message = reader["message"].ToString();
+                recommendation.Message = reader["message"] == DBNull.Value
+                                 ? string.Empty
+                                 : Convert.ToString(reader["message"]) ?? string.Empty;
             }
 
             reader.Close();
