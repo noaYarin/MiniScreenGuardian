@@ -25,13 +25,41 @@ export const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 8,
   },
+header: {
+  position: "relative",
+  minHeight: 56,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingTop: 8,
+  paddingBottom: 6,
+},
+
+headerMenuLeft: {
+  position: "absolute",
+  left: 0,
+  top: 8,
+},
+
+headerBellRight: {
+  position: "absolute",
+  right: 0,
+  top: 8,
+},
+
+  headerLeftActions: {
+    position: "absolute",
+    left: 0,
+    top: 8,
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
   headerMenuButton: {
     width: 40,
     height: 40,
     alignItems: "center",
     justifyContent: "center",
-    marginHorizontal: 8,
+    marginRight: 4,
   },
 
   headerMenuButtonPressed: {
@@ -43,12 +71,13 @@ export const styles = StyleSheet.create({
     height: 24,
     alignItems: "center",
     justifyContent: "center",
+    position: "relative",
   },
 
   bellBadge: {
     position: "absolute",
     top: -7,
-    right: -10,
+    right: -6,
     minWidth: 18,
     height: 18,
     borderRadius: 9,
@@ -66,18 +95,12 @@ export const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
 
-  header: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingTop: 8,
-    paddingBottom: 6,
-  },
-
   bigHello: {
     fontSize: 28,
     lineHeight: 34,
     color: "#0F172A",
     marginTop: 8,
+    textAlign: "center",
   },
 
   overviewLink: {

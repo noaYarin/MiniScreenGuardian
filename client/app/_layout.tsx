@@ -119,7 +119,7 @@ function AppStack() {
     if (!isIndexRoute) return;
 
     if (childToken) {
-      router.replace("/Child/index" as Href);
+      router.replace("/Child" as Href);
     } else if (token) {
       router.replace("/Parent" as Href);
     }
