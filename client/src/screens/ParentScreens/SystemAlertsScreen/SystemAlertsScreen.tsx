@@ -3,7 +3,6 @@ import {
   View,
   FlatList,
   Pressable,
-  ActivityIndicator,
   RefreshControl,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -36,11 +35,16 @@ function toAlertSeverity(severity: string): AlertSeverity {
 
 function pickIcon(type: string, severity: string) {
   const t = String(type || "").toUpperCase();
+
   switch (t) {
-    case "DEVICE_LOCKED": return "lock-outline";
-    case "DEVICE_UNLOCKED": return "lock-open-outline";
-    case "EXTENSION_REQUEST_APPROVED": return "check-decagram-outline";
-    case "EXTENSION_REQUEST_REJECTED": return "close-octagon-outline";
+    case "DEVICE_LOCKED":
+      return "lock-outline";
+    case "DEVICE_UNLOCKED":
+      return "lock-open-outline";
+    case "EXTENSION_REQUEST_APPROVED":
+      return "check-decagram-outline";
+    case "EXTENSION_REQUEST_REJECTED":
+      return "close-octagon-outline";
     default:
       return toAlertSeverity(severity) === "critical"
         ? "shield-alert-outline"
@@ -48,19 +52,12 @@ function pickIcon(type: string, severity: string) {
   }
 }
 
-function formatCreatedAt(createdAt?: string) {
-  if (!createdAt) return "";
-  const d = new Date(createdAt);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString();
-}
-
 const FILTERS: AlertFilter[] = ["all", "unread", "critical"];
 
 export default function SystemAlertsScreen() {
   const dispatch = useDispatch<AppDispatch>();
 
-  const { items, pagination, status, error, unreadCount } = useSelector(
+  const { items, pagination, status, unreadCount } = useSelector(
     (state: RootState) => state.notifications
   );
 
@@ -82,7 +79,10 @@ export default function SystemAlertsScreen() {
   }, [loadData]);
 
   const handleMarkAllRead = useCallback(async () => {
+    if (markAllReadBusy) return;
+
     setMarkAllReadBusy(true);
+
     try {
       await dispatch(markAllParentNotificationsReadThunk()).unwrap();
     } catch {
@@ -90,12 +90,14 @@ export default function SystemAlertsScreen() {
     } finally {
       setMarkAllReadBusy(false);
     }
-  }, [dispatch]);
+  }, [dispatch, markAllReadBusy]);
 
   const handleDeleteNotification = useCallback(
     async (notificationId: string) => {
       try {
-        await dispatch(deleteParentNotificationThunk({ notificationId })).unwrap();
+        await dispatch(
+          deleteParentNotificationThunk({ notificationId })
+        ).unwrap();
       } catch {
         showAppToast("Could not delete the notification");
       }
@@ -109,8 +111,9 @@ export default function SystemAlertsScreen() {
       status === "loading" ||
       !pagination ||
       pagination.page >= pagination.pages
-    )
+    ) {
       return;
+    }
 
     setIsFetchingMore(true);
 
@@ -145,6 +148,7 @@ export default function SystemAlertsScreen() {
             <AppText weight="extraBold" style={styles.heroTitle}>
               System Alerts
             </AppText>
+
             <AppText weight="medium" style={styles.heroSubtitle}>
               Track important updates and unusual activity
             </AppText>
@@ -202,16 +206,19 @@ export default function SystemAlertsScreen() {
           <Pressable
             key={f}
             onPress={() => setSelectedFilter(f)}
-            style={[
+            accessibilityRole="button"
+            accessibilityLabel={`Filter by ${f}`}
+            style={({ pressed }) => [
               styles.filterChip,
-              selectedFilter === f && styles.filterChipSelected,
+              selectedFilter === f ? styles.filterChipSelected : null,
+              pressed ? styles.pressed : null,
             ]}
           >
             <AppText
               weight={selectedFilter === f ? "bold" : "medium"}
               style={[
                 styles.filterChipText,
-                selectedFilter === f && styles.filterChipTextSelected,
+                selectedFilter === f ? styles.filterChipTextSelected : null,
               ]}
             >
               {f}
@@ -226,9 +233,17 @@ export default function SystemAlertsScreen() {
         </AppText>
 
         {unreadCount > 0 && (
-          <Pressable onPress={handleMarkAllRead}>
+          <Pressable
+            onPress={handleMarkAllRead}
+            accessibilityRole="button"
+            accessibilityLabel="Mark all notifications as read"
+            style={({ pressed }) => [
+              styles.markAllReadPressable,
+              pressed ? styles.pressed : null,
+            ]}
+          >
             <AppText weight="bold" style={styles.markAllReadText}>
-              Mark all read
+              {markAllReadBusy ? "Marking..." : "Mark all read"}
             </AppText>
           </Pressable>
         )}
@@ -243,10 +258,6 @@ export default function SystemAlertsScreen() {
     return (
       <View style={styles.alertListItemWrap}>
         <View style={styles.alertCard}>
-          <View
-            style={[styles.alertAccent, { backgroundColor: palette.accent }]}
-          />
-
           <Pressable
             onPress={() => {
               if (!item.isRead) {
@@ -257,7 +268,12 @@ export default function SystemAlertsScreen() {
                 );
               }
             }}
-            style={styles.alertCardMainPressable}
+            accessibilityRole="button"
+            accessibilityLabel={String(item.title || "Open alert")}
+            style={({ pressed }) => [
+              styles.alertCardMainPressable,
+              pressed ? styles.pressed : null,
+            ]}
           >
             <View
               style={[
@@ -281,6 +297,23 @@ export default function SystemAlertsScreen() {
                 {String(item.description || "")}
               </AppText>
             </View>
+
+            <Pressable
+              onPress={() => handleDeleteNotification(String(item._id))}
+              accessibilityRole="button"
+              accessibilityLabel="Delete notification"
+              hitSlop={8}
+              style={({ pressed }) => [
+                styles.alertDeleteButton,
+                pressed ? styles.alertDeleteButtonPressed : null,
+              ]}
+            >
+              <MaterialCommunityIcons
+                name="trash-can-outline"
+                size={18}
+                color="#94A3B8"
+              />
+            </Pressable>
           </Pressable>
         </View>
       </View>
@@ -297,7 +330,9 @@ export default function SystemAlertsScreen() {
         }
         ListHeaderComponent={renderHeader}
         onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.25}
         contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={status === "loading"}

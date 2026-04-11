@@ -85,7 +85,6 @@ export default function HomeParentScreen() {
     }));
   }, [children]);
 
-  const onPressOverview = () => router.push("/Parent/(tabs)/reports" as Href);
   const onPressFullWatch = () => router.push("/Parent/(tabs)/children" as Href);
   const onPressAddChild = () => router.push("/Parent/addChild" as Href);
 
@@ -110,16 +109,60 @@ export default function HomeParentScreen() {
             contentContainerStyle={styles.mainScrollContent}
             showsVerticalScrollIndicator={false}
           >
-            {/* HEADER */}
-            <View style={styles.header}>
-              <AppText weight="extraBold" style={styles.bigHello}>
-                Hello {parentName}
-              </AppText>
+<View style={styles.header}>
+  <View style={styles.headerMenuLeft}>
+    <Pressable
+      onPress={onPressOpenMenu}
+      accessibilityRole="button"
+      accessibilityLabel="Open menu"
+      style={({ pressed }) => [
+        styles.headerMenuButton,
+        pressed ? styles.headerMenuButtonPressed : null,
+      ]}
+    >
+      <MaterialCommunityIcons
+        name={ICON.menu}
+        size={24}
+        color="#0F172A"
+      />
+    </Pressable>
+  </View>
 
-              
-            </View>
+  <AppText weight="extraBold" style={styles.bigHello}>
+    Hello {parentName}
+  </AppText>
 
-            {/* SUMMARY */}
+  <View style={styles.headerBellRight}>
+    <Pressable
+      onPress={onPressNotifications}
+      accessibilityRole="button"
+      accessibilityLabel="Open system alerts"
+      style={({ pressed }) => [
+        styles.headerMenuButton,
+        pressed ? styles.headerMenuButtonPressed : null,
+      ]}
+    >
+      <View style={styles.bellWrap}>
+        <MaterialCommunityIcons
+          name={ICON.bell}
+          size={24}
+          color="#0F172A"
+        />
+
+        {unreadNotificationsCount > 0 ? (
+          <View style={styles.bellBadge}>
+            <AppText weight="extraBold" style={styles.bellBadgeText}>
+              {unreadNotificationsCount > 99
+                ? "99+"
+                : String(unreadNotificationsCount)}
+            </AppText>
+          </View>
+        ) : null}
+      </View>
+    </Pressable>
+  </View>
+</View>
+
             <View style={styles.summaryCard}>
               <View style={styles.summaryRow}>
                 <View style={styles.summaryChip}>
@@ -142,7 +185,6 @@ export default function HomeParentScreen() {
               </View>
             </View>
 
-            {/* CONTENT */}
             {isLoading ? (
               <View style={styles.loaderWrap}>
                 <ActivityIndicator />
@@ -156,9 +198,11 @@ export default function HomeParentScreen() {
                 <Pressable
                   style={({ pressed }) => [
                     styles.btnSecondary,
-                    pressed && styles.buttonPressed,
+                    pressed ? styles.buttonPressed : null,
                   ]}
                   onPress={onPressAddChild}
+                  accessibilityRole="button"
+                  accessibilityLabel="Add child"
                 >
                   <AppText weight="extraBold" style={styles.btnSecondaryText}>
                     Add Child
@@ -172,9 +216,11 @@ export default function HomeParentScreen() {
                     key={c.id}
                     style={({ pressed }) => [
                       styles.card,
-                      pressed && styles.cardPressed,
+                      pressed ? styles.cardPressed : null,
                     ]}
                     onPress={() => onPressChildCard(c.id, c.name)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Open profile for ${c.name}`}
                   >
                     <View style={styles.cardInner}>
                       <View style={styles.avatarCircle}>
@@ -187,6 +233,7 @@ export default function HomeParentScreen() {
                           <MaterialCommunityIcons
                             name={c.isLocked ? ICON.lock : ICON.user}
                             size={22}
+                            color="#0F172A"
                           />
                         )}
                       </View>
@@ -206,12 +253,8 @@ export default function HomeParentScreen() {
                       <View style={styles.cardEdge}>
                         {c.isLocked ? (
                           <>
-                            <AppText weight="extraBold">
-                              Locked
-                            </AppText>
-                            <AppText style={styles.timeSub}>
-                              By parent
-                            </AppText>
+                            <AppText weight="extraBold">Locked</AppText>
+                            <AppText style={styles.timeSub}>By parent</AppText>
                           </>
                         ) : (
                           <>
@@ -233,15 +276,16 @@ export default function HomeParentScreen() {
             )}
           </ScrollView>
 
-          {/* ACTIONS */}
           {childCards.length > 0 && (
             <View style={styles.actionsWrap}>
               <Pressable
                 style={({ pressed }) => [
                   styles.btnPrimary,
-                  pressed && styles.buttonPressed,
+                  pressed ? styles.buttonPressed : null,
                 ]}
                 onPress={onPressFullWatch}
+                accessibilityRole="button"
+                accessibilityLabel="Open full view"
               >
                 <AppText weight="extraBold" style={styles.btnPrimaryText}>
                   Full View
@@ -251,9 +295,11 @@ export default function HomeParentScreen() {
               <Pressable
                 style={({ pressed }) => [
                   styles.btnSecondary,
-                  pressed && styles.buttonPressed,
+                  pressed ? styles.buttonPressed : null,
                 ]}
                 onPress={onPressAddChild}
+                accessibilityRole="button"
+                accessibilityLabel="Add child"
               >
                 <AppText weight="extraBold" style={styles.btnSecondaryText}>
                   Add Child

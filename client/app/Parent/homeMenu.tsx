@@ -1,19 +1,19 @@
 import React from "react";
 import { Stack } from "expo-router";
 
-import SystemAlertsScreen from "@/src/screens/ParentScreens/SystemAlertsScreen/SystemAlertsScreen";
+import HomeMenuScreen from "@/src/screens/ParentScreens/HomeMenuScreen/HomeMenuScreen";
 
-export default function SystemAlertsRoute() {
+export default function HomeMenuRoute() {
   return (
     <>
       <Stack.Screen
         options={{
-          title: "System Alerts",
+          title: "Menu",
           headerTitleAlign: "center",
           headerShadowVisible: false,
         }}
       />
-      <SystemAlertsScreen />
+      <HomeMenuScreen />
     </>
   );
 }

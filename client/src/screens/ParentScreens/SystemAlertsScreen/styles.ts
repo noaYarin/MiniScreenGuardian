@@ -47,7 +47,7 @@ export const styles = StyleSheet.create({
   },
 
   heroTopRow: {
-    flexDirection: "row", // ✅ תיקון
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
@@ -79,7 +79,7 @@ export const styles = StyleSheet.create({
   },
 
   statsRow: {
-    flexDirection: "row", // ✅ תיקון קריטי
+    flexDirection: "row",
     gap: 10,
   },
 
@@ -112,7 +112,7 @@ export const styles = StyleSheet.create({
   },
 
   listTitleRow: {
-    flexDirection: "row", // ✅ תיקון
+    flexDirection: "row",
     width: "100%",
     alignItems: "center",
     justifyContent: "space-between",
@@ -134,6 +134,7 @@ export const styles = StyleSheet.create({
   alertListItemWrap: {
     width: "100%",
     marginBottom: 12,
+    paddingHorizontal: 10,
   },
 
   alertCardInner: {
@@ -148,7 +149,7 @@ export const styles = StyleSheet.create({
   },
 
   alertUnreadDotRow: {
-    flexDirection: "row", // ✅ תיקון
+    flexDirection: "row",
     width: "100%",
     alignItems: "flex-start",
     marginBottom: 8,
@@ -165,10 +166,12 @@ export const styles = StyleSheet.create({
   },
 
   alertCardMainPressable: {
-    flexDirection: "row", // ✅ תיקון קריטי
+    flexDirection: "row",
     width: "100%",
     alignItems: "flex-start",
     gap: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
   },
 
   alertDeleteFooter: {
@@ -183,7 +186,7 @@ export const styles = StyleSheet.create({
   },
 
   alertFooterMetaGroup: {
-    flexDirection: "row", // ✅ תיקון קריטי
+    flexDirection: "row",
     flex: 1,
     flexWrap: "wrap",
     gap: 8,
@@ -197,7 +200,7 @@ export const styles = StyleSheet.create({
   },
 
   filtersRow: {
-    flexDirection: "row", // ✅ תיקון
+    flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
   },
@@ -222,6 +225,7 @@ export const styles = StyleSheet.create({
   filterChipText: {
     fontSize: 13,
     color: "#4B5563",
+    textTransform: "capitalize",
   },
 
   filterChipTextSelected: {
@@ -250,17 +254,13 @@ export const styles = StyleSheet.create({
     opacity: 0.94,
   },
 
-  alertAccent: {
-    width: "100%",
-    height: 4,
-  },
-
   alertIconWrap: {
     width: 46,
     height: 46,
     borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
+    flexShrink: 0,
   },
 
   alertTextWrap: {
@@ -296,7 +296,7 @@ export const styles = StyleSheet.create({
   },
 
   alertFooterRow: {
-    flexDirection: "row", // ✅ תיקון קריטי
+    flexDirection: "row",
     alignItems: "center",
     width: "100%",
   },
@@ -333,6 +333,20 @@ export const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
 
+  alertDeleteButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    marginLeft: 2,
+  },
+
+  alertDeleteButtonPressed: {
+    backgroundColor: "#F8FAFC",
+  },
+
   emptyState: {
     width: "100%",
     borderRadius: 22,
@@ -344,6 +358,8 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 32,
     gap: 10,
+    marginTop: 12,
+    marginHorizontal: 10,
   },
 
   emptyTitle: {
