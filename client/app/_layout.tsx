@@ -14,12 +14,13 @@ import { COLORS } from "@/constants/theme";
 import Initializer from "../src/components/Initializer";
 
 import { connectSocket, onEvent, disconnectSocket } from "@/src/services/socket";
-import { LOCATION_LIVE_UPDATE, FORCE_CHILD_LOGOUT, NOTIFICATION_CREATED } from "@/src/constants/socketEvents";
-import { clearAllDevices, updateDeviceFromSocket } from "@/src/redux/slices/device-slice";
+import { LOCATION_LIVE_UPDATE, FORCE_CHILD_LOGOUT, NOTIFICATION_CREATED, DEVICE_STATUS_UPDATED } from "@/src/constants/socketEvents";
+import { clearAllDevices, updateDeviceFromSocket, updateDeviceStatusFromSocket } from "@/src/redux/slices/device-slice";
 import { logoutChildReducer } from "@/src/redux/slices/auth-slice";
 import { removeChildToken } from "@/src/services/authStorage";
 import { clearChildrenList } from "@/src/redux/slices/children-slice";
 import { addNotificationFromSocket } from "@/src/redux/slices/notification-slice";
+import { updateChildSummaryFromSocket } from "@/src/redux/slices/parentHome-slice";
 
 function AppStack() {
   const { i18n } = useTranslation();
@@ -33,7 +34,7 @@ function AppStack() {
   useEffect(() => {
     if (childToken && activeChildId) {
       connectSocket(String(activeChildId), "child", parentId ? { parentId: String(parentId) } : undefined);
-  
+
       onEvent(FORCE_CHILD_LOGOUT, async (data: any) => {
         const targetDeviceId = data?.deviceId;
 
@@ -47,7 +48,7 @@ function AppStack() {
           position: Toast.positions.TOP,
         });
         dispatch(logoutChildReducer());
-        dispatch(clearAllDevices()); 
+        dispatch(clearAllDevices());
         dispatch(clearChildrenList());
         await removeChildToken();
         disconnectSocket();
@@ -58,22 +59,35 @@ function AppStack() {
 
   useEffect(() => {
     const isInsideParentScreens = segments.includes("Parent");
+
     if (isInsideParentScreens && parentId) {
       connectSocket(String(parentId), "parent");
+
       const unsubscribe = onEvent(LOCATION_LIVE_UPDATE, (data: any) => {
         dispatch(updateDeviceFromSocket(data));
       });
+
+      const unsubscribeDeviceStatus = onEvent(DEVICE_STATUS_UPDATED, (data: any) => {
+        dispatch(updateDeviceStatusFromSocket(data));
+        dispatch(updateChildSummaryFromSocket(data));
+
+      });
+
       const unsubscribeNotifications = onEvent(NOTIFICATION_CREATED, (data: any) => {
         dispatch(addNotificationFromSocket(data));
+
         const title = data?.title ? String(data.title) : "New notification";
         const description = data?.description ? String(data.description) : "";
+
         Toast.show(description ? `${title}\n${description}` : title, {
           duration: Toast.durations.SHORT,
           position: Toast.positions.TOP,
         });
       });
+
       return () => {
         if (unsubscribe) unsubscribe();
+        if (unsubscribeDeviceStatus) unsubscribeDeviceStatus();
         if (unsubscribeNotifications) unsubscribeNotifications();
       };
     }
@@ -120,10 +134,10 @@ export default function RootLayout() {
   return (
     <ReduxProvider store={store}>
       <I18nextProvider i18n={i18n}>
-      <RootSiblingParent>
-        <Initializer>
-          <AppStack />
-        </Initializer>
+        <RootSiblingParent>
+          <Initializer>
+            <AppStack />
+          </Initializer>
         </RootSiblingParent>
       </I18nextProvider>
     </ReduxProvider>

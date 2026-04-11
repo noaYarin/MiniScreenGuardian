@@ -13,7 +13,7 @@ import { hydrateChildSession } from "../../../redux/slices/auth-slice";
 import type { AppDispatch } from "../../../redux/store/types";
 import { styles } from "./styles";
 import { NativeModules } from "react-native";
-import * as Location from "expo-location";  
+import * as Location from "expo-location";
 import { updateDeviceLocation } from "../../../redux/thunks/deviceThunks";
 import { showAppToast } from "@/src/utils/appToast";
 
@@ -71,17 +71,22 @@ export default function LinkChildrenScreen() {
         await NativeModules.DeviceControl.saveHeartbeatConfig(
           process.env.EXPO_PUBLIC_API_URL,
           res.deviceId,
-          res.childToken
+          res.childToken,
+          res.childId,
+          res.parentId
         );
       } catch (e) {
         console.log("Failed to save heartbeat config:", e);
       }
+
+      // Fetch the latest policy right after pairing so the child device starts with the current server rules
 
       try {
         await NativeModules.DeviceControl.syncPolicyNow();
       } catch (e) {
         console.log("Failed to sync initial policy:", e);
       }
+
 
       const dbDeviceId = res.deviceId;
       dispatch(
@@ -99,7 +104,7 @@ export default function LinkChildrenScreen() {
         pathname: "/Child/home",
         params: { initialName: res.childName ?? "" }
       });
-    } catch(err: any) {
+    } catch (err: any) {
       showAppToast(
         err?.error?.message ?? t("common.error_message"),
         t("linkChildren.error_title")

@@ -35,17 +35,13 @@ package com.screenguardianmobile
  *    - usedToday → minutes used today
  *    - automatically resets at the start of a new day
  *
- * 4. Daily Reset:
- *    - resetIfNewDay() ensures usage and extra time reset at midnight
- *    - based on device local time
- *
- * 5. Lock Decision Logic:
+ * 4. Lock Decision Logic:
  *    shouldLockDevice() returns true if:
  *      - manual lock is active
  *      - server lock is active
  *      - OR limit is enabled AND usage reached the limit
  *
- * 6. Offline Support:
+ * 5. Offline Support:
  *    - All data is stored locally
  *    - Device can enforce limits without server connection
  *    - Sync happens later when network is available
@@ -53,7 +49,6 @@ package com.screenguardianmobile
  * Important notes:
  * - getRemainingMinutes() returns Int.MAX_VALUE if limit is disabled
  * - Values are clamped to avoid invalid states
- * - Always calls resetIfNewDay() before returning usage-related data
  *
  * Heartbeat configuration:
  * - Stores baseUrl, deviceId, token for server communication
@@ -75,12 +70,14 @@ object PolicyStore {
     private const val KEY_DAILY_LIMIT = "dailyLimit"
     private const val KEY_USED_TODAY = "usedToday"
     private const val KEY_EXTRA_MINUTES = "extraMinutes"
-    private const val KEY_LAST_RESET = "lastReset"
     private const val KEY_BLOCK_REASON = "blockReason"
 
     private const val KEY_HEARTBEAT_BASE_URL = "heartbeatBaseUrl"
     private const val KEY_HEARTBEAT_DEVICE_ID = "heartbeatDeviceId"
     private const val KEY_HEARTBEAT_TOKEN = "heartbeatToken"
+
+    private const val KEY_CHILD_ID = "childId"
+    private const val KEY_PARENT_ID = "parentId"
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -128,7 +125,6 @@ object PolicyStore {
     }
 
     fun getUsedToday(context: Context): Int {
-        resetIfNewDay(context)
         return prefs(context).getInt(KEY_USED_TODAY, 0)
     }
 
@@ -143,7 +139,6 @@ object PolicyStore {
     }
 
     fun getExtraMinutes(context: Context): Int {
-        resetIfNewDay(context)
         return prefs(context).getInt(KEY_EXTRA_MINUTES, 0)
     }
 
@@ -157,39 +152,14 @@ object PolicyStore {
         return prefs(context).getString(KEY_BLOCK_REASON, "") ?: ""
     }
 
-    // ---------- Reset ----------
-
-    fun resetIfNewDay(context: Context) {
-        val prefs = prefs(context)
-
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-
-        val todayStart = calendar.timeInMillis
-        val lastReset = prefs.getLong(KEY_LAST_RESET, -1)
-
-        if (lastReset < todayStart) { 
-            prefs.edit()
-                .putLong(KEY_LAST_RESET, todayStart)
-                .putInt(KEY_USED_TODAY, 0)
-                .putInt(KEY_EXTRA_MINUTES, 0)
-                
-                .apply()
-        }
-    }
 
     // ---------- Calculations ----------
 
     fun getEffectiveLimit(context: Context): Int {
-        resetIfNewDay(context)
-        return getDailyLimit(context) + getExtraMinutes(context)
+       return getDailyLimit(context) + getExtraMinutes(context)
     }
 
     fun getRemainingMinutes(context: Context): Int {
-        resetIfNewDay(context)
 
         if (!isLimitEnabled(context)) {
             return Int.MAX_VALUE
@@ -240,6 +210,25 @@ object PolicyStore {
     fun getHeartbeatToken(context: Context): String? {
         return prefs(context).getString(KEY_HEARTBEAT_TOKEN, null)
     }
+
+
+        // ---------- Sockets IDs ----------
+
+    fun setChildId(context: Context, value: String) {
+    prefs(context).edit().putString(KEY_CHILD_ID, value).apply()
+}
+
+fun getChildId(context: Context): String? {
+    return prefs(context).getString(KEY_CHILD_ID, null)
+}
+
+fun setParentId(context: Context, value: String) {
+    prefs(context).edit().putString(KEY_PARENT_ID, value).apply()
+}
+
+fun getParentId(context: Context): String? {
+    return prefs(context).getString(KEY_PARENT_ID, null)
+}
 
     // ---------- Clear ----------
 

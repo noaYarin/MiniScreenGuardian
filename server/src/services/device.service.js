@@ -108,10 +108,11 @@ function calculateRealtimeHomeStatus(usedTodayMinutes, totalAllowedMinutes, isLo
 
 // Builds a lightweight device status payload for parent-side real-time UI updates
 function buildDeviceStatusPayload(device) {
-  const dailyLimitMinutes = Number(device.screenTime?.dailyLimitMinutes ?? 0);
+  const isLimitEnabled = device.screenTime?.isLimitEnabled === true;
+  const dailyLimitMinutesRaw = Number(device.screenTime?.dailyLimitMinutes ?? 0);
   const extraMinutesToday = Number(device.screenTime?.extraMinutesToday ?? 0);
   const usedTodayMinutes = Number(device.screenTime?.usedTodayMinutes ?? 0);
-  const totalAllowedMinutes = dailyLimitMinutes + extraMinutesToday;
+  const totalAllowedMinutes = dailyLimitMinutesRaw + extraMinutesToday;
   const isLocked = device.isLocked ?? false;
 
   return {
@@ -122,16 +123,15 @@ function buildDeviceStatusPayload(device) {
     isActive: device.isActive ?? true,
     status: calculateRealtimeHomeStatus(
       usedTodayMinutes,
-      totalAllowedMinutes,
+      isLimitEnabled ? totalAllowedMinutes : null,
       isLocked
     ),
     usedTodayMinutes,
-    dailyLimitMinutes: totalAllowedMinutes > 0 ? totalAllowedMinutes : null,
+    dailyLimitMinutes: isLimitEnabled ? totalAllowedMinutes : null,
     extraMinutesToday,
-    remainingMinutes:
-      totalAllowedMinutes > 0
-        ? Math.max(totalAllowedMinutes - usedTodayMinutes, 0)
-        : null,
+    remainingMinutes: isLimitEnabled
+      ? Math.max(totalAllowedMinutes - usedTodayMinutes, 0)
+      : null,
     lastSeenAt: device.lastSeenAt ?? null,
     accessibilityEnabled: device.accessibilityEnabled ?? null,
     usageAccessEnabled: device.usageAccessEnabled ?? null
@@ -792,7 +792,6 @@ export async function updateDeviceUsageByChild({
   return currentStatus;
 }
 
-
 export async function handleDeviceHeartbeat({
   deviceId,
   childId,
@@ -833,6 +832,39 @@ export async function handleDeviceHeartbeat({
 
   pushDeviceStatusUpdate(updatedDevice);
 
+  // Send an initial setup warning if accessibility is missing on the first known heartbeat
+  if (wasAccessibilityEnabled == null && accessibilityEnabled === false) {
+    try {
+      await notifyParent({
+        parentId: device.parentId,
+        childId: device.childId,
+        type: NotificationType.BYPASS_ATTEMPT,
+        severity: NotificationSeverity.WARNING,
+        title: "Device Setup Incomplete",
+        description: "Accessibility service is not enabled, so device locking and blocking may not work correctly."
+      });
+    } catch (err) {
+      console.error("notifyParent failed in handleDeviceHeartbeat (initial accessibility):", err.message);
+    }
+  }
+
+  // Send an initial setup warning if usage access is missing on the first known heartbeat
+  if (wasUsageAccessEnabled == null && usageAccessEnabled === false) {
+    try {
+      await notifyParent({
+        parentId: device.parentId,
+        childId: device.childId,
+        type: NotificationType.BYPASS_ATTEMPT,
+        severity: NotificationSeverity.WARNING,
+        title: "Device Setup Incomplete",
+        description: "Usage access is not enabled, so screen-time usage and remaining time may not update correctly."
+      });
+    } catch (err) {
+      console.error("notifyParent failed in handleDeviceHeartbeat (initial usage):", err.message);
+    }
+  }
+
+  // Send a stronger warning only when accessibility was previously enabled and then turned off
   if (wasAccessibilityEnabled === true && accessibilityEnabled === false) {
     try {
       await notifyParent({
@@ -841,34 +873,33 @@ export async function handleDeviceHeartbeat({
         type: NotificationType.BYPASS_ATTEMPT,
         severity: NotificationSeverity.CRITICAL,
         title: "Protection Disabled",
-        description: "Accessibility service was turned off"
+        description: "Accessibility service was turned off, so device locking and blocking may no longer work correctly."
       });
     } catch (err) {
       console.error("notifyParent failed in handleDeviceHeartbeat (accessibility):", err.message);
     }
   }
 
+  // Send a stronger warning only when usage access was previously enabled and then turned off
   if (wasUsageAccessEnabled === true && usageAccessEnabled === false) {
-    {
-      try {
-        await notifyParent({
-          parentId: device.parentId,
-          childId: device.childId,
-          type: NotificationType.BYPASS_ATTEMPT,
-          severity: NotificationSeverity.WARNING,
-          title: "Limited Protection",
-          description: "Usage access permission was turned off"
-        });
-      } catch (err) {
-        console.error("notifyParent failed in handleDeviceHeartbeat (usage):", err.message);
-      }
+    try {
+      await notifyParent({
+        parentId: device.parentId,
+        childId: device.childId,
+        type: NotificationType.BYPASS_ATTEMPT,
+        severity: NotificationSeverity.WARNING,
+        title: "Limited Protection",
+        description: "Usage access was turned off, so screen-time usage and remaining time may no longer update correctly."
+      });
+    } catch (err) {
+      console.error("notifyParent failed in handleDeviceHeartbeat (usage):", err.message);
     }
-
-    return {
-      deviceId: String(updatedDevice._id),
-      lastSeenAt: updatedDevice.lastSeenAt,
-      accessibilityEnabled: updatedDevice.accessibilityEnabled,
-      usageAccessEnabled: updatedDevice.usageAccessEnabled
-    };
   }
+
+  return {
+    deviceId: String(updatedDevice._id),
+    lastSeenAt: updatedDevice.lastSeenAt,
+    accessibilityEnabled: updatedDevice.accessibilityEnabled,
+    usageAccessEnabled: updatedDevice.usageAccessEnabled
+  };
 }

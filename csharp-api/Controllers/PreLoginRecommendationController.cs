@@ -30,7 +30,7 @@ namespace ScreenGuardianAPI.Controllers
                     return BadRequest("Age must be between 6 and 17.");
                 }
 
-                PreLoginRecommendation recommendation = repository.GetRecommendationByAge(age.Value);
+                PreLoginRecommendation? recommendation = repository.GetRecommendationByAge(age.Value);
 
                 if (recommendation == null)
                 {

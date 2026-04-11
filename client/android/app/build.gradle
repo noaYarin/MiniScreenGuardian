@@ -156,6 +156,10 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
+    // Native Socket.IO client for real-time policy updates
+    implementation("io.socket:socket.io-client:2.1.0") {
+        exclude group: "org.json", module: "json"
+    }
     def isGifEnabled = (findProperty('expo.gif.enabled') ?: "") == "true";
     def isWebpEnabled = (findProperty('expo.webp.enabled') ?: "") == "true";
     def isWebpAnimatedEnabled = (findProperty('expo.webp.animated') ?: "") == "true";
