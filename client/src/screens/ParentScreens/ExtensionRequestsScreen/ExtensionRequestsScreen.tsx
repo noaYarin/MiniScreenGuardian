@@ -4,7 +4,6 @@ import {
   ScrollView,
   Pressable,
   useWindowDimensions,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -25,6 +24,7 @@ import {
   fetchPendingRequestsThunk,
   decideRequestThunk,
 } from "@/src/redux/thunks/requestThunks";
+import { showAppToast } from "@/src/utils/appToast";
 
 function getDeviceIconName(deviceType?: string) {
   return deviceType === "tablet" ? "tablet-dashboard" : "cellphone";
@@ -141,9 +141,9 @@ export default function ExtensionRequestsScreen() {
         })
       ).unwrap();
 
-      Alert.alert("Success", "Request approved");
+      showAppToast("Request approved", "Success");
     } catch (error: any) {
-      Alert.alert("Error", error?.message ?? "Something went wrong");
+      showAppToast(error?.message ?? "Something went wrong", "Error");
     }
   };
 
@@ -156,9 +156,9 @@ export default function ExtensionRequestsScreen() {
         })
       ).unwrap();
 
-      Alert.alert("Success", "Request declined");
+      showAppToast("Request declined", "Success");
     } catch (error: any) {
-      Alert.alert("Error", error?.message ?? "Something went wrong");
+      showAppToast(error?.message ?? "Something went wrong", "Error");
     }
   };
 
