@@ -17,16 +17,6 @@ function getMenuLabel(item: HomeMenuItem) {
   switch (item.key) {
     case "location":
       return "Location";
-    case "alerts":
-      return "System Alerts";
-    case "requests":
-      return "Extension Requests";
-    case "activities":
-      return "Activity Recommendations";
-    case "rewards":
-      return "Tasks & Rewards";
-    case "chatbot":
-      return "Chatbot";
     case "history":
       return "Activity History";
     default:
@@ -38,16 +28,6 @@ function getMenuAccessibilityLabel(item: HomeMenuItem) {
   switch (item.key) {
     case "location":
       return "Open location";
-    case "alerts":
-      return "Open system alerts";
-    case "requests":
-      return "Open extension requests";
-    case "activities":
-      return "Open activity recommendations";
-    case "rewards":
-      return "Open tasks and rewards";
-    case "chatbot":
-      return "Open chatbot";
     case "history":
       return "Open activity history";
     default:
