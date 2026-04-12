@@ -33,23 +33,59 @@ function toAlertSeverity(severity: string): AlertSeverity {
   return "info";
 }
 
-function pickIcon(type: string, severity: string) {
+function pickIcon(
+  type: string,
+  severity: string
+): React.ComponentProps<typeof MaterialCommunityIcons>["name"] {
   const t = String(type || "").toUpperCase();
 
   switch (t) {
-    case "DEVICE_LOCKED":
-      return "lock-outline";
-    case "DEVICE_UNLOCKED":
-      return "lock-open-outline";
+    case "CHILD_LOGGED_IN":
+      return "account-check-outline";
+    case "CHILD_ADDED":
+      return "account-plus-outline";
+    case "CHILD_PROFILE_UPDATED":
+      return "account-edit-outline";
+    case "CHILD_DELETED":
+      return "account-remove-outline";
+    case "CHILD_DISCONNECTED":
+      return "account-off-outline";
+    case "CHILD_LOCATION_UPDATED":
+      return "map-marker-check-outline";
+    case "EXTENSION_REQUEST_CREATED":
+      return "clock-plus-outline";
     case "EXTENSION_REQUEST_APPROVED":
       return "check-decagram-outline";
     case "EXTENSION_REQUEST_REJECTED":
       return "close-octagon-outline";
+    case "DEVICE_LOCKED":
+      return "lock-outline";
+    case "DEVICE_UNLOCKED":
+      return "lock-open-outline";
+    case "DEVICE_ADDED":
+      return "cellphone-link";
+    case "DEVICE_DELETED":
+      return "cellphone-remove";
+    case "DEVICE_RENAMED":
+      return "rename-outline";
+    case "SCREEN_TIME_UPDATED":
+      return "clock-edit-outline";
+    case "SCREEN_TIME_ENDING":
+      return "clock-alert-outline";
+    case "SCREEN_TIME_ENDED":
+      return "clock-remove-outline";
     default:
       return toAlertSeverity(severity) === "critical"
         ? "shield-alert-outline"
         : "bell-outline";
   }
+}
+
+function formatCreatedAt(createdAt?: string) {
+  if (!createdAt) return "";
+  const d = new Date(createdAt);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString();
 }
 
 const FILTERS: AlertFilter[] = ["all", "unread", "critical"];
@@ -254,67 +290,123 @@ export default function SystemAlertsScreen() {
   const renderItem = ({ item }: { item: Notification }) => {
     const severity = toAlertSeverity(item.severity);
     const palette = ALERT_COLORS[severity];
+    const isUnread = !item.isRead;
 
     return (
       <View style={styles.alertListItemWrap}>
-        <View style={styles.alertCard}>
-          <Pressable
-            onPress={() => {
-              if (!item.isRead) {
-                dispatch(
-                  markParentNotificationReadThunk({
-                    notificationId: String(item._id),
-                  })
-                );
-              }
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={String(item.title || "Open alert")}
-            style={({ pressed }) => [
-              styles.alertCardMainPressable,
-              pressed ? styles.pressed : null,
-            ]}
-          >
-            <View
-              style={[
-                styles.alertIconWrap,
-                { backgroundColor: palette.soft },
-              ]}
-            >
-              <MaterialCommunityIcons
-                name={pickIcon(item.type, item.severity)}
-                size={20}
-                color={palette.accent}
-              />
+        <View
+          style={[
+            styles.alertCard,
+            !isUnread && styles.alertCardRead,
+          ]}
+        >
+          <View
+            style={[styles.alertAccent, { backgroundColor: palette.accent }]}
+          />
+
+          <View style={styles.alertCardInner}>
+            {isUnread ? (
+              <View style={styles.alertUnreadDotRow}>
+                <View style={styles.alertCardEndSpacer} />
+                <View style={styles.alertTrashTrack}>
+                  <View style={styles.unreadDot} />
+                </View>
+              </View>
+            ) : null}
+
+            <View style={styles.alertCardInnerColumn}>
+              <Pressable
+                onPress={() => {
+                  if (!item.isRead) {
+                    dispatch(
+                      markParentNotificationReadThunk({
+                        notificationId: String(item._id),
+                      })
+                    );
+                  }
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={String(item.title || "Open alert")}
+                style={({ pressed }) => [
+                  styles.alertCardMainPressable,
+                  pressed ? styles.pressed : null,
+                ]}
+              >
+                <View
+                  style={[
+                    styles.alertIconWrap,
+                    { backgroundColor: palette.soft },
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name={pickIcon(item.type, item.severity)}
+                    size={21}
+                    color={palette.accent}
+                  />
+                </View>
+
+                <View style={styles.alertTextWrap}>
+                  <View style={styles.alertHeaderRow}>
+                    <AppText weight="bold" style={styles.alertTitle} numberOfLines={2}>
+                      {String(item.title || "")}
+                    </AppText>
+                  </View>
+
+                  <AppText weight="medium" style={styles.alertDescription}>
+                    {String(item.description || "")}
+                  </AppText>
+                </View>
+              </Pressable>
+
+              <View style={styles.alertFooterRow}>
+                <View style={styles.alertFooterMetaGroup}>
+                  <View style={styles.timeBadge}>
+                    <MaterialCommunityIcons
+                      name="clock-time-four-outline"
+                      size={14}
+                      color="#64748B"
+                    />
+                    <AppText weight="medium" style={styles.timeText}>
+                      {formatCreatedAt(item.createdAt) || "Just now"}
+                    </AppText>
+                  </View>
+
+                  <View
+                    style={[
+                      styles.severityBadge,
+                      { backgroundColor: palette.soft },
+                    ]}
+                  >
+                    <AppText
+                      weight="bold"
+                      style={[styles.severityText, { color: palette.accent }]}
+                    >
+                      {severity}
+                    </AppText>
+                  </View>
+                </View>
+
+                <View style={styles.alertTrashTrack}>
+                  <Pressable
+                    onPress={() => handleDeleteNotification(String(item._id))}
+                    accessibilityRole="button"
+                    accessibilityLabel="Delete notification"
+                    hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                    style={({ pressed }) => [
+                      styles.alertDeleteFooter,
+                      pressed ? styles.alertDeleteFooterPressed : null,
+                    ]}
+                  >
+                    <MaterialCommunityIcons
+                      name="trash-can-outline"
+                      size={22}
+                      color="#DC2626"
+                    />
+                  </Pressable>
+                </View>
+              </View>
             </View>
-
-            <View style={styles.alertTextWrap}>
-              <AppText weight="bold" style={styles.alertTitle}>
-                {String(item.title || "")}
-              </AppText>
-
-              <AppText weight="medium" style={styles.alertDescription}>
-                {String(item.description || "")}
-              </AppText>
-            </View>
-
-            <Pressable
-              onPress={() => handleDeleteNotification(String(item._id))}
-              accessibilityRole="button"
-              accessibilityLabel="Delete notification"
-              hitSlop={8}
-              style={({ pressed }) => [
-                styles.alertDeleteButton,
-                pressed ? styles.alertDeleteButtonPressed : null,
-              ]}
-            >
-              <MaterialCommunityIcons
-                name="trash-can-outline"
-                size={18}
-                color="#94A3B8"
-              />
-            </Pressable>
-          </Pressable>
+          </View>
         </View>
       </View>
     );
