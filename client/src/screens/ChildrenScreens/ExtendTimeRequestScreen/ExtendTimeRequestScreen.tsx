@@ -343,15 +343,27 @@ export default function ExtendTimeRequestScreen() {
                   }}
                 />
               </View>
-
+              
               <Button
                 mode="contained"
                 onPress={onSend}
                 disabled={isSubmitting || hasPendingRequestForThisDevice}
                 accessibilityLabel="Send extension request"
-                style={styles.sendBtn}
+                style={[
+                  styles.sendBtn,
+                  (isSubmitting || hasPendingRequestForThisDevice) && styles.sendBtnDisabled,
+                ]}
                 contentStyle={styles.sendBtnContent}
-                labelStyle={styles.sendBtnText}
+                labelStyle={[
+                  styles.sendBtnText,
+                  (isSubmitting || hasPendingRequestForThisDevice) && styles.sendBtnTextDisabled,
+                ]}
+                buttonColor={
+                  isSubmitting || hasPendingRequestForThisDevice ? "#E5E7EB" : "#16A34A"
+                }
+                textColor={
+                  isSubmitting || hasPendingRequestForThisDevice ? "#475569" : "#FFFFFF"
+                }
                 icon="send"
               >
                 {hasPendingRequestForThisDevice

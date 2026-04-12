@@ -303,4 +303,5 @@ export const styles = StyleSheet.create({
     color: "#6F7A8F",
     textAlign: "center",
   },
+  
 });

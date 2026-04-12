@@ -70,6 +70,30 @@ export default function HomeParentScreen() {
       .padStart(2, "0")}`;
   };
 
+  const getStatusStyles = (status: ChildCard["status"]) => {
+    switch (status) {
+      case "warn":
+        return {
+          avatarBg: styles.avatarWarn,
+          timeColor: styles.timeWarn,
+          subtitle: "Getting close to limit",
+        };
+      case "bad":
+        return {
+          avatarBg: styles.avatarBad,
+          timeColor: styles.timeBad,
+          subtitle: "Limit reached",
+        };
+      case "good":
+      default:
+        return {
+          avatarBg: styles.avatarGood,
+          timeColor: styles.timeGood,
+          subtitle: "Daily screen time",
+        };
+    }
+  };
+
   const childCards: ChildCard[] = useMemo(() => {
     return children.map((child) => ({
       id: String(child.childId),
@@ -109,59 +133,59 @@ export default function HomeParentScreen() {
             contentContainerStyle={styles.mainScrollContent}
             showsVerticalScrollIndicator={false}
           >
-<View style={styles.header}>
-  <View style={styles.headerMenuLeft}>
-    <Pressable
-      onPress={onPressOpenMenu}
-      accessibilityRole="button"
-      accessibilityLabel="Open menu"
-      style={({ pressed }) => [
-        styles.headerMenuButton,
-        pressed ? styles.headerMenuButtonPressed : null,
-      ]}
-    >
-      <MaterialCommunityIcons
-        name={ICON.menu}
-        size={24}
-        color="#0F172A"
-      />
-    </Pressable>
-  </View>
+            <View style={styles.header}>
+              <View style={styles.headerMenuLeft}>
+                <Pressable
+                  onPress={onPressOpenMenu}
+                  accessibilityRole="button"
+                  accessibilityLabel="Open menu"
+                  style={({ pressed }) => [
+                    styles.headerMenuButton,
+                    pressed ? styles.headerMenuButtonPressed : null,
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name={ICON.menu}
+                    size={24}
+                    color="#0F172A"
+                  />
+                </Pressable>
+              </View>
 
-  <AppText weight="extraBold" style={styles.bigHello}>
-    Hello {parentName}
-  </AppText>
+              <AppText weight="extraBold" style={styles.bigHello}>
+                Hello {parentName}
+              </AppText>
 
-  <View style={styles.headerBellRight}>
-    <Pressable
-      onPress={onPressNotifications}
-      accessibilityRole="button"
-      accessibilityLabel="Open system alerts"
-      style={({ pressed }) => [
-        styles.headerMenuButton,
-        pressed ? styles.headerMenuButtonPressed : null,
-      ]}
-    >
-      <View style={styles.bellWrap}>
-        <MaterialCommunityIcons
-          name={ICON.bell}
-          size={24}
-          color="#0F172A"
-        />
+              <View style={styles.headerBellRight}>
+                <Pressable
+                  onPress={onPressNotifications}
+                  accessibilityRole="button"
+                  accessibilityLabel="Open system alerts"
+                  style={({ pressed }) => [
+                    styles.headerMenuButton,
+                    pressed ? styles.headerMenuButtonPressed : null,
+                  ]}
+                >
+                  <View style={styles.bellWrap}>
+                    <MaterialCommunityIcons
+                      name={ICON.bell}
+                      size={24}
+                      color="#0F172A"
+                    />
 
-        {unreadNotificationsCount > 0 ? (
-          <View style={styles.bellBadge}>
-            <AppText weight="extraBold" style={styles.bellBadgeText}>
-              {unreadNotificationsCount > 99
-                ? "99+"
-                : String(unreadNotificationsCount)}
-            </AppText>
-          </View>
-        ) : null}
-      </View>
-    </Pressable>
-  </View>
-</View>
+                    {unreadNotificationsCount > 0 ? (
+                      <View style={styles.bellBadge}>
+                        <AppText weight="extraBold" style={styles.bellBadgeText}>
+                          {unreadNotificationsCount > 99
+                            ? "99+"
+                            : String(unreadNotificationsCount)}
+                        </AppText>
+                      </View>
+                    ) : null}
+                  </View>
+                </Pressable>
+              </View>
+            </View>
 
             <View style={styles.summaryCard}>
               <View style={styles.summaryRow}>
@@ -211,67 +235,73 @@ export default function HomeParentScreen() {
               </View>
             ) : (
               <View style={styles.cardsWrap}>
-                {childCards.map((c) => (
-                  <Pressable
-                    key={c.id}
-                    style={({ pressed }) => [
-                      styles.card,
-                      pressed ? styles.cardPressed : null,
-                    ]}
-                    onPress={() => onPressChildCard(c.id, c.name)}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Open profile for ${c.name}`}
-                  >
-                    <View style={styles.cardInner}>
-                      <View style={styles.avatarCircle}>
-                        {c.avatarUri ? (
-                          <Image
-                            source={{ uri: c.avatarUri }}
-                            style={styles.avatarImage}
-                          />
-                        ) : (
-                          <MaterialCommunityIcons
-                            name={c.isLocked ? ICON.lock : ICON.user}
-                            size={22}
-                            color="#0F172A"
-                          />
-                        )}
-                      </View>
+                {childCards.map((c) => {
+                  const statusStyles = getStatusStyles(c.status);
 
-                      <View style={styles.cardCenter}>
-                        <AppText weight="extraBold" style={styles.childName}>
-                          {c.name}
-                        </AppText>
+                  return (
+                    <Pressable
+                      key={c.id}
+                      style={({ pressed }) => [
+                        styles.card,
+                        pressed ? styles.cardPressed : null,
+                      ]}
+                      onPress={() => onPressChildCard(c.id, c.name)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Open profile for ${c.name}`}
+                    >
+                      <View style={styles.cardInner}>
+                        <View style={[styles.avatarCircle, statusStyles.avatarBg]}>
+                          {c.avatarUri ? (
+                            <Image
+                              source={{ uri: c.avatarUri }}
+                              style={styles.avatarImage}
+                            />
+                          ) : (
+                            <MaterialCommunityIcons
+                              name={c.isLocked ? ICON.lock : ICON.user}
+                              size={22}
+                              color="#0F172A"
+                            />
+                          )}
+                        </View>
 
-                        <AppText style={styles.childSubtitle}>
-                          {c.isLocked
-                            ? "Device locked"
-                            : "Daily screen time"}
-                        </AppText>
-                      </View>
+                        <View style={styles.cardCenter}>
+                          <AppText weight="extraBold" style={styles.childName}>
+                            {c.name}
+                          </AppText>
 
-                      <View style={styles.cardEdge}>
-                        {c.isLocked ? (
-                          <>
-                            <AppText weight="extraBold">Locked</AppText>
-                            <AppText style={styles.timeSub}>By parent</AppText>
-                          </>
-                        ) : (
-                          <>
-                            <AppText weight="extraBold">
-                              {c.usedText ?? "--:--"}
-                            </AppText>
-                            <AppText style={styles.timeSub}>
-                              {c.limitText
-                                ? `Out of ${c.limitText}`
-                                : "No limit"}
-                            </AppText>
-                          </>
-                        )}
+                          <AppText style={styles.childSubtitle}>
+                            {c.isLocked ? "Device locked" : statusStyles.subtitle}
+                          </AppText>
+                        </View>
+
+                        <View style={styles.cardEdge}>
+                          {c.isLocked ? (
+                            <>
+                              <AppText weight="extraBold" style={[styles.timeMain, styles.timeBad]}>
+                                Locked
+                              </AppText>
+                              <AppText style={styles.timeSub}>By parent</AppText>
+                            </>
+                          ) : (
+                            <>
+                              <AppText
+                                weight="extraBold"
+                                style={[styles.timeMain, statusStyles.timeColor]}
+                              >
+                                {c.usedText ?? "--:--"}
+                              </AppText>
+
+                              <AppText style={styles.timeSub}>
+                                {c.limitText ? `Out of ${c.limitText}` : "No limit"}
+                              </AppText>
+                            </>
+                          )}
+                        </View>
                       </View>
-                    </View>
-                  </Pressable>
-                ))}
+                    </Pressable>
+                  );
+                })}
               </View>
             )}
           </ScrollView>
