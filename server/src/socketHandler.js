@@ -11,10 +11,8 @@ import {
   POLICY_UPDATED,
   DEVICE_STATUS_UPDATED
 } from "./constants/socketEvents.js";
-import {NotificationType} from "./constants/notificationType.js";
-import {NotificationSeverity} from "./constants/severity.js";
 
-import { notifyParent } from "./services/notification.service.js";
+
 let io = null;
 
 export function initSocket(httpServer) {
@@ -108,18 +106,6 @@ export function initSocket(httpServer) {
     socket.on("disconnect", () => {
       console.log(`Socket disconnected: ${socket.id}`);
 
-      const parentId = socket.data?.parentId;
-      const childId = socket.data?.childId;
-      if (parentId && childId) {
-        notifyParent({
-          parentId,
-          childId,
-          type: NotificationType.CHILD_DISCONNECTED,
-          severity: NotificationSeverity.WARNING,
-          title: "Child Disconnected",
-          description: "The child's device disconnected"
-        });
-      }
     });
   });
 

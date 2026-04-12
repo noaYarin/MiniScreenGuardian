@@ -59,8 +59,8 @@ function DeviceDetailRow({
         <AppText style={[styles.deviceDetailLabel, text]}>{label}</AppText>
 
         {isDeviceNameRow &&
-        nameInputValue != null &&
-        onNameInputChange != null ? (
+          nameInputValue != null &&
+          onNameInputChange != null ? (
           <TextInput
             value={nameInputValue}
             onChangeText={(v) =>
@@ -151,6 +151,8 @@ export function ChildDetailsDeviceCard({
     renameDisabled,
   ]);
 
+  const linkColor = device.active ? "#16A34A" : "#64748B";
+
   return (
     <View style={styles.deviceCard}>
       <View style={[styles.deviceHeaderRow, row]}>
@@ -167,10 +169,10 @@ export function ChildDetailsDeviceCard({
             <MaterialCommunityIcons
               name="cellphone-link"
               size={17}
-              color="#475569"
+              color={linkColor}
             />
-            <AppText style={[styles.deviceStatusText, text]}>
-              {device.active ? "Connected" : "Offline"}
+            <AppText style={[styles.deviceStatusText, text, { color: linkColor }]}>
+              {device.active ? "Linked" : "Not linked"}
             </AppText>
           </View>
 
@@ -212,19 +214,6 @@ export function ChildDetailsDeviceCard({
               text={text}
               valueLines={1}
             />
-
-            <View style={styles.deviceDetailRowDivider} />
-
-            <DeviceDetailRow
-              icon="power"
-              label="Active"
-              value={device.active ? "Yes" : "No"}
-              row={row}
-              text={text}
-              valueLines={1}
-            />
-
-            <View style={styles.deviceDetailRowDivider} />
 
             <Pressable
               accessibilityRole="button"
