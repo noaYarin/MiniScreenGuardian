@@ -18,6 +18,7 @@ import { removeChildToken } from "@/src/services/authStorage";
 import { clearChildrenList } from "@/src/redux/slices/children-slice";
 import { addNotificationFromSocket } from "@/src/redux/slices/notification-slice";
 import { updateChildSummaryFromSocket } from "@/src/redux/slices/parentHome-slice";
+import { bumpPendingRequestsRefreshKey } from "@/src/redux/slices/requests-slice";
 
 function AppStack() {
   const dispatch = useDispatch();
@@ -92,6 +93,13 @@ function AppStack() {
       const unsubscribeNotifications = onEvent(NOTIFICATION_CREATED, (data: any) => {
         dispatch(addNotificationFromSocket(data));
 
+        const isExtensionRequestCreated =
+          data?.type === "EXTENSION_REQUEST_CREATED";
+
+        if (isExtensionRequestCreated) {
+          dispatch(bumpPendingRequestsRefreshKey());
+        }
+
         const title = data?.title ? String(data.title) : "New notification";
         const description = data?.description ? String(data.description) : "";
 
@@ -102,7 +110,7 @@ function AppStack() {
       });
 
       return () => {
-      if (unsubscribeLocation) unsubscribeLocation();
+        if (unsubscribeLocation) unsubscribeLocation();
         if (unsubscribeDeviceStatus) unsubscribeDeviceStatus();
         if (unsubscribeNotifications) unsubscribeNotifications();
       };

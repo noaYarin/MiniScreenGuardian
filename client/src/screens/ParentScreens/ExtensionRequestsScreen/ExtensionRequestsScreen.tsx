@@ -74,6 +74,10 @@ export default function ExtensionRequestsScreen() {
     (state: RootState) => state.requests.error
   );
 
+  const pendingRequestsRefreshKey = useSelector(
+  (state: RootState) => state.requests.pendingRequestsRefreshKey
+);
+
   const [selectedChildId, setSelectedChildId] = useState("");
   const [selectedDeviceId, setSelectedDeviceId] = useState(ALL_DEVICE_ID);
 
@@ -101,7 +105,7 @@ export default function ExtensionRequestsScreen() {
         childId: selectedChildId,
       })
     );
-  }, [dispatch, selectedChildId]);
+  }, [dispatch, selectedChildId, pendingRequestsRefreshKey]);
 
   const selectedChild = useMemo(() => {
     return children.find((c) => String(c._id) === selectedChildId) ?? null;
