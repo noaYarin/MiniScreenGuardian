@@ -13,9 +13,6 @@ import AppText from "../../../components/AppText/AppText";
 import ChildDeviceSelector from "../../../components/ChildDeviceSelector/ChildDeviceSelector";
 import { styles } from "./styles";
 
-import { useTranslation } from "../../../../hooks/use-translation";
-import { useLocaleLayout } from "../../../../hooks/use-locale-layout";
-
 import type { AppDispatch, RootState } from "@/src/redux/store/types";
 import { getMyChildrenThunk } from "@/src/redux/thunks/childrenThunks";
 import { fetchAuditLogsThunk } from "@/src/redux/thunks/auditThunks";
@@ -71,37 +68,40 @@ function getActivityMeta(actionType: AuditActionType) {
   }
 }
 
-function getActivityTitleKey(actionType: AuditActionType) {
+function getActivityTitle(actionType: AuditActionType) {
   switch (actionType) {
     case "LOCK_DEVICE":
-      return "activityHistory.items.lockDevice.title";
+      return "Device locked";
     case "UNLOCK_DEVICE":
-      return "activityHistory.items.unlockDevice.title";
+      return "Device unlocked";
     case "APPROVE_REQUEST":
-      return "activityHistory.items.approveRequest.title";
+      return "Request approved";
     case "REJECT_REQUEST":
-      return "activityHistory.items.rejectRequest.title";
+      return "Request rejected";
     case "UPDATE_SCREEN_TIME":
-      return "activityHistory.items.updateScreenTime.title";
+      return "Screen time updated";
     default:
-      return "activityHistory.items.default.title";
+      return "Activity";
   }
 }
 
-function getActivityDescriptionKey(actionType: AuditActionType) {
+function getActivityDescription(
+  actionType: AuditActionType,
+  childName: string
+) {
   switch (actionType) {
     case "LOCK_DEVICE":
-      return "activityHistory.items.lockDevice.description";
+      return `${childName}'s device was locked`;
     case "UNLOCK_DEVICE":
-      return "activityHistory.items.unlockDevice.description";
+      return `${childName}'s device was unlocked`;
     case "APPROVE_REQUEST":
-      return "activityHistory.items.approveRequest.description";
+      return `Screen time extension approved for ${childName}`;
     case "REJECT_REQUEST":
-      return "activityHistory.items.rejectRequest.description";
+      return `Screen time extension request rejected for ${childName}`;
     case "UPDATE_SCREEN_TIME":
-      return "activityHistory.items.updateScreenTime.description";
+      return `Screen time settings updated for ${childName}`;
     default:
-      return "activityHistory.items.default.description";
+      return `A new activity was recorded for ${childName}`;
   }
 }
 
@@ -112,7 +112,7 @@ function formatTime(dateString: string) {
     return "";
   }
 
-  return date.toLocaleTimeString([], {
+  return date.toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -120,9 +120,7 @@ function formatTime(dateString: string) {
 
 export default function ActivityHistoryScreen() {
   const dispatch = useDispatch<AppDispatch>();
-  const { t } = useTranslation();
   const { width } = useWindowDimensions();
-  const { row, text, isRTL } = useLocaleLayout();
 
   const isTablet = width >= 900;
 
@@ -137,18 +135,29 @@ export default function ActivityHistoryScreen() {
   );
   const [selectedFilter, setSelectedFilter] = useState<FilterKey>("all");
 
-  const auditLogs = useSelector(
-    (state: RootState) => state.audit.logsByChildId[selectedChildId] ?? []
-  );
+  const auditLogs = useSelector((state: RootState) => {
+    if (selectedChildId === ALL_CHILDREN_FILTER_ID) {
+      return state.audit.logsByChildId[ALL_CHILDREN_FILTER_ID] ?? [];
+    }
 
-  const auditStatus = useSelector(
-    (state: RootState) =>
-      state.audit.statusByChildId[selectedChildId] ?? "idle"
-  );
+    return state.audit.logsByChildId[selectedChildId] ?? [];
+  });
 
-  const auditError = useSelector(
-    (state: RootState) => state.audit.errorByChildId[selectedChildId]
-  );
+  const auditStatus = useSelector((state: RootState) => {
+    if (selectedChildId === ALL_CHILDREN_FILTER_ID) {
+      return state.audit.statusByChildId[ALL_CHILDREN_FILTER_ID] ?? "idle";
+    }
+
+    return state.audit.statusByChildId[selectedChildId] ?? "idle";
+  });
+
+  const auditError = useSelector((state: RootState) => {
+    if (selectedChildId === ALL_CHILDREN_FILTER_ID) {
+      return state.audit.errorByChildId[ALL_CHILDREN_FILTER_ID];
+    }
+
+    return state.audit.errorByChildId[selectedChildId];
+  });
 
   useEffect(() => {
     dispatch(getMyChildrenThunk());
@@ -171,7 +180,7 @@ export default function ActivityHistoryScreen() {
       }
 
       if (selectedFilter === "updates") {
-        return ["UPDATE_SCREEN_TIME"].includes(item.actionType);
+        return item.actionType === "UPDATE_SCREEN_TIME";
       }
 
       return true;
@@ -188,16 +197,18 @@ export default function ActivityHistoryScreen() {
     ["APPROVE_REQUEST", "REJECT_REQUEST"].includes(item.actionType)
   ).length;
 
-  const filters: { key: FilterKey; labelKey: string }[] = [
-    { key: "all", labelKey: "activityHistory.filters.all" },
-    { key: "locks", labelKey: "activityHistory.filters.locks" },
-    { key: "extensions", labelKey: "activityHistory.filters.extensions" },
-    { key: "updates", labelKey: "activityHistory.filters.updates" },
+  const filters: { key: FilterKey; label: string }[] = [
+    { key: "all", label: "All" },
+    { key: "locks", label: "Locks" },
+    { key: "extensions", label: "Extensions" },
+    { key: "updates", label: "Updates" },
   ];
 
   const hasChildren = childrenList.length > 0;
-  const shouldShowChildSelector =
-    hasChildren && selectedChildId !== ALL_CHILDREN_FILTER_ID;
+  const selectorChildId =
+    selectedChildId === ALL_CHILDREN_FILTER_ID
+      ? String(childrenList[0]?._id ?? "")
+      : selectedChildId;
 
   return (
     <ScreenLayout>
@@ -207,14 +218,15 @@ export default function ActivityHistoryScreen() {
       >
         <View style={styles.container}>
           <View style={styles.heroCard}>
-            <View style={[styles.heroTopRow, row]}>
+            <View style={styles.heroTopRow}>
               <View style={styles.heroTitleBlock}>
-                <AppText weight="extraBold" style={[styles.heroTitle, text]}>
-                  {t("activityHistory.heading")}
+                <AppText weight="extraBold" style={styles.heroTitle}>
+                  Activity History
                 </AppText>
 
-                <AppText weight="medium" style={[styles.heroSubtitle, text]}>
-                  {t("activityHistory.subtitle")}
+                <AppText weight="medium" style={styles.heroSubtitle}>
+                  A clean and professional view of recent actions across your
+                  children
                 </AppText>
               </View>
 
@@ -234,31 +246,31 @@ export default function ActivityHistoryScreen() {
               ]}
             >
               <View style={styles.summaryCard}>
-                <AppText weight="medium" style={[styles.summaryLabel, text]}>
-                  {t("activityHistory.summary.today")}
+                <AppText weight="medium" style={styles.summaryLabel}>
+                  Today's events
                 </AppText>
 
-                <AppText weight="extraBold" style={[styles.summaryValue, text]}>
+                <AppText weight="extraBold" style={styles.summaryValue}>
                   {todayCount}
                 </AppText>
               </View>
 
               <View style={styles.summaryCard}>
-                <AppText weight="medium" style={[styles.summaryLabel, text]}>
-                  {t("activityHistory.summary.locks")}
+                <AppText weight="medium" style={styles.summaryLabel}>
+                  Locks
                 </AppText>
 
-                <AppText weight="extraBold" style={[styles.summaryValue, text]}>
+                <AppText weight="extraBold" style={styles.summaryValue}>
                   {lockCount}
                 </AppText>
               </View>
 
               <View style={styles.summaryCard}>
-                <AppText weight="medium" style={[styles.summaryLabel, text]}>
-                  {t("activityHistory.summary.extensions")}
+                <AppText weight="medium" style={styles.summaryLabel}>
+                  Extensions
                 </AppText>
 
-                <AppText weight="extraBold" style={[styles.summaryValue, text]}>
+                <AppText weight="extraBold" style={styles.summaryValue}>
                   {extensionCount}
                 </AppText>
               </View>
@@ -266,24 +278,16 @@ export default function ActivityHistoryScreen() {
           </View>
 
           <View style={styles.selectorSection}>
-            <AppText weight="bold" style={[styles.sectionTitle, text]}>
-              {t("activityHistory.childSectionTitle", "Children")}
+            <AppText weight="bold" style={styles.sectionTitle}>
+              Choose child
             </AppText>
 
             <View style={styles.filtersSection}>
-              <View
-                style={[
-                  styles.filtersRow,
-                  isRTL ? styles.filtersRowRtl : styles.filtersRowLtr,
-                ]}
-              >
+              <View style={styles.filtersRow}>
                 <Pressable
                   onPress={() => setSelectedChildId(ALL_CHILDREN_FILTER_ID)}
                   accessibilityRole="button"
-                  accessibilityLabel={t(
-                    "activityHistory.allChildren",
-                    "All children"
-                  )}
+                  accessibilityLabel="Show activity for all children"
                   style={({ pressed }) => [
                     styles.filterChip,
                     selectedChildId === ALL_CHILDREN_FILTER_ID
@@ -300,13 +304,12 @@ export default function ActivityHistoryScreen() {
                     }
                     style={[
                       styles.filterChipText,
-                      text,
                       selectedChildId === ALL_CHILDREN_FILTER_ID
                         ? styles.filterChipTextActive
                         : null,
                     ]}
                   >
-                    {t("activityHistory.allChildren", "All children")}
+                    All children
                   </AppText>
                 </Pressable>
               </View>
@@ -314,23 +317,19 @@ export default function ActivityHistoryScreen() {
 
             {childrenLoading ? (
               <View style={styles.emptyState}>
-                <AppText weight="medium" style={[styles.emptySubtitle, text]}>
-                  {t("common.loading", "Loading...")}
+                <AppText weight="medium" style={styles.emptySubtitle}>
+                  Loading...
                 </AppText>
               </View>
             ) : childrenError ? (
               <View style={styles.emptyState}>
-                <AppText weight="medium" style={[styles.emptySubtitle, text]}>
-                  {t(childrenError, childrenError)}
+                <AppText weight="medium" style={styles.emptySubtitle}>
+                  {childrenError}
                 </AppText>
               </View>
             ) : hasChildren ? (
               <ChildDeviceSelector
-                selectedChildId={
-                  shouldShowChildSelector
-                    ? selectedChildId
-                    : String(childrenList[0]?._id ?? "")
-                }
+                selectedChildId={selectorChildId}
                 onSelectChild={(childId) => setSelectedChildId(childId)}
                 showDevices={false}
               />
@@ -344,34 +343,23 @@ export default function ActivityHistoryScreen() {
                   />
                 </View>
 
-                <AppText weight="bold" style={[styles.emptyTitle, text]}>
-                  {t(
-                    "activityHistory.empty.noChildrenTitle",
-                    "No children found"
-                  )}
+                <AppText weight="bold" style={styles.emptyTitle}>
+                  No children found
                 </AppText>
 
-                <AppText weight="medium" style={[styles.emptySubtitle, text]}>
-                  {t(
-                    "activityHistory.empty.noChildrenSubtitle",
-                    "There are no children linked to this account yet."
-                  )}
+                <AppText weight="medium" style={styles.emptySubtitle}>
+                  There are no children linked to this account yet.
                 </AppText>
               </View>
             )}
           </View>
 
           <View style={styles.filtersSection}>
-            <AppText weight="bold" style={[styles.sectionTitle, text]}>
-              {t("activityHistory.filterTitle")}
+            <AppText weight="bold" style={styles.sectionTitle}>
+              Filter activity
             </AppText>
 
-            <View
-              style={[
-                styles.filtersRow,
-                isRTL ? styles.filtersRowRtl : styles.filtersRowLtr,
-              ]}
-            >
+            <View style={styles.filtersRow}>
               {filters.map((filter) => {
                 const active = filter.key === selectedFilter;
 
@@ -380,7 +368,7 @@ export default function ActivityHistoryScreen() {
                     key={filter.key}
                     onPress={() => setSelectedFilter(filter.key)}
                     accessibilityRole="button"
-                    accessibilityLabel={t(filter.labelKey)}
+                    accessibilityLabel={`Filter by ${filter.label}`}
                     style={({ pressed }) => [
                       styles.filterChip,
                       active ? styles.filterChipActive : null,
@@ -391,11 +379,10 @@ export default function ActivityHistoryScreen() {
                       weight={active ? "bold" : "medium"}
                       style={[
                         styles.filterChipText,
-                        text,
                         active ? styles.filterChipTextActive : null,
                       ]}
                     >
-                      {t(filter.labelKey)}
+                      {filter.label}
                     </AppText>
                   </Pressable>
                 );
@@ -404,28 +391,26 @@ export default function ActivityHistoryScreen() {
           </View>
 
           <View style={styles.listSection}>
-            <View style={[styles.listHeaderRow, row]}>
-              <AppText weight="bold" style={[styles.sectionTitle, text]}>
-                {t("activityHistory.activityListTitle")}
+            <View style={styles.listHeaderRow}>
+              <AppText weight="bold" style={styles.sectionTitle}>
+                Recent activity
               </AppText>
 
-              <AppText weight="medium" style={[styles.resultCount, text]}>
-                {t("activityHistory.resultCount", {
-                  count: filteredActivities.length,
-                })}
+              <AppText weight="medium" style={styles.resultCount}>
+                {filteredActivities.length} results
               </AppText>
             </View>
 
             {auditStatus === "loading" ? (
               <View style={styles.emptyState}>
-                <AppText weight="medium" style={[styles.emptySubtitle, text]}>
-                  {t("common.loading", "Loading...")}
+                <AppText weight="medium" style={styles.emptySubtitle}>
+                  Loading...
                 </AppText>
               </View>
             ) : auditError ? (
               <View style={styles.emptyState}>
-                <AppText weight="medium" style={[styles.emptySubtitle, text]}>
-                  {t(auditError, auditError)}
+                <AppText weight="medium" style={styles.emptySubtitle}>
+                  {auditError}
                 </AppText>
               </View>
             ) : filteredActivities.length === 0 ? (
@@ -438,12 +423,12 @@ export default function ActivityHistoryScreen() {
                   />
                 </View>
 
-                <AppText weight="bold" style={[styles.emptyTitle, text]}>
-                  {t("activityHistory.empty.title")}
+                <AppText weight="bold" style={styles.emptyTitle}>
+                  No activity found
                 </AppText>
 
-                <AppText weight="medium" style={[styles.emptySubtitle, text]}>
-                  {t("activityHistory.empty.subtitle")}
+                <AppText weight="medium" style={styles.emptySubtitle}>
+                  Try selecting another child or changing the filter
                 </AppText>
               </View>
             ) : (
@@ -451,10 +436,13 @@ export default function ActivityHistoryScreen() {
                 const child = childrenList.find(
                   (c) => String(c._id) === String(item.childId)
                 );
+
+                const childName = child?.name ?? "Child";
                 const meta = getActivityMeta(item.actionType);
-                const titleKey = getActivityTitleKey(item.actionType);
-                const descriptionKey = getActivityDescriptionKey(
-                  item.actionType
+                const title = getActivityTitle(item.actionType);
+                const description = getActivityDescription(
+                  item.actionType,
+                  childName
                 );
                 const time = formatTime(item.createdAt);
 
@@ -462,22 +450,17 @@ export default function ActivityHistoryScreen() {
                   <Pressable
                     key={item._id}
                     accessibilityRole="button"
-                    accessibilityLabel={t("activityHistory.activityCardA11y", {
-                      title: t(titleKey),
-                      childName: child?.name ?? "",
-                      time,
-                    })}
+                    accessibilityLabel={`${title}, child: ${childName}, time: ${time}`}
                     style={({ pressed }) => [
                       styles.activityCard,
                       pressed ? styles.pressed : null,
                     ]}
                   >
-                    <View style={[styles.activityTopRow, row]}>
+                    <View style={styles.activityTopRow}>
                       <View style={styles.activityMainContent}>
                         <View
                           style={[
                             styles.activityTitleRow,
-                            row,
                             styles.activityTitleRowSpacing,
                           ]}
                         >
@@ -497,18 +480,16 @@ export default function ActivityHistoryScreen() {
                           <View style={styles.activityTextWrap}>
                             <AppText
                               weight="bold"
-                              style={[styles.activityTitle, text]}
+                              style={styles.activityTitle}
                             >
-                              {t(titleKey)}
+                              {title}
                             </AppText>
 
                             <AppText
                               weight="medium"
-                              style={[styles.activityDescription, text]}
+                              style={styles.activityDescription}
                             >
-                              {t(descriptionKey, {
-                                childName: child?.name ?? "",
-                              })}
+                              {description}
                             </AppText>
                           </View>
                         </View>

@@ -1,17 +1,11 @@
 import React from "react";
-import { View } from "react-native";
 import { Stack } from "expo-router";
-import { HeaderBackButton } from "@react-navigation/elements";
-import { useTranslation } from "react-i18next";
 import { COLORS } from "@/constants/theme";
 
 export default function ParentRootLayout() {
-  const { i18n, t } = useTranslation();
-  const isRTL = i18n.language?.startsWith("he") ?? false;
-
   return (
     <Stack
-      screenOptions={({ navigation }) => ({
+      screenOptions={{
         headerTitleAlign: "center",
         headerShadowVisible: false,
         headerBackButtonDisplayMode: "minimal",
@@ -21,22 +15,7 @@ export default function ParentRootLayout() {
         headerStyle: {
           backgroundColor: COLORS.light.tint,
         },
-
-        ...(isRTL
-          ? {
-              headerBackVisible: false,
-              headerLeft: () => null,
-              headerRight: (props) =>
-                navigation.canGoBack() ? (
-                  <View style={{ transform: [{ scaleX: -1 }] }}>
-                    <HeaderBackButton {...props} onPress={navigation.goBack} />
-                  </View>
-                ) : null,
-            }
-          : {
-              headerBackVisible: true,
-            }),
-      })}
+      }}
     >
       <Stack.Screen
         name="(tabs)"
@@ -48,28 +27,51 @@ export default function ParentRootLayout() {
       <Stack.Screen
         name="addChild"
         options={{
-          title: isRTL ? "הוספת ילד" : "Add Child",
+          title: "Add Child",
         }}
       />
 
       <Stack.Screen
         name="childDetails"
         options={{
-          title: t("childDetails.title"),
+          title: "Child Details",
         }}
       />
 
       <Stack.Screen
         name="childProfile"
         options={{
-          title: isRTL ? "פרופיל של הילד/ה" : "Child Profile",
+          title: "Child Profile",
         }}
       />
 
       <Stack.Screen
-        name="homeMenu"
+        name="editChildProfile"
         options={{
-          title: t("homeMenu.title"),
+          title: "Edit Child Profile",
+        }}
+      />
+
+      <Stack.Screen
+        name="childLocation"
+        options={{
+          title: "Child Location",
+        }}
+      />
+
+
+
+      <Stack.Screen
+        name="linkDevice"
+        options={{
+          title: "Connect Device",
+        }}
+      />
+
+      <Stack.Screen
+        name="systemAlerts"
+        options={{
+          title: "System Alerts",
         }}
       />
     </Stack>

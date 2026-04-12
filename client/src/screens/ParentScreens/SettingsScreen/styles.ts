@@ -56,6 +56,7 @@ export const styles = StyleSheet.create({
   },
 
   deviceAppButtonContent: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
@@ -63,6 +64,7 @@ export const styles = StyleSheet.create({
 
   deviceAppButtonMain: {
     flex: 1,
+    flexDirection: "row",
     alignItems: "center",
     gap: 12,
   },
@@ -112,6 +114,7 @@ export const styles = StyleSheet.create({
   },
 
   logoutContent: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 10,

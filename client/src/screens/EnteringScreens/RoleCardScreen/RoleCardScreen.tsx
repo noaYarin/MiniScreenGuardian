@@ -1,16 +1,16 @@
-import React, { ReactNode, useRef, useState } from 'react';
+import React, { useRef, useState } from "react";
 import {
   Animated,
   Image,
   ImageSourcePropType,
   Pressable,
   StyleProp,
-  Text,
   View,
   ViewStyle,
-} from 'react-native';
+} from "react-native";
 
-import { roleCardStyles as styles } from './rolecard.styles';
+import AppText from "../../../components/AppText/AppText";
+import { roleCardStyles as styles } from "./rolecard.styles";
 
 type RoleCardProps = {
   title: string;
@@ -60,7 +60,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
       onPressOut={handlePressOut}
       accessibilityRole="button"
       accessibilityLabel={title}
-      accessibilityHint={title}
+      accessibilityHint={description}
     >
       <Animated.View
         style={[
@@ -69,15 +69,27 @@ export const RoleCard: React.FC<RoleCardProps> = ({
             backgroundColor,
             borderWidth: 0,
             transform: [{ scale }],
+            opacity: pressed ? 0.96 : 1,
           },
           containerStyle,
         ]}
       >
-        <View style={[styles.imageContainer, { backgroundColor: avatarCircleBackground }]}>
+        <View
+          style={[
+            styles.imageContainer,
+            { backgroundColor: avatarCircleBackground },
+          ]}
+        >
           <Image source={imageSource} style={styles.image} />
         </View>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.description}>{description}</Text>
+
+        <AppText weight="extraBold" style={styles.title}>
+          {title}
+        </AppText>
+
+        <AppText weight="regular" style={styles.description}>
+          {description}
+        </AppText>
       </Animated.View>
     </Pressable>
   );

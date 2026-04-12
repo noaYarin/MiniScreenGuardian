@@ -30,6 +30,7 @@ export const styles = StyleSheet.create({
   },
 
   heroTopRow: {
+    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     gap: 12,
@@ -61,26 +62,9 @@ export const styles = StyleSheet.create({
   },
 
   summaryGrid: {
-    gap: 5,
-        flexDirection: "row",
-
+    gap: 10,
   },
 
-filtersRow: {
-  width: "100%",
-  flexDirection: "row",
-  flexWrap: "wrap",
-  gap: 10,
-},
-
-filtersRowLtr: {
-  justifyContent: "flex-start",
-},
-
-filtersRowRtl: {
-    flexDirection: "row-reverse",
-  justifyContent: "flex-start",
-},
   summaryGridTablet: {
     flexDirection: "row",
   },
@@ -121,6 +105,12 @@ filtersRowRtl: {
     color: "#111827",
   },
 
+  filtersRow: {
+    width: "100%",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
 
   filterChip: {
     minHeight: 42,
@@ -152,6 +142,7 @@ filtersRowRtl: {
   },
 
   listHeaderRow: {
+    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     gap: 12,
@@ -176,6 +167,7 @@ filtersRowRtl: {
   },
 
   activityTopRow: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
@@ -186,6 +178,7 @@ filtersRowRtl: {
   },
 
   activityTitleRow: {
+    flexDirection: "row",
     alignItems: "center",
   },
 

@@ -39,8 +39,11 @@ const requestsSlice = createSlice({
       .addCase(fetchPendingRequestsThunk.rejected, (state, action) => {
         state.status = "failed";
         state.error =
-          action.payload ?? action.error.message ?? "api.generic_error";
+          (action.payload as string) ??
+          action.error.message ??
+          "Something went wrong. Please try again.";
       })
+
       .addCase(fetchMyRequestsThunk.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -53,8 +56,11 @@ const requestsSlice = createSlice({
       .addCase(fetchMyRequestsThunk.rejected, (state, action) => {
         state.status = "failed";
         state.error =
-          action.payload ?? action.error.message ?? "api.generic_error";
+          (action.payload as string) ??
+          action.error.message ??
+          "Something went wrong. Please try again.";
       })
+
       .addCase(createRequestThunk.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -67,8 +73,11 @@ const requestsSlice = createSlice({
       .addCase(createRequestThunk.rejected, (state, action) => {
         state.status = "failed";
         state.error =
-          action.payload ?? action.error.message ?? "api.generic_error";
+          (action.payload as string) ??
+          action.error.message ??
+          "Something went wrong. Please try again.";
       })
+
       .addCase(decideRequestThunk.fulfilled, (state, action) => {
         state.pending = state.pending.filter(
           (req) => String(req._id) !== String(action.payload._id)

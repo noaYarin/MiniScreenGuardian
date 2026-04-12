@@ -21,13 +21,13 @@ const check = {
 
 export function validateLogin(email: string, password: string): string | null {
   if (check.isEmpty(email) && check.isEmpty(password)) {
-    return "loginParent.missing_fields";
+    return "Please fill in all fields";
   }
   if (!check.isEmail(email)) {
-    return "loginParent.invalid_email";
+    return "Please enter a valid email";
   }
   if (!check.isPassword(password)) {
-    return "loginParent.invalid_password";
+    return "Password must be at least 8 characters long";
   }
   return null;
 }
@@ -37,27 +37,31 @@ export function validateRegister(
   password: string,
   confirmPassword: string
 ): string | null {
-  if (check.isEmpty(email) && check.isEmpty(password) && check.isEmpty(confirmPassword)) {
-    return "registerParent.missing_fields";
+  if (
+    check.isEmpty(email) &&
+    check.isEmpty(password) &&
+    check.isEmpty(confirmPassword)
+  ) {
+    return "Please fill in all fields";
   }
   if (!check.isEmail(email)) {
-    return "registerParent.invalid_email";
+    return "Invalid email address";
   }
   if (!check.match(password, confirmPassword)) {
-    return "registerParent.passwords_not_match";
+    return "Passwords do not match";
   }
   if (!check.isPassword(password)) {
-    return "registerParent.invalid_password";
+    return "Password must be at least 8 characters long";
   }
   if (!check.isPassword(confirmPassword)) {
-    return "registerParent.invalid_confirm_password";
+    return "Confirm password must be at least 8 characters long";
   }
   return null;
 }
 
 export function validateForgotPassword(email: string): string | null {
   if (!check.isEmail(email)) {
-    return "loginParent.invalid_email";
+    return "Please enter a valid email";
   }
   return null;
 }
@@ -69,19 +73,19 @@ export function validateResetPassword(
   confirmPassword: string
 ): string | null {
   if (!email) {
-    return "resetPassword.missing_email";
+    return "Missing email. Please restart the reset process";
   }
   if (!check.isOtp(code)) {
-    return "resetPassword.invalid_code";
+    return "Please enter the 6-digit verification code";
   }
   if (check.isEmpty(password) || check.isEmpty(confirmPassword)) {
-    return "resetPassword.missing_fields";
+    return "Please fill in all fields";
   }
   if (!check.isPassword(password)) {
-    return "resetPassword.invalid_password";
+    return "Password must be at least 8 characters long";
   }
   if (!check.match(password, confirmPassword)) {
-    return "resetPassword.passwords_not_match";
+    return "Passwords do not match";
   }
   return null;
 }

@@ -10,19 +10,17 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Href, router } from "expo-router";
+import { useDispatch, useSelector } from "react-redux";
 
 import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
 import AppText from "../../../components/AppText/AppText";
 import { styles } from "./styles";
 
-import { useTranslation } from "../../../../hooks/use-translation";
-import { useLocaleLayout } from "../../../../hooks/use-locale-layout";
 import { logoutParent } from "@/src/redux/thunks/authThunks";
 import {
   logoutParentReducer,
   setAuthLoading,
 } from "../../../redux/slices/auth-slice";
-import { useDispatch, useSelector } from "react-redux";
 import { disconnectSocket, emitEvent } from "../../../services/socket";
 import { PARENT_LOGOUT } from "@/src/constants/socketEvents";
 import { removeParentToken } from "@/src/services/authStorage";
@@ -30,43 +28,47 @@ import { showAppToast } from "@/src/utils/appToast";
 import { getAppInviteDownloadUrl } from "@/src/constants/appLinks";
 
 export default function SettingsScreen() {
-  const { t } = useTranslation();
-  const { row, text, isRTL } = useLocaleLayout();
   const { width } = useWindowDimensions();
   const dispatch = useDispatch();
+
   const isLoggingOut = useSelector((state: any) => state.auth.isLoading);
   const parentId = useSelector((state: any) => state.auth.parentId);
   const childrenIds = useSelector((state: any) => state.children.childrenList);
+
   const isTablet = width >= 900;
 
   const onPressOpenDeviceAppSettings = async () => {
     try {
       await Linking.openSettings();
     } catch {
-      showAppToast(t("settings.deviceApp.openFailed"));
+      showAppToast("Could not open settings");
     }
   };
 
   const onPressInviteFriend = async () => {
     const url = getAppInviteDownloadUrl();
+
     if (!url) {
-      showAppToast(t("settings.inviteFriend.noLink"));
+      showAppToast("Download link is not available");
       return;
     }
-    const message = t("settings.inviteFriend.shareMessage", { url });
+
+    const message = `Try the app — download: ${url}`;
+
     try {
       await Share.share(
         Platform.OS === "android"
-          ? { message, title: t("settings.inviteFriend.shareTitle") }
+          ? { message, title: "Invite to the app" }
           : { message }
       );
     } catch {
-      showAppToast(t("settings.inviteFriend.shareFailed"));
+      showAppToast("Could not share");
     }
   };
 
   const onPressLogout = async () => {
     dispatch(setAuthLoading(true));
+
     try {
       if (childrenIds?.length) {
         emitEvent(PARENT_LOGOUT, {
@@ -74,10 +76,11 @@ export default function SettingsScreen() {
           childrenIds: childrenIds.map((child: any) => child._id),
         });
       }
+
       await (dispatch as any)(logoutParent()).unwrap();
     } catch (error) {
-      const message = (error as Error)?.message ?? "settings.logout.failed";
-      showAppToast(t(message));
+      const message = (error as Error)?.message ?? "Logout failed";
+      showAppToast(message === "settings.logout.failed" ? "Logout failed" : message);
     } finally {
       dispatch(logoutParentReducer());
       await removeParentToken();
@@ -98,7 +101,7 @@ export default function SettingsScreen() {
           <View
             style={styles.heroIconOnly}
             accessibilityRole="image"
-            accessibilityLabel={t("settings.heading")}
+            accessibilityLabel="Advanced Settings"
           >
             <View style={styles.heroIconBadge}>
               <MaterialCommunityIcons
@@ -112,15 +115,15 @@ export default function SettingsScreen() {
           <Pressable
             onPress={onPressOpenDeviceAppSettings}
             accessibilityRole="button"
-            accessibilityLabel={t("settings.deviceApp.a11y")}
-            accessibilityHint={t("settings.deviceApp.subtitle")}
+            accessibilityLabel="Open system settings for this app"
+            accessibilityHint="Notifications, permissions and location"
             style={({ pressed }) => [
               styles.deviceAppButton,
               pressed && styles.deviceAppButtonPressed,
             ]}
           >
-            <View style={[styles.deviceAppButtonContent, row]}>
-              <View style={[styles.deviceAppButtonMain, row]}>
+            <View style={styles.deviceAppButtonContent}>
+              <View style={styles.deviceAppButtonMain}>
                 <View style={styles.deviceAppIconWrap}>
                   <MaterialCommunityIcons
                     name="cellphone-cog"
@@ -128,23 +131,20 @@ export default function SettingsScreen() {
                     color="#FFFFFF"
                   />
                 </View>
+
                 <View style={styles.deviceAppTexts}>
-                  <AppText
-                    weight="bold"
-                    style={[styles.deviceAppTitle, text]}
-                  >
-                    {t("settings.deviceApp.button")}
+                  <AppText weight="bold" style={styles.deviceAppTitle}>
+                    App settings on this device
                   </AppText>
-                  <AppText
-                    weight="medium"
-                    style={[styles.deviceAppSubtitle, text]}
-                  >
-                    {t("settings.deviceApp.subtitle")}
+
+                  <AppText weight="medium" style={styles.deviceAppSubtitle}>
+                    Notifications, permissions and location
                   </AppText>
                 </View>
               </View>
+
               <MaterialCommunityIcons
-                name={isRTL ? "chevron-left" : "chevron-right"}
+                name="chevron-right"
                 size={24}
                 color="#7A8599"
               />
@@ -154,15 +154,15 @@ export default function SettingsScreen() {
           <Pressable
             onPress={onPressInviteFriend}
             accessibilityRole="button"
-            accessibilityLabel={t("settings.inviteFriend.a11y")}
-            accessibilityHint={t("settings.inviteFriend.subtitle")}
+            accessibilityLabel="Share the app invite link"
+            accessibilityHint="Share the download link"
             style={({ pressed }) => [
               styles.deviceAppButton,
               pressed && styles.deviceAppButtonPressed,
             ]}
           >
-            <View style={[styles.deviceAppButtonContent, row]}>
-              <View style={[styles.deviceAppButtonMain, row]}>
+            <View style={styles.deviceAppButtonContent}>
+              <View style={styles.deviceAppButtonMain}>
                 <View style={styles.deviceAppIconWrap}>
                   <MaterialCommunityIcons
                     name="account-plus-outline"
@@ -170,23 +170,20 @@ export default function SettingsScreen() {
                     color="#FFFFFF"
                   />
                 </View>
+
                 <View style={styles.deviceAppTexts}>
-                  <AppText
-                    weight="bold"
-                    style={[styles.deviceAppTitle, text]}
-                  >
-                    {t("settings.inviteFriend.button")}
+                  <AppText weight="bold" style={styles.deviceAppTitle}>
+                    Invite a friend
                   </AppText>
-                  <AppText
-                    weight="medium"
-                    style={[styles.deviceAppSubtitle, text]}
-                  >
-                    {t("settings.inviteFriend.subtitle")}
+
+                  <AppText weight="medium" style={styles.deviceAppSubtitle}>
+                    Share the download link
                   </AppText>
                 </View>
               </View>
+
               <MaterialCommunityIcons
-                name={isRTL ? "chevron-left" : "chevron-right"}
+                name="chevron-right"
                 size={24}
                 color="#7A8599"
               />
@@ -198,17 +195,17 @@ export default function SettingsScreen() {
           onPress={onPressLogout}
           disabled={isLoggingOut}
           accessibilityRole="button"
-          accessibilityLabel={t("settings.logout.a11y")}
+          accessibilityLabel="Log out from the account"
           style={({ pressed }) => [
             styles.logoutButton,
             !isLoggingOut && pressed && styles.logoutPressed,
             isLoggingOut ? { opacity: 0.7 } : null,
           ]}
         >
-          <View style={[styles.logoutContent, row]}>
+          <View style={styles.logoutContent}>
             <MaterialCommunityIcons name="logout" size={22} color="#FFFFFF" />
             <AppText weight="bold" style={styles.logoutText}>
-              {t("settings.logout.button")}
+              {isLoggingOut ? "Logging out..." : "Log Out"}
             </AppText>
           </View>
         </Pressable>

@@ -25,13 +25,41 @@ export const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 8,
   },
+header: {
+  position: "relative",
+  minHeight: 56,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingTop: 8,
+  paddingBottom: 6,
+},
+
+headerMenuLeft: {
+  position: "absolute",
+  left: 0,
+  top: 8,
+},
+
+headerBellRight: {
+  position: "absolute",
+  right: 0,
+  top: 8,
+},
+
+  headerLeftActions: {
+    position: "absolute",
+    left: 0,
+    top: 8,
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
   headerMenuButton: {
     width: 40,
     height: 40,
     alignItems: "center",
     justifyContent: "center",
-    marginHorizontal: 8,
+    marginRight: 4,
   },
 
   headerMenuButtonPressed: {
@@ -43,12 +71,13 @@ export const styles = StyleSheet.create({
     height: 24,
     alignItems: "center",
     justifyContent: "center",
+    position: "relative",
   },
 
   bellBadge: {
     position: "absolute",
     top: -7,
-    right: -10,
+    right: -6,
     minWidth: 18,
     height: 18,
     borderRadius: 9,
@@ -66,17 +95,12 @@ export const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
 
-  header: {
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
   bigHello: {
     fontSize: 28,
     lineHeight: 34,
     color: "#0F172A",
     marginTop: 8,
+    textAlign: "center",
   },
 
   overviewLink: {
@@ -94,28 +118,28 @@ export const styles = StyleSheet.create({
   },
 
   summaryCard: {
-    marginTop: 14,
-    borderRadius: 16,
+    marginTop: 18,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: "#E7EFFA",
     backgroundColor: "#F8FAFC",
-    padding: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
 
   summaryRow: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     gap: 12,
   },
 
   summaryChip: {
-    minWidth: 44,
-    height: 36,
+    width: 42,
+    height: 42,
     borderRadius: 12,
     backgroundColor: "#DBEAFE",
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 10,
   },
 
   summaryChipText: {
@@ -125,6 +149,7 @@ export const styles = StyleSheet.create({
 
   summaryTextWrap: {
     flex: 1,
+    justifyContent: "center",
   },
 
   sectionTitle: {
@@ -140,33 +165,36 @@ export const styles = StyleSheet.create({
   },
 
   loaderWrap: {
-    paddingVertical: 16,
+    paddingVertical: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   emptyState: {
     alignItems: "center",
     gap: 12,
-    paddingVertical: 16,
+    paddingVertical: 20,
   },
 
   cardsWrap: {
     width: "100%",
-    marginTop: 14,
-    gap: 12,
+    marginTop: 16,
+    gap: 14,
   },
 
   card: {
     width: "100%",
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: "#E7EFFA",
     backgroundColor: "#FFFFFF",
-    padding: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 6 },
-    elevation: 1,
+    elevation: 2,
   },
 
   cardPressed: {
@@ -175,18 +203,21 @@ export const styles = StyleSheet.create({
   },
 
   cardInner: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
   },
 
   avatarCircle: {
-    width: 46,
-    height: 46,
+    width: 52,
+    height: 52,
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
+    backgroundColor: "#F1F5F9",
+    flexShrink: 0,
   },
 
   avatarImage: {
@@ -208,10 +239,11 @@ export const styles = StyleSheet.create({
 
   cardCenter: {
     flex: 1,
+    justifyContent: "center",
   },
 
   childName: {
-    fontSize: 18,
+    fontSize: 17,
     lineHeight: 22,
     color: "#0F172A",
   },
@@ -219,31 +251,36 @@ export const styles = StyleSheet.create({
   childSubtitle: {
     marginTop: 4,
     fontSize: 13,
-    color: "#334155",
-    opacity: 0.75,
+    color: "#64748B",
   },
 
   cardEdge: {
-    minWidth: 88,
+    minWidth: 86,
+    alignItems: "flex-end",
+    justifyContent: "center",
+    flexShrink: 0,
   },
 
   cardEdgeLtr: {
-    alignItems: "flex-start",
+    alignItems: "flex-end",
   },
 
   cardEdgeRtl: {
-    alignItems: "flex-end",
+    alignItems: "flex-start",
   },
 
   timeMain: {
     fontSize: 18,
     lineHeight: 22,
+    color: "#0F172A",
+    textAlign: "right",
   },
 
   timeSub: {
     marginTop: 4,
     fontSize: 12,
     color: "#64748B",
+    textAlign: "right",
   },
 
   timeGood: {

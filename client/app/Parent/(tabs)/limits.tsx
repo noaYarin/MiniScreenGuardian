@@ -1,4 +1,17 @@
-import React from "react";
-import { View } from "react-native";
+import { Stack } from "expo-router";
+import DailyTimeLimitsScreen from "@/src/screens/ParentScreens/DailyTimeLimitsScreen/DailyTimeLimitsScreen";
 
-export { default } from "../../../src/screens/ParentScreens/LimitsEnteringScreen/LimitsEnteringScreen";
+export default function DailyTimeLimitsRoute() {
+  return (
+    <>
+      <Stack.Screen
+        options={{
+          title: "Screen Time Limits",
+          headerTitleAlign: "center",
+          headerShadowVisible: false,
+        }}
+      />
+      <DailyTimeLimitsScreen />
+    </>
+  );
+}

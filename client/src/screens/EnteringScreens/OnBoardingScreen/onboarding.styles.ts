@@ -1,79 +1,97 @@
-import { StyleSheet } from 'react-native';
-
-import { COLORS, Fonts, SIZES } from '../../../../constants/theme';
+import { StyleSheet } from "react-native";
+import { COLORS, Fonts, SIZES } from "../../../../constants/theme";
 
 export const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: COLORS.light.background,
-    justifyContent: 'center',
+    justifyContent: "space-between",
   },
+
+  slideWrapper: {
+    flex: 1,
+    width: "100%",
+    position: "relative",
+  },
+
+  slideScroll: {
+    flex: 1,
+  },
+
   slideContainer: {
-    width: SIZES.width,
-    alignItems: 'center',
-    justifyContent: 'center',
+    flex: 1,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
     padding: SIZES.padding,
   },
-  imageBackground: {
-    width: SIZES.width,
-    height: SIZES.height,
-    borderRadius: SIZES.radius,
-  },
-  link: {
-    position: 'absolute',
+
+  linkButton: {
+    position: "absolute",
     top: 0,
     right: 0,
+    padding: SIZES.padding,
+    marginBottom: 15,
+    zIndex: 2,
+  },
+
+  linkText: {
     fontSize: SIZES.description,
     color: COLORS.light.icon,
-    padding: SIZES.padding,
-  marginBottom: 15,
-    textDecorationLine: 'underline',
+    textDecorationLine: "underline",
   },
+
   iconContainer: {
-    //backgroundColor: COLORS.light.primary,
+    backgroundColor: COLORS.light.primary,
     borderRadius: 20,
     padding: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 16,
     elevation: 4,
     marginBottom: 24,
   },
+
   textContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingHorizontal: 30,
   },
+
   title: {
     fontSize: SIZES.title,
     fontFamily: Fonts.rounded,
     color: COLORS.light.text,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 15,
     letterSpacing: 0.5,
   },
+
   image: {
-    width: '100%',
-    height: '30%',
-    resizeMode: 'contain',
+    width: "100%",
+    height: "30%",
+    resizeMode: "contain",
     marginTop: SIZES.padding,
   },
+
   description: {
     fontSize: SIZES.description,
     color: COLORS.light.icon,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 26,
     borderLeftWidth: 3,
     borderLeftColor: COLORS.light.tint,
     paddingLeft: 10,
   },
+
   stepsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
   },
+
   stepDot: {
     width: 8,
     height: 8,
@@ -82,11 +100,13 @@ export const styles = StyleSheet.create({
     opacity: 0.3,
     marginHorizontal: 6,
   },
+
   stepDotActive: {
     width: 24,
     opacity: 1,
     backgroundColor: COLORS.light.tint,
   },
+
   startButton: {
     marginTop: SIZES.padding * 2,
     paddingHorizontal: SIZES.padding * 1.5,
@@ -94,14 +114,16 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.light.tint,
     borderRadius: SIZES.radius,
   },
+
   startButtonText: {
     color: COLORS.light.text,
     fontSize: SIZES.description,
     fontFamily: Fonts.rounded,
-    textAlign: 'center',
+    textAlign: "center",
   },
+
   footerContainer: {
-    height: '20%',
+    height: "20%",
     paddingHorizontal: SIZES.padding,
     paddingVertical: SIZES.padding,
   },

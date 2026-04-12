@@ -1,126 +1,180 @@
-import Feather from '@expo/vector-icons/Feather';
-import { useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import Feather from "@expo/vector-icons/Feather";
+import { useRouter } from "expo-router";
+import React, { useRef, useState } from "react";
 import {
-  FlatList,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  Text,
   View,
   Image,
-} from 'react-native';
+  Pressable,
+  ScrollView,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+  useWindowDimensions,
+} from "react-native";
 
-import { OnboardingButton } from '../../../components/OnboardingButton';
-import { COLORS, SIZES } from '../../../../constants/theme';
-import {
-  getOnboardingSlides,
-  OnboardingSlide,
-} from '../../../../data/onBoardingData';
-import { useTranslation } from '../../../../hooks/use-translation';
-import { styles } from './onboarding.styles';
+import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
+import AppText from "../../../components/AppText/AppText";
+import { OnboardingButton } from "../../../components/OnboardingButton";
+import { COLORS } from "../../../../constants/theme";
+import { styles } from "./onboarding.styles";
+
+const CHOOSE_CHILD_AGE = "/Entering/chooseChildAge";
+
+type OnboardingSlide = {
+  id: string;
+  icon: React.ComponentProps<typeof Feather>["name"];
+  title: string;
+  description: string;
+  image?: any;
+};
 
 export const OnboardingScreen: React.FC = () => {
   const router = useRouter();
-  const { t } = useTranslation();
-  const slides: OnboardingSlide[] = getOnboardingSlides(t);
-
+  const { width: pageWidth } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const flatListRef = useRef<FlatList<OnboardingSlide> | null>(null);
+  const indexRef = useRef(0);
+  const scrollRef = useRef<ScrollView | null>(null);
 
-  const handleStartUsingApp = () => {
-    router.push('Entering/chooseChildAge' as any);
+  const slides: OnboardingSlide[] = [
+    {
+      id: "1",
+      icon: "shield",
+      title: "Monitor & Protect",
+      description: "Track screen time and block apps instantly.",
+    },
+    {
+      id: "2",
+      icon: "map-pin",
+      title: "Real-time Location",
+      description: "Get your child's GPS location anytime.",
+      image: require("../../../../assets/images/map.png"),
+    },
+    {
+      id: "3",
+      icon: "cpu",
+      title: "AI Analysis",
+      description: "AI-based recommendations for other activities.",
+    },
+  ];
+
+  //Prevent index that not exist
+  const clampIndex = (index: number) =>
+    Math.max(0, Math.min(slides.length - 1, index));
+
+  const isLastSlide = currentIndex >= slides.length - 1;
+
+  const goToChooseChildAge = () => {
+    router.push(CHOOSE_CHILD_AGE as any);
   };
 
   const handleSkipOnboarding = () => {
-    router.push('Entering/chooseChildAge' as any);
+    goToChooseChildAge();
   };
 
-  const handleNext = () => {
-    const nextIndex = currentIndex + 1;
+  const syncIndexFromOffset = (offsetX: number) => {
+    if (pageWidth <= 0) return;
+    const idx = clampIndex(Math.round(offsetX / pageWidth));
+    indexRef.current = idx;
+    setCurrentIndex(idx);
+  };
 
-    if (nextIndex < slides.length) {
-      setCurrentIndex(nextIndex);
-      flatListRef.current?.scrollToIndex({
-        index: nextIndex,
+  const handleMomentumScrollEnd = (
+    event: NativeSyntheticEvent<NativeScrollEvent>
+  ) => {
+    syncIndexFromOffset(event.nativeEvent.contentOffset.x);
+  };
+
+  const handlePrimaryPress = () => {
+    const i = indexRef.current;
+    if (i >= slides.length - 1) {
+      goToChooseChildAge();
+      return;
+    }
+    const next = i + 1;
+    indexRef.current = next;
+    setCurrentIndex(next);
+    if (pageWidth > 0) {
+      scrollRef.current?.scrollTo({
+        x: next * pageWidth,
         animated: true,
       });
     }
   };
 
-  const handleMomentumScrollEnd = (
-    event: NativeSyntheticEvent<NativeScrollEvent>,
-  ) => {
-    const offsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(offsetX / SIZES.width);
-    setCurrentIndex(index);
-  };
-
-  const renderItem = ({
-    item,
-  }: {
-    item: OnboardingSlide;
-  }) => {
-
-    return (
-      <>
-       <Text style={styles.link} onPress={handleSkipOnboarding}> {t('dashboard.skip')}</Text>
-      <View style={styles.slideContainer}>
-        <View
-          style={styles.iconContainer}
-        >
-          <Feather name={item.icon} size={40} color={COLORS.light.background} />
-        </View>
-        <View style={styles.textContainer}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.description}>{item.description}</Text>
-        </View> 
-        {item.image && <Image source={item.image} style={styles.image}/>}
-      </View>
-      </>
-    );
-  };
-
   return (
-    <View style={styles.safeArea}>
-      <FlatList
-        ref={flatListRef}
-        data={slides}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={handleMomentumScrollEnd}
-      />
+    <ScreenLayout scrollable={false}>
+      <View style={styles.safeArea}>
+        <View style={styles.slideWrapper}>
+          <ScrollView
+            ref={scrollRef}
+            style={styles.slideScroll}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={handleMomentumScrollEnd}
+            keyboardShouldPersistTaps="handled"
+          >
+            {slides.map((slide) => (
+              <View key={slide.id} style={{ width: pageWidth }}>
+                <View style={styles.slideContainer}>
+                  <View style={styles.iconContainer}>
+                    <Feather
+                      name={slide.icon}
+                      size={40}
+                      color={COLORS.light.background}
+                    />
+                  </View>
 
-      <View style={styles.footerContainer}>
-        <View style={styles.stepsContainer}>
-          {slides.map((_, index) => {
-            const isActive = index === currentIndex;
-            return (
+                  <View style={styles.textContainer}>
+                    <AppText weight="extraBold" style={styles.title}>
+                      {slide.title}
+                    </AppText>
+
+                    <AppText weight="regular" style={styles.description}>
+                      {slide.description}
+                    </AppText>
+                  </View>
+
+                  {slide.image ? (
+                    <Image source={slide.image} style={styles.image} />
+                  ) : null}
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+
+          <Pressable
+            onPress={handleSkipOnboarding}
+            accessibilityRole="button"
+            accessibilityLabel="Skip onboarding"
+            style={styles.linkButton}
+          >
+            <AppText weight="medium" style={styles.linkText}>
+              Skip
+            </AppText>
+          </Pressable>
+        </View>
+
+        <View style={styles.footerContainer}>
+          <View style={styles.stepsContainer}>
+            {slides.map((_, index) => (
               <View
                 key={index}
-                style={[styles.stepDot, isActive && styles.stepDotActive]}
+                style={[
+                  styles.stepDot,
+                  index === currentIndex && styles.stepDotActive,
+                ]}
               />
-            );
-          })}
-        </View>
+            ))}
+          </View>
 
-        <OnboardingButton
-          label={
-            currentIndex < slides.length - 1
-              ? t('dashboard.next')
-              : t('dashboard.start')
-          }
-          onPress={
-            currentIndex < slides.length - 1
-              ? handleNext
-              : handleStartUsingApp
-          }
-          containerStyle={styles.startButton}
-          textStyle={styles.startButtonText}
-        />
+          <OnboardingButton
+            label={isLastSlide ? "Start" : "Next"}
+            onPress={handlePrimaryPress}
+            containerStyle={styles.startButton}
+            textStyle={styles.startButtonText}
+          />
+        </View>
       </View>
-    </View>
+    </ScreenLayout>
   );
 };

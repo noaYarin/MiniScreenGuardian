@@ -29,7 +29,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderWidth: 1,
     borderColor: "#EAF1F7",
-
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.06,
@@ -58,44 +57,22 @@ export const styles = StyleSheet.create({
 
   menuItemRow: {
     width: "100%",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
 
-  menuItemRowRtl: {
-    flexDirection: "row-reverse",
-  },
-
-  menuItemRowLtr: {
-    flexDirection: "row",
-  },
-
   menuMainSide: {
     flex: 1,
-    alignItems: "center",
-    gap: 14,
-  },
-
-  menuMainSideRtl: {
-    flexDirection: "row-reverse",
-    justifyContent: "flex-end",
-  },
-
-  menuMainSideLtr: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "flex-start",
+    gap: 14,
   },
 
   menuTextWrap: {
     flex: 1,
     justifyContent: "center",
-  },
-
-  menuTextWrapRtl: {
-    alignItems: "flex-end",
-  },
-
-  menuTextWrapLtr: {
     alignItems: "flex-start",
   },
 

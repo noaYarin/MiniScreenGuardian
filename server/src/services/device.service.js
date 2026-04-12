@@ -17,7 +17,6 @@ import {
   findDeviceStatusById,
   updateDeviceUsedTodayMinutes,
   updateDeviceHeartbeat,
-  releaseDevicePolicyBeforeDelete,
 
 } from "../dal/device.dal.js";
 import { getChildrenByParentId } from "../dal/parent.dal.js";

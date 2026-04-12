@@ -17,7 +17,7 @@ export default function ScreenLayout({
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView style={styles.page} contentContainerStyle={styles.content}>
       <View style={styles.inner}>{children}</View>
     </ScrollView>
   );

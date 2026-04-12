@@ -7,7 +7,6 @@ import {
   ViewStyle,
   TextStyle,
 } from "react-native";
-import { useTranslation } from "react-i18next";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import AppText from "@/src/components/AppText/AppText";
@@ -46,8 +45,6 @@ function DeviceDetailRow({
   onNameInputCommit,
   nameInputDisabled,
 }: DeviceDetailRowProps) {
-  const { t } = useTranslation();
-
   return (
     <View style={[styles.deviceDetailRow, row]}>
       <View style={styles.deviceDetailIconColumn}>
@@ -57,8 +54,10 @@ function DeviceDetailRow({
           color={childDetailsIconColors.detailAccent}
         />
       </View>
+
       <View style={styles.deviceDetailTextColumn}>
         <AppText style={[styles.deviceDetailLabel, text]}>{label}</AppText>
+
         {isDeviceNameRow &&
         nameInputValue != null &&
         onNameInputChange != null ? (
@@ -72,7 +71,7 @@ function DeviceDetailRow({
             editable={!nameInputDisabled}
             maxLength={DEVICE_NAME_MAX_LEN}
             returnKeyType="done"
-            accessibilityLabel={t("childDetails.device_detail_name")}
+            accessibilityLabel="Device name"
             style={[
               styles.deviceDetailValue,
               styles.deviceDetailNameInput,
@@ -116,7 +115,6 @@ export function ChildDetailsDeviceCard({
   onSetDeviceLocked,
   onRenameDevice,
 }: Props) {
-  const { t } = useTranslation();
   const [nameDraft, setNameDraft] = useState(device.name);
   const [nameSaving, setNameSaving] = useState(false);
 
@@ -126,12 +124,16 @@ export function ChildDetailsDeviceCard({
 
   const commitDeviceName = useCallback(async () => {
     if (renameDisabled || nameSaving) return;
+
     const trimmed = nameDraft.trim();
+
     if (trimmed.length === 0) {
       setNameDraft(device.name);
       return;
     }
+
     if (trimmed === device.name) return;
+
     setNameSaving(true);
     try {
       await onRenameDevice(device.id, trimmed);
@@ -168,16 +170,14 @@ export function ChildDetailsDeviceCard({
               color="#475569"
             />
             <AppText style={[styles.deviceStatusText, text]}>
-              {device.active
-                ? t("childDetails.status_connected")
-                : t("childDetails.status_disconnected")}
+              {device.active ? "Connected" : "Offline"}
             </AppText>
           </View>
 
           <View style={styles.deviceInfoStrip}>
             <DeviceDetailRow
               icon="rename-outline"
-              label={t("childDetails.device_detail_name")}
+              label="Device name"
               value={device.name}
               row={row}
               text={text}
@@ -190,49 +190,51 @@ export function ChildDetailsDeviceCard({
               }}
               nameInputDisabled={renameDisabled || nameSaving}
             />
+
             <View style={styles.deviceDetailRowDivider} />
+
             <DeviceDetailRow
               icon="tablet-cellphone"
-              label={t("childDetails.device_detail_type")}
+              label="Device type"
               value={device.typeLabel}
               row={row}
               text={text}
               valueLines={1}
             />
+
             <View style={styles.deviceDetailRowDivider} />
+
             <DeviceDetailRow
               icon="cellphone-marker"
-              label={t("childDetails.device_detail_platform")}
+              label="Platform"
               value={device.platformLabel}
               row={row}
               text={text}
               valueLines={1}
             />
+
             <View style={styles.deviceDetailRowDivider} />
+
             <DeviceDetailRow
               icon="power"
-              label={t("childDetails.device_active")}
-              value={
-                device.active
-                  ? t("childDetails.device_active_yes")
-                  : t("childDetails.device_active_no")
-              }
+              label="Active"
+              value={device.active ? "Yes" : "No"}
               row={row}
               text={text}
               valueLines={1}
             />
+
             <View style={styles.deviceDetailRowDivider} />
+
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={
                 device.isLocked
-                  ? t("childDetails.device_unlock_a11y", { name: device.name })
-                  : t("childDetails.device_lock_a11y", { name: device.name })
+                  ? `Unlock device ${device.name}`
+                  : `Lock device ${device.name}`
               }
               disabled={lockDisabled}
-              onPress={() =>
-                onSetDeviceLocked(device.id, !device.isLocked)
-              }
+              onPress={() => onSetDeviceLocked(device.id, !device.isLocked)}
               style={({ pressed }) => [
                 styles.deviceLockActionButton,
                 device.isLocked
@@ -250,9 +252,7 @@ export function ChildDetailsDeviceCard({
                     : styles.deviceLockActionTextRed
                 }
               >
-                {device.isLocked
-                  ? t("childDetails.device_unlock")
-                  : t("childDetails.device_lock")}
+                {device.isLocked ? "Unlock" : "Lock"}
               </AppText>
             </Pressable>
           </View>
@@ -266,9 +266,7 @@ export function ChildDetailsDeviceCard({
             },
           ]}
           accessibilityRole="button"
-          accessibilityLabel={t("childDetails.delete_device_a11y", {
-            name: device.name,
-          })}
+          accessibilityLabel={`Delete device ${device.name}`}
           disabled={deleteDisabled}
           onPress={() => onDelete(device.id, device.name)}
         >

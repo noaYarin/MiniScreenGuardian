@@ -80,7 +80,7 @@ const parentHomeSlice = createSlice({
         state.isLoading = false;
         state.isRefreshing = false;
         state.error =
-          (action.payload as string) ?? "homeParent.fetch_summary_failed";
+          (action.payload as string) ?? "Could not load the home summary.";
       });
   },
 });

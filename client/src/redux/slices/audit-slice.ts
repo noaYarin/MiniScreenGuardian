@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { AuditLog } from "../../api/audit";
 import { fetchAuditLogsThunk } from "../thunks/auditThunks";
 
@@ -20,7 +20,7 @@ const auditSlice = createSlice({
   name: "audit",
   initialState,
   reducers: {
-    clearAuditLogsForChild: (state, action) => {
+    clearAuditLogsForChild: (state, action: PayloadAction<string>) => {
       const childId = action.payload;
       delete state.logsByChildId[childId];
       delete state.statusByChildId[childId];
@@ -49,7 +49,9 @@ const auditSlice = createSlice({
         const childId = action.meta.arg;
         state.statusByChildId[childId] = "failed";
         state.errorByChildId[childId] =
-          action.payload ?? action.error.message ?? "activityHistory.fetch_failed";
+          (action.payload as string) ??
+          action.error.message ??
+          "Could not load activity history.";
       });
   },
 });

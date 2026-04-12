@@ -99,6 +99,7 @@ export const childDetailsStyles = StyleSheet.create({
   },
 
   profileHeader: {
+    flexDirection: "row",
     alignItems: "center",
     gap: 12,
   },
@@ -161,6 +162,7 @@ export const childDetailsStyles = StyleSheet.create({
 
   sectionHeader: {
     marginTop: 20,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
@@ -177,6 +179,7 @@ export const childDetailsStyles = StyleSheet.create({
   },
 
   devicesToggleInner: {
+    flexDirection: "row",
     alignItems: "center",
     gap: 6,
   },
@@ -223,6 +226,7 @@ export const childDetailsStyles = StyleSheet.create({
 
   deviceHeaderRow: {
     width: "100%",
+    flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
     gap: 10,
@@ -240,6 +244,7 @@ export const childDetailsStyles = StyleSheet.create({
 
   deviceStatusRow: {
     marginTop: 8,
+    flexDirection: "row",
     alignItems: "center",
     gap: 6,
   },
@@ -253,13 +258,14 @@ export const childDetailsStyles = StyleSheet.create({
     marginTop: 12,
     borderRadius: 14,
     backgroundColor: "#FFFFFF",
-    paddingHorizontal: 16,
+  
     paddingVertical: 14,
     alignItems: "stretch",
   },
 
   deviceDetailRow: {
     width: "100%",
+    flexDirection: "row",
     alignItems: "flex-start",
     gap: 14,
     paddingVertical: 12,
@@ -338,6 +344,7 @@ export const childDetailsStyles = StyleSheet.create({
   },
 
   infoMiniRow: {
+    flexDirection: "row",
     alignItems: "center",
     gap: 4,
   },

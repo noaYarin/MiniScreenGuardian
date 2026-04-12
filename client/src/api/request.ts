@@ -1,12 +1,15 @@
 import { API_BASE_URL } from "../config/env";
-import { getParentToken, getChildToken, removeParentToken, removeChildToken } from "../services/authStorage";
-import i18n from "../locales/i18n";
+import {
+  getParentToken,
+  getChildToken,
+  removeParentToken,
+  removeChildToken,
+} from "../services/authStorage";
 
 type RequestOptions = {
   requireAuth?: boolean;
   role?: "PARENT" | "CHILD";
 };
-
 
 async function request<T>(
   method: string,
@@ -16,7 +19,7 @@ async function request<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${path}`;
 
-  const headers: any = {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
 
@@ -24,11 +27,12 @@ async function request<T>(
     const parentData = await getParentToken();
     const childData = await getChildToken();
 
-    // Parent token is stored as `token`, child token is stored as `childToken`.
     const token =
       options.role === "CHILD" ? childData?.childToken : parentData?.token;
 
-    if (token) headers["Authorization"] = `Bearer ${token}`;
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
   }
 
   const response = await fetch(url, {
@@ -43,16 +47,23 @@ async function request<T>(
     if (options.requireAuth) {
       await removeParentToken();
       await removeChildToken();
-      throw new Error(i18n.t("api.session_expired"));
+      throw new Error("Session expired. Please log in again.");
     }
-  
-    const errorMessage = result?.error?.message || result?.message || i18n.t("api.unauthorized");
-    throw new Error(errorMessage);    
-}
+
+    const errorMessage =
+      result?.error?.message ||
+      result?.message ||
+      "Unauthorized request.";
+
+    throw new Error(errorMessage);
+  }
 
   if (!response.ok) {
     const errorMessage =
-      result?.error?.message  || result?.message || i18n.t("api.generic_error");
+      result?.error?.message ||
+      result?.message ||
+      "Something went wrong. Please try again.";
+
     throw new Error(errorMessage);
   }
 
@@ -61,14 +72,17 @@ async function request<T>(
 
 export const api = {
   get: <T>(path: string, options?: RequestOptions) =>
-    request<T>("GET", path, null, options),
+    request<T>("GET", path, undefined, options),
+
   post: <T>(path: string, body?: unknown, options?: RequestOptions) =>
     request<T>("POST", path, body, options),
+
   put: <T>(path: string, body?: unknown, options?: RequestOptions) =>
     request<T>("PUT", path, body, options),
+
   patch: <T>(path: string, body?: unknown, options?: RequestOptions) =>
     request<T>("PATCH", path, body, options),
-  delete: <T>(path: string, options?: RequestOptions) =>
-    request<T>("DELETE", path, null, options),
-};
 
+  delete: <T>(path: string, options?: RequestOptions) =>
+    request<T>("DELETE", path, undefined, options),
+};

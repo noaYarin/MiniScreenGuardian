@@ -17,27 +17,6 @@ export const MENU_ITEMS: HomeMenuItem[] = [
     route: "/Parent/childLocation" as Href,
   },
   {
-    key: "requests",
-    labelKey: "homeMenu.items.requests",
-    icon: "message-outline",
-    route: "/Parent/extensionRequests" as Href,
-  },
-  {
-    key: "activities",
-    labelKey: "homeMenu.items.activities",
-    icon: "star-four-points-outline",
-  },
-  {
-    key: "rewards",
-    labelKey: "homeMenu.items.rewards",
-    icon: "gift-outline",
-  },
-  {
-    key: "chatbot",
-    labelKey: "homeMenu.items.chatbot",
-    icon: "emoticon-outline",
-  },
-  {
     key: "history",
     labelKey: "homeMenu.items.history",
     icon: "history",
