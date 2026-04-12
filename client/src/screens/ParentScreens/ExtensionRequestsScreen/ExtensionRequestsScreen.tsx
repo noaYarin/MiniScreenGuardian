@@ -4,7 +4,6 @@ import {
   ScrollView,
   Pressable,
   useWindowDimensions,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -25,6 +24,7 @@ import {
   fetchPendingRequestsThunk,
   decideRequestThunk,
 } from "@/src/redux/thunks/requestThunks";
+import { showAppToast } from "@/src/utils/appToast";
 
 function getDeviceIconName(deviceType?: string) {
   return deviceType === "tablet" ? "tablet-dashboard" : "cellphone";
@@ -74,6 +74,10 @@ export default function ExtensionRequestsScreen() {
     (state: RootState) => state.requests.error
   );
 
+  const pendingRequestsRefreshKey = useSelector(
+  (state: RootState) => state.requests.pendingRequestsRefreshKey
+);
+
   const [selectedChildId, setSelectedChildId] = useState("");
   const [selectedDeviceId, setSelectedDeviceId] = useState(ALL_DEVICE_ID);
 
@@ -101,11 +105,21 @@ export default function ExtensionRequestsScreen() {
         childId: selectedChildId,
       })
     );
-  }, [dispatch, selectedChildId]);
+  }, [dispatch, selectedChildId, pendingRequestsRefreshKey]);
 
   const selectedChild = useMemo(() => {
     return children.find((c) => String(c._id) === selectedChildId) ?? null;
   }, [children, selectedChildId]);
+
+  const getChildName = (childId: string) => {
+    const child = children.find((c) => String(c._id) === String(childId));
+    return child?.name ?? "";
+  };
+
+  const getDeviceByIds = (childId: string, deviceId: string) => {
+    const list = devicesByChild[String(childId)] ?? [];
+    return list.find((d) => String(d._id) === String(deviceId)) ?? null;
+  };
 
   const selectedDevice = useMemo(() => {
     if (selectedDeviceId === ALL_DEVICE_ID) {
@@ -141,9 +155,9 @@ export default function ExtensionRequestsScreen() {
         })
       ).unwrap();
 
-      Alert.alert("Success", "Request approved");
+      showAppToast("Request approved", "Success");
     } catch (error: any) {
-      Alert.alert("Error", error?.message ?? "Something went wrong");
+      showAppToast(error?.message ?? "Something went wrong", "Error");
     }
   };
 
@@ -156,9 +170,9 @@ export default function ExtensionRequestsScreen() {
         })
       ).unwrap();
 
-      Alert.alert("Success", "Request declined");
+      showAppToast("Request declined", "Success");
     } catch (error: any) {
-      Alert.alert("Error", error?.message ?? "Something went wrong");
+      showAppToast(error?.message ?? "Something went wrong", "Error");
     }
   };
 
@@ -199,37 +213,114 @@ export default function ExtensionRequestsScreen() {
           ) : (
             <View style={styles.cardsWrap}>
               {visibleRequests.map((request) => {
-                const device = devicesByChild[String(request.childId)]?.find(
-                  (d) => String(d._id) === String(request.deviceId)
-                );
+                const childName = getChildName(request.childId);
+                const device = getDeviceByIds(request.childId, request.deviceId);
+                const deviceName = device?.name ?? "All devices";
+                const deviceType = (device?.type as DeviceType) ?? "phone";
+                const remaining = getRemainingMinutes(device);
 
                 return (
                   <View key={request._id} style={styles.requestCard}>
-                    <AppText weight="bold">
-                      {device?.name ?? "Device"}
-                    </AppText>
+                    <View style={styles.cardTopRow}>
+                      <View style={styles.deviceBadge}>
+                        <MaterialCommunityIcons
+                          name={getDeviceIconName(deviceType)}
+                          size={24}
+                          color="#315BFF"
+                        />
+                      </View>
 
-                    <AppText>
-                      Requested: {request.requestedMinutes} minutes
-                    </AppText>
+                      <View style={styles.cardTopTextWrap}>
+                        <AppText weight="extraBold" style={styles.deviceName}>
+                          {deviceName}
+                        </AppText>
 
-                    <AppText>{request.reason}</AppText>
+                        <AppText weight="medium" style={styles.childName}>
+                          {childName}
+                        </AppText>
+                      </View>
+                    </View>
+
+                    <View style={styles.infoGrid}>
+                      <View style={styles.infoChip}>
+                        <MaterialCommunityIcons
+                          name="clock-plus-outline"
+                          size={16}
+                          color="#315BFF"
+                        />
+                        <AppText weight="bold" style={styles.infoChipText}>
+                          Requested: {request.requestedMinutes} minutes
+                        </AppText>
+                      </View>
+                    </View>
+
+                    <View style={styles.reasonBox}>
+                      <AppText weight="bold" style={styles.reasonLabel}>
+                        Reason
+                      </AppText>
+
+                      <AppText weight="medium" style={styles.reasonText}>
+                        {request.reason || "No reason provided"}
+                      </AppText>
+                    </View>
+
+                    <View style={styles.remainingBox}>
+                      <View style={styles.remainingRowLtr}>
+                        <MaterialCommunityIcons
+                          name="timer-sand"
+                          size={16}
+                          color="#7A8599"
+                        />
+                        <AppText weight="medium" style={styles.remainingText}>
+                          {remaining === "UNLIMITED"
+                            ? "Unlimited"
+                            : remaining !== null
+                              ? `${remaining} minutes remaining`
+                              : "Remaining time unavailable"}
+                        </AppText>
+                      </View>
+                    </View>
+
+                    <View style={styles.timeRowLtr}>
+                      <MaterialCommunityIcons
+                        name="history"
+                        size={16}
+                        color="#8A94A6"
+                      />
+                      <AppText weight="medium" style={styles.timeText}>
+                        {request.createdAt ? new Date(request.createdAt).toLocaleString() : ""}
+                      </AppText>
+                    </View>
 
                     <View style={styles.actionsRow}>
                       <Pressable
                         onPress={() => handleDecline(request._id)}
-                        style={styles.declineButton}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Decline request for ${deviceName}`}
+                        style={({ pressed }) => [
+                          styles.actionButton,
+                          styles.declineButton,
+                          pressed && styles.actionButtonPressed,
+                        ]}
                       >
-                        <AppText style={styles.actionButtonText}>
+                        <MaterialCommunityIcons name="close" size={18} color="#FFFFFF" />
+                        <AppText weight="extraBold" style={styles.actionButtonText}>
                           Decline
                         </AppText>
                       </Pressable>
 
                       <Pressable
                         onPress={() => handleApprove(request._id)}
-                        style={styles.approveButton}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Approve request for ${deviceName}`}
+                        style={({ pressed }) => [
+                          styles.actionButton,
+                          styles.approveButton,
+                          pressed && styles.actionButtonPressed,
+                        ]}
                       >
-                        <AppText style={styles.actionButtonText}>
+                        <MaterialCommunityIcons name="check" size={18} color="#FFFFFF" />
+                        <AppText weight="extraBold" style={styles.actionButtonText}>
                           Approve
                         </AppText>
                       </Pressable>

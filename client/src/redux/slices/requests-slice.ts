@@ -12,6 +12,7 @@ type RequestsState = {
   mine: ParentExtensionRequest[];
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
+  pendingRequestsRefreshKey: number;
 };
 
 const initialState: RequestsState = {
@@ -19,12 +20,17 @@ const initialState: RequestsState = {
   mine: [],
   status: "idle",
   error: null,
+  pendingRequestsRefreshKey: 0,
 };
 
 const requestsSlice = createSlice({
   name: "requests",
   initialState,
-  reducers: {},
+  reducers: {
+    bumpPendingRequestsRefreshKey(state) {
+      state.pendingRequestsRefreshKey += 1;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchPendingRequestsThunk.pending, (state) => {
@@ -86,4 +92,5 @@ const requestsSlice = createSlice({
   },
 });
 
+export const { bumpPendingRequestsRefreshKey } = requestsSlice.actions;
 export default requestsSlice.reducer;

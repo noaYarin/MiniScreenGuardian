@@ -377,4 +377,12 @@ export const styles = StyleSheet.create({
   pressed: {
     opacity: 0.88,
   },
+  
+  alertAccent: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: 5,
+  },
 });

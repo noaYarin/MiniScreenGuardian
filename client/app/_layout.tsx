@@ -9,24 +9,16 @@ import store from "../src/redux/store";
 import { COLORS } from "@/constants/theme";
 import Initializer from "../src/components/Initializer";
 
-import {
-  connectSocket,
-  onEvent,
-  disconnectSocket,
-} from "@/src/services/socket";
-import {
-  LOCATION_LIVE_UPDATE,
-  FORCE_CHILD_LOGOUT,
-  NOTIFICATION_CREATED,
-} from "@/src/constants/socketEvents";
-import {
-  clearAllDevices,
-  updateDeviceFromSocket,
-} from "@/src/redux/slices/device-slice";
+import { connectSocket, onEvent, disconnectSocket } from "@/src/services/socket";
+import { LOCATION_LIVE_UPDATE, FORCE_CHILD_LOGOUT, NOTIFICATION_CREATED, DEVICE_STATUS_UPDATED } from "@/src/constants/socketEvents";
+import { clearAllDevices, updateDeviceFromSocket, updateDeviceStatusFromSocket } from "@/src/redux/slices/device-slice";
+
 import { logoutChildReducer } from "@/src/redux/slices/auth-slice";
 import { removeChildToken } from "@/src/services/authStorage";
 import { clearChildrenList } from "@/src/redux/slices/children-slice";
 import { addNotificationFromSocket } from "@/src/redux/slices/notification-slice";
+import { updateChildSummaryFromSocket } from "@/src/redux/slices/parentHome-slice";
+import { bumpPendingRequestsRefreshKey } from "@/src/redux/slices/requests-slice";
 
 function AppStack() {
   const dispatch = useDispatch();
@@ -39,6 +31,7 @@ function AppStack() {
   const myCurrentDeviceId = useSelector((state: any) => state.auth.deviceId);
 
   useEffect(() => {
+
     if (!childToken || !activeChildId) return;
 
     connectSocket(
@@ -83,18 +76,29 @@ function AppStack() {
   useEffect(() => {
     const isInsideParentScreens = segments.includes("Parent");
 
-    if (!isInsideParentScreens || !parentId) return;
+    if (isInsideParentScreens && parentId) {
+      connectSocket(String(parentId), "parent");
 
-    connectSocket(String(parentId), "parent");
+      const unsubscribeLocation = onEvent(LOCATION_LIVE_UPDATE, (data: any) => {
+        dispatch(updateDeviceFromSocket(data));
+      });
 
-    const unsubscribeLocation = onEvent(LOCATION_LIVE_UPDATE, (data: any) => {
-      dispatch(updateDeviceFromSocket(data));
-    });
 
-    const unsubscribeNotifications = onEvent(
-      NOTIFICATION_CREATED,
-      (data: any) => {
+      const unsubscribeDeviceStatus = onEvent(DEVICE_STATUS_UPDATED, (data: any) => {
+        dispatch(updateDeviceStatusFromSocket(data));
+        dispatch(updateChildSummaryFromSocket(data));
+
+      });
+
+      const unsubscribeNotifications = onEvent(NOTIFICATION_CREATED, (data: any) => {
         dispatch(addNotificationFromSocket(data));
+
+        const isExtensionRequestCreated =
+          data?.type === "EXTENSION_REQUEST_CREATED";
+
+        if (isExtensionRequestCreated) {
+          dispatch(bumpPendingRequestsRefreshKey());
+        }
 
         const title = data?.title ? String(data.title) : "New notification";
         const description = data?.description ? String(data.description) : "";
@@ -103,13 +107,15 @@ function AppStack() {
           duration: Toast.durations.SHORT,
           position: Toast.positions.TOP,
         });
-      }
-    );
+      });
 
-    return () => {
-      if (unsubscribeLocation) unsubscribeLocation();
-      if (unsubscribeNotifications) unsubscribeNotifications();
-    };
+      return () => {
+        if (unsubscribeLocation) unsubscribeLocation();
+        if (unsubscribeDeviceStatus) unsubscribeDeviceStatus();
+        if (unsubscribeNotifications) unsubscribeNotifications();
+      };
+    }
+
   }, [segments, token, parentId, dispatch]);
 
   useEffect(() => {

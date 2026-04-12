@@ -4,7 +4,6 @@ import {
   Pressable,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   ScrollView,
 } from "react-native";
 import { router } from "expo-router";
@@ -22,6 +21,7 @@ import {
   createRequestThunk,
   fetchMyRequestsThunk,
 } from "@/src/redux/thunks/requestThunks";
+import { showAppToast } from "@/src/utils/appToast";
 
 const { DeviceControl } = NativeModules;
 
@@ -105,39 +105,39 @@ export default function ExtendTimeRequestScreen() {
 
     try {
       if (!deviceId) {
-        Alert.alert("Error", "No linked device found");
+        showAppToast("No linked device found", "Error");
         return;
       }
 
       if (!selectedMinutes || selectedMinutes < 1 || selectedMinutes > 120) {
-        Alert.alert("Error", "Invalid number of minutes");
+        showAppToast("Invalid number of minutes", "Error");
         return;
       }
 
       if (!DeviceControl?.getRemainingTime || !DeviceControl?.syncPolicyNow) {
-  Alert.alert("Error", "Device control is not available on this device");
-  return;
-}
+        showAppToast("Device control is not available on this device", "Error");
+        return;
+      }
 
-await DeviceControl.syncPolicyNow();
-const nativeState = await DeviceControl.getRemainingTime();
+      await DeviceControl.syncPolicyNow();
+      const nativeState = await DeviceControl.getRemainingTime();
 
       const hasActiveLimit =
         !!nativeState?.limitEnabled &&
         Number(nativeState?.dailyLimitMinutes ?? 0) > 0;
 
       if (!hasActiveLimit) {
-        Alert.alert(
-          "Error",
-          "There is no active screen-time limit on this device"
+        showAppToast(
+          "There is no active screen-time limit on this device",
+          "Error"
         );
         return;
       }
 
       if (hasPendingRequestForThisDevice) {
-        Alert.alert(
-          "Error",
-          "A pending extension request already exists for this device"
+        showAppToast(
+          "A pending extension request already exists for this device",
+          "Error"
         );
         return;
       }
@@ -152,11 +152,11 @@ const nativeState = await DeviceControl.getRemainingTime();
         })
       ).unwrap();
 
-      Alert.alert("Success", "Extension request sent successfully");
+      showAppToast("Extension request sent successfully", "Success");
 
       router.back();
     } catch (error) {
-      Alert.alert("Error", getErrorMessage((error as Error)?.message));
+      showAppToast(getErrorMessage((error as Error)?.message), "Error");
     } finally {
       setIsSubmitting(false);
     }
@@ -349,13 +349,25 @@ const nativeState = await DeviceControl.getRemainingTime();
                 onPress={onSend}
                 disabled={isSubmitting || hasPendingRequestForThisDevice}
                 accessibilityLabel="Send extension request"
-                style={styles.sendBtn}
+                style={[
+                  styles.sendBtn,
+                  (isSubmitting || hasPendingRequestForThisDevice) && styles.sendBtnDisabled,
+                ]}
                 contentStyle={styles.sendBtnContent}
-                labelStyle={styles.sendBtnText}
+                labelStyle={[
+                  styles.sendBtnText,
+                  (isSubmitting || hasPendingRequestForThisDevice) && styles.sendBtnTextDisabled,
+                ]}
+                buttonColor={
+                  isSubmitting || hasPendingRequestForThisDevice ? "#E5E7EB" : "#16A34A"
+                }
+                textColor={
+                  isSubmitting || hasPendingRequestForThisDevice ? "#475569" : "#FFFFFF"
+                }
                 icon="send"
               >
                 {hasPendingRequestForThisDevice
-                  ? "A pending extension request already exists for this device"
+                  ? "Pending request already sent"
                   : isSubmitting
                     ? "Sending..."
                     : "Send request to parent"}

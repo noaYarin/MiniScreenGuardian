@@ -43,6 +43,8 @@ import android.content.Context
 import android.util.Log
 import java.util.Calendar
 import kotlin.math.min
+import android.app.AppOpsManager
+import android.os.Process
 
 object UsageStatsHelper {
 
@@ -136,22 +138,19 @@ object UsageStatsHelper {
         return false
     }
 
-    fun hasUsageAccess(context: Context): Boolean {
-        return try {
-            val usageStatsManager =
-                context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+   fun hasUsageAccess(context: Context): Boolean {
+      return try {
+          val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+          val mode = appOps.unsafeCheckOpNoThrow(
+            AppOpsManager.OPSTR_GET_USAGE_STATS,
+            android.os.Process.myUid(),
+            context.packageName
+          )
 
-            val now = System.currentTimeMillis()
-            val stats = usageStatsManager.queryUsageStats(
-                UsageStatsManager.INTERVAL_DAILY,
-                now - 60_000,
-                now
-            )
-
-            !stats.isNullOrEmpty()
-        } catch (e: Exception) {
-            false
-        }
+         mode == AppOpsManager.MODE_ALLOWED
+      } catch (e: Exception) {
+         false
+      }
     }
 
     private fun getStartOfTodayInMillis(): Long {

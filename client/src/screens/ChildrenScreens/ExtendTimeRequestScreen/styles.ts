@@ -368,7 +368,6 @@ export const styles = StyleSheet.create({
   sendBtn: {
     marginTop: 18,
     borderRadius: 20,
-    backgroundColor: "#16A34A",
   },
 
   sendBtnContent: {
@@ -380,5 +379,14 @@ export const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 0.2,
     color: "#FFFFFF",
+  },
+  sendBtnDisabled: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+  },
+
+  sendBtnTextDisabled: {
+    color: "#475569",
+    fontSize: 14,
   },
 });

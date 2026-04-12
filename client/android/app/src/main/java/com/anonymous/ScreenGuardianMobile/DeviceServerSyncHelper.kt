@@ -1,14 +1,11 @@
 package com.screenguardianmobile
 
-
 import android.content.Context
 import android.util.Log
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
-import kotlin.math.min
-
 
 /**
  * DeviceServerSyncHelper
@@ -42,14 +39,13 @@ import kotlin.math.min
  * - If network fails → local policy still enforced (PolicyStore).
  * - Sync resumes automatically when connection is restored.
  */
-
-
 object DeviceServerSyncHelper {
 
     private const val TAG = "DeviceServerSync"
-
     private const val MAX_MINUTES_PER_DAY = 24 * 60
 
+    @Volatile
+    private var lastSentUsageMinutes: Int? = null
 
     /**
      * Sends a heartbeat to the server.
@@ -61,13 +57,13 @@ object DeviceServerSyncHelper {
      * Endpoint:
      * PATCH /api/v1/devices/{deviceId}/heartbeat
      */
-
     fun sendHeartbeat(context: Context) {
         try {
             val baseUrl = PolicyStore.getHeartbeatBaseUrl(context) ?: return
             val deviceId = PolicyStore.getHeartbeatDeviceId(context) ?: return
             val token = PolicyStore.getHeartbeatToken(context) ?: return
             val usageAccessEnabled = UsageStatsHelper.hasUsageAccess(context)
+            val accessibilityEnabled = ScreenGuardianAccessibilityService.isServiceEnabled(context)
 
             Thread {
                 var connection: HttpURLConnection? = null
@@ -85,7 +81,7 @@ object DeviceServerSyncHelper {
 
                     val body = """
                     {
-                      "accessibilityEnabled": true,
+                    "accessibilityEnabled": $accessibilityEnabled,
                       "usageAccessEnabled": $usageAccessEnabled
                     }
                     """.trimIndent()
@@ -109,7 +105,7 @@ object DeviceServerSyncHelper {
         }
     }
 
-     /**
+    /**
      * Sends current screen-time usage to the server.
      *
      * Purpose:
@@ -119,7 +115,6 @@ object DeviceServerSyncHelper {
      * Endpoint:
      * PATCH /api/v1/devices/{deviceId}/usage
      */
-    
     fun sendUsage(context: Context) {
         try {
             val baseUrl = PolicyStore.getHeartbeatBaseUrl(context) ?: return
@@ -129,7 +124,7 @@ object DeviceServerSyncHelper {
             val usedTodayMinutesRaw = PolicyStore.getUsedToday(context)
 
             // Clamp to prevent invalid values
-            val usedTodayMinutes = min(usedTodayMinutesRaw, MAX_MINUTES_PER_DAY)
+            val usedTodayMinutes = usedTodayMinutesRaw.coerceIn(0, MAX_MINUTES_PER_DAY)
 
             Thread {
                 var connection: HttpURLConnection? = null
@@ -171,6 +166,37 @@ object DeviceServerSyncHelper {
         } catch (e: Exception) {
             Log.e(TAG, "Usage error", e)
         }
+    }
+
+    /**
+     * Sends usage only if the current value changed enough.
+     *
+     * This helps avoid unnecessary PATCH requests on every loop cycle.
+     */
+    fun sendUsageIfChanged(context: Context, minDeltaMinutes: Int = 1) {
+        try {
+            val current = PolicyStore.getUsedToday(context)
+            val last = lastSentUsageMinutes
+
+            if (last != null && kotlin.math.abs(current - last) < minDeltaMinutes) {
+                return
+            }
+
+            lastSentUsageMinutes = current
+            sendUsage(context)
+
+        } catch (e: Exception) {
+            Log.e(TAG, "sendUsageIfChanged error", e)
+        }
+    }
+
+    /**
+     * Clears local usage sync cache.
+     *
+     * Useful when device session is reset / disconnected / deleted.
+     */
+    fun clearSessionCache() {
+        lastSentUsageMinutes = null
     }
 
     // Read response safely (handles both success and error streams)

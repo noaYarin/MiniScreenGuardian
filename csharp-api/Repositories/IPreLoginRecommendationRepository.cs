@@ -4,6 +4,6 @@ namespace ScreenGuardianAPI.Repositories
 {
     public interface IPreLoginRecommendationRepository
     {
-        PreLoginRecommendation GetRecommendationByAge(int age);
+        PreLoginRecommendation? GetRecommendationByAge(int age);
     }
 }

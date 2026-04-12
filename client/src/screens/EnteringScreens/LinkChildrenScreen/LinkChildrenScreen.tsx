@@ -70,17 +70,22 @@ export default function LinkChildrenScreen() {
         await NativeModules.DeviceControl.saveHeartbeatConfig(
           process.env.EXPO_PUBLIC_API_URL,
           res.deviceId,
-          res.childToken
+          res.childToken,
+          res.childId,
+          res.parentId
         );
       } catch (e) {
         console.log("Failed to save heartbeat config:", e);
       }
+
+      // Fetch the latest policy right after pairing so the child device starts with the current server rules
 
       try {
         await NativeModules.DeviceControl.syncPolicyNow();
       } catch (e) {
         console.log("Failed to sync initial policy:", e);
       }
+
 
       const dbDeviceId = res.deviceId;
 

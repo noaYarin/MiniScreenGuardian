@@ -66,14 +66,76 @@ const devicesSlice = createSlice({
       const { childId, location, lastUpdated } = action.payload;
       if (state.byChildId[childId]) {
         state.byChildId[childId] = state.byChildId[childId].map((device) => ({
-            ...device,
-            location: {
-                lat: location.lat,
-                lng: location.lng,
-                lastUpdated: lastUpdated
-            }
+          ...device,
+          location: {
+            lat: location.lat,
+            lng: location.lng,
+            lastUpdated: lastUpdated
+          }
         }));
       }
+    },
+
+    updateDeviceStatusFromSocket: (
+      state,
+      action: PayloadAction<{
+        childId: string;
+        deviceId: string;
+        isLocked?: boolean;
+        isActive?: boolean;
+        usedTodayMinutes?: number;
+        dailyLimitMinutes?: number;
+        extraMinutesToday?: number;
+        remainingMinutes?: number;
+        lastSeenAt?: string | null;
+        accessibilityEnabled?: boolean | null;
+        usageAccessEnabled?: boolean | null;
+      }>
+    ) => {
+      const {
+        childId,
+        deviceId,
+        isLocked,
+        isActive,
+        usedTodayMinutes,
+        dailyLimitMinutes,
+        extraMinutesToday,
+        lastSeenAt,
+        accessibilityEnabled,
+        usageAccessEnabled,
+      } = action.payload;
+
+      const list = state.byChildId[childId];
+      if (!list) return;
+
+      const idx = list.findIndex((d) => String(d._id) === String(deviceId));
+      if (idx < 0) return;
+
+      const device = list[idx];
+
+      state.byChildId[childId][idx] = {
+        ...device,
+        isLocked: isLocked ?? device.isLocked,
+        isActive: isActive ?? (device as any).isActive,
+        lastSeenAt: lastSeenAt ?? (device as any).lastSeenAt,
+        accessibilityEnabled:
+          accessibilityEnabled !== undefined
+            ? accessibilityEnabled
+            : (device as any).accessibilityEnabled,
+        usageAccessEnabled:
+          usageAccessEnabled !== undefined
+            ? usageAccessEnabled
+            : (device as any).usageAccessEnabled,
+        screenTime: {
+          ...(device.screenTime ?? {}),
+          usedTodayMinutes:
+            usedTodayMinutes ?? device.screenTime?.usedTodayMinutes ?? 0,
+          dailyLimitMinutes:
+            dailyLimitMinutes ?? device.screenTime?.dailyLimitMinutes ?? 0,
+          extraMinutesToday:
+            extraMinutesToday ?? device.screenTime?.extraMinutesToday ?? 0,
+        },
+      } as any;
     },
   },
   extraReducers: (builder) => {
@@ -150,7 +212,8 @@ const devicesSlice = createSlice({
   },
 });
 
-export const { clearDevicesForChild, clearAllDevices, setDeviceLockLocal, updateDeviceFromSocket  } =
+export const { clearDevicesForChild, clearAllDevices, setDeviceLockLocal, updateDeviceFromSocket, updateDeviceStatusFromSocket,
+} =
   devicesSlice.actions;
 export {
   fetchDevicesByChild,

@@ -20,7 +20,7 @@ import {
 
 } from "../dal/device.dal.js";
 import { getChildrenByParentId } from "../dal/parent.dal.js";
-
+import { emitPolicyUpdated, emitDeviceStatusUpdated } from "../socketHandler.js";
 
 function assertDailyLimitMinutes(value) {
   const n = Number(value);
@@ -42,7 +42,7 @@ function isSameDay(date1, date2) {
 }
 
 
-
+// Builds a lightweight current status object for the device based on daily screen-time data
 function buildCurrentStatus(device) {
   const dailyLimitMinutes = Number(device.screenTime?.dailyLimitMinutes ?? 0);
   const extraMinutesToday = Number(device.screenTime?.extraMinutesToday ?? 0);
@@ -60,6 +60,88 @@ function buildCurrentStatus(device) {
     isLocked: device.isLocked ?? false,
     isActive: device.isActive ?? true
   };
+}
+
+// Builds the minimal policy payload sent to the child device for real-time enforcement updates
+function buildPolicyPayload(device) {
+  return {
+    isLocked: device.isLocked ?? false,
+    screenTime: {
+      isLimitEnabled: device.screenTime?.isLimitEnabled ?? false,
+      dailyLimitMinutes: Number(device.screenTime?.dailyLimitMinutes ?? 0),
+      extraMinutesToday: Number(device.screenTime?.extraMinutesToday ?? 0)
+    }
+  };
+}
+
+// Sends a real-time policy update to the linked child room after a policy-related device change
+export function pushPolicyUpdate(device) {
+  if (!device?.childId) return;
+  emitPolicyUpdated(String(device.childId), buildPolicyPayload(device));
+}
+
+
+
+// Derives the parent home status from current usage and allowed daily time
+function calculateRealtimeHomeStatus(usedTodayMinutes, totalAllowedMinutes, isLocked) {
+  if (isLocked) {
+    return "bad";
+  }
+
+  if (!totalAllowedMinutes || totalAllowedMinutes <= 0) {
+    return "good";
+  }
+
+  const ratio = usedTodayMinutes / totalAllowedMinutes;
+
+  if (ratio >= 1) {
+    return "bad";
+  }
+
+  if (ratio >= 0.8) {
+    return "warn";
+  }
+
+  return "good";
+}
+
+// Builds a lightweight device status payload for parent-side real-time UI updates
+function buildDeviceStatusPayload(device) {
+  const isLimitEnabled = device.screenTime?.isLimitEnabled === true;
+  const dailyLimitMinutesRaw = Number(device.screenTime?.dailyLimitMinutes ?? 0);
+  const extraMinutesToday = Number(device.screenTime?.extraMinutesToday ?? 0);
+  const usedTodayMinutes = Number(device.screenTime?.usedTodayMinutes ?? 0);
+  const totalAllowedMinutes = dailyLimitMinutesRaw + extraMinutesToday;
+  const isLocked = device.isLocked ?? false;
+
+  return {
+    parentId: String(device.parentId),
+    childId: String(device.childId),
+    deviceId: String(device._id),
+    isLocked,
+    isActive: device.isActive ?? true,
+    status: calculateRealtimeHomeStatus(
+      usedTodayMinutes,
+      isLimitEnabled ? totalAllowedMinutes : null,
+      isLocked
+    ),
+    usedTodayMinutes,
+    dailyLimitMinutes: isLimitEnabled ? totalAllowedMinutes : null,
+    extraMinutesToday,
+    remainingMinutes: isLimitEnabled
+      ? Math.max(totalAllowedMinutes - usedTodayMinutes, 0)
+      : null,
+    lastSeenAt: device.lastSeenAt ?? null,
+    accessibilityEnabled: device.accessibilityEnabled ?? null,
+    usageAccessEnabled: device.usageAccessEnabled ?? null
+  };
+}
+
+
+// Sends the latest device status to the parent room after a device-related change
+export function pushDeviceStatusUpdate(device) {
+  if (!device?.parentId) return;
+  emitDeviceStatusUpdated(String(device.parentId), buildDeviceStatusPayload(device));
 }
 
 
@@ -81,6 +163,7 @@ export async function validateDeviceAccess({ deviceId, parentId, childId, allowI
   return device;
 }
 
+
 function ensureChildBelongsToParent(childList, childId) {
   const belongs = childList.some((child) => String(child._id) === String(childId));
 
@@ -96,6 +179,12 @@ export async function lockDevice(parentId, deviceId) {
   const device = await validateDeviceAccess({ deviceId, parentId });
 
   const updatedDevice = await updateDeviceById(deviceId, { isLocked: true });
+
+  // Push the updated policy to the child device in real time
+  pushPolicyUpdate(updatedDevice);
+
+  // Push the latest device status to the parent room in real time
+  pushDeviceStatusUpdate(updatedDevice);
 
   try {
     await notifyChild({
@@ -130,6 +219,10 @@ export async function unlockDevice(parentId, deviceId) {
 
   const device = await validateDeviceAccess({ deviceId, parentId });
   const updatedDevice = await updateDeviceById(deviceId, { isLocked: false });
+
+  pushPolicyUpdate(updatedDevice);
+
+  pushDeviceStatusUpdate(updatedDevice);
 
   try {
 
@@ -233,6 +326,10 @@ export async function updateDeviceScreenTime(parentId, deviceId, body) {
 
   const updatedDevice = await updateDeviceById(deviceId, patch);
 
+  pushPolicyUpdate(updatedDevice);
+
+  pushDeviceStatusUpdate(updatedDevice);
+
   try {
     await notifyChild({
       parentId,
@@ -258,7 +355,7 @@ export async function updateDeviceScreenTime(parentId, deviceId, body) {
   } catch (err) {
     console.error("notifyParent failed in updateDeviceScreenTime:", err.message);
   }
-  
+
   try {
     await sendAuditLog({
       parentId,
@@ -387,6 +484,8 @@ export async function blockApplication(parentId, deviceId, packageName) {
 
   const updatedDevice = await updateApplicationBlockStatus(deviceId, packageName, true);
 
+  pushPolicyUpdate(updatedDevice);
+
   const updatedApp = updatedDevice.applications?.find(
     (application) => application.packageName === packageName
   );
@@ -407,6 +506,8 @@ export async function unblockApplication(parentId, deviceId, packageName) {
   }
 
   const updatedDevice = await updateApplicationBlockStatus(deviceId, packageName, false);
+
+  pushPolicyUpdate(updatedDevice);
 
   const updatedApp = updatedDevice.applications?.find(
     (application) => application.packageName === packageName
@@ -467,6 +568,10 @@ export async function updateDeviceDailyLimitService(parentId, deviceId, body) {
     isLimitEnabled,
     dailyLimitMinutes
   });
+
+  pushPolicyUpdate(updatedDevice);
+
+  pushDeviceStatusUpdate(updatedDevice);
 
   try {
     await notifyChild({
@@ -605,6 +710,9 @@ export async function updateDeviceUsageByChild({
 
   const previousStatus = buildCurrentStatus(device);
   const updatedDevice = await updateDeviceUsedTodayMinutes(deviceId, n);
+
+  pushDeviceStatusUpdate(updatedDevice);
+
   const currentStatus = buildCurrentStatus(updatedDevice);
 
   const crossedEndingThreshold =
@@ -636,6 +744,10 @@ export async function updateDeviceUsageByChild({
 
   if (crossedEndedThreshold) {
     const lockedDevice = await updateDeviceById(deviceId, { isLocked: true });
+
+    pushPolicyUpdate(lockedDevice);
+
+    pushDeviceStatusUpdate(lockedDevice);
 
     try {
       await notifyParent({
@@ -679,7 +791,6 @@ export async function updateDeviceUsageByChild({
   return currentStatus;
 }
 
-
 export async function handleDeviceHeartbeat({
   deviceId,
   childId,
@@ -709,8 +820,8 @@ export async function handleDeviceHeartbeat({
     throw new AppError(CommonErrors.DEVICE_NOT_ACTIVE);
   }
 
-  const wasAccessibilityEnabled = device.accessibilityEnabled ?? true;
-  const wasUsageAccessEnabled = device.usageAccessEnabled ?? true;
+  const wasAccessibilityEnabled = device.accessibilityEnabled;
+  const wasUsageAccessEnabled = device.usageAccessEnabled;
 
   const updatedDevice = await updateDeviceHeartbeat(deviceId, {
     lastSeenAt: new Date(),
@@ -718,9 +829,42 @@ export async function handleDeviceHeartbeat({
     usageAccessEnabled
   });
 
+  pushDeviceStatusUpdate(updatedDevice);
 
+  // Send an initial setup warning if accessibility is missing on the first known heartbeat
+  if (wasAccessibilityEnabled == null && accessibilityEnabled === false) {
+    try {
+      await notifyParent({
+        parentId: device.parentId,
+        childId: device.childId,
+        type: NotificationType.BYPASS_ATTEMPT,
+        severity: NotificationSeverity.WARNING,
+        title: "Device Setup Incomplete",
+        description: "Accessibility service is not enabled, so device locking and blocking may not work correctly."
+      });
+    } catch (err) {
+      console.error("notifyParent failed in handleDeviceHeartbeat (initial accessibility):", err.message);
+    }
+  }
 
-  if (wasAccessibilityEnabled && !accessibilityEnabled) {
+  // Send an initial setup warning if usage access is missing on the first known heartbeat
+  if (wasUsageAccessEnabled == null && usageAccessEnabled === false) {
+    try {
+      await notifyParent({
+        parentId: device.parentId,
+        childId: device.childId,
+        type: NotificationType.BYPASS_ATTEMPT,
+        severity: NotificationSeverity.WARNING,
+        title: "Device Setup Incomplete",
+        description: "Usage access is not enabled, so screen-time usage and remaining time may not update correctly."
+      });
+    } catch (err) {
+      console.error("notifyParent failed in handleDeviceHeartbeat (initial usage):", err.message);
+    }
+  }
+
+  // Send a stronger warning only when accessibility was previously enabled and then turned off
+  if (wasAccessibilityEnabled === true && accessibilityEnabled === false) {
     try {
       await notifyParent({
         parentId: device.parentId,
@@ -728,14 +872,15 @@ export async function handleDeviceHeartbeat({
         type: NotificationType.BYPASS_ATTEMPT,
         severity: NotificationSeverity.CRITICAL,
         title: "Protection Disabled",
-        description: "Accessibility service was turned off"
+        description: "Accessibility service was turned off, so device locking and blocking may no longer work correctly."
       });
     } catch (err) {
       console.error("notifyParent failed in handleDeviceHeartbeat (accessibility):", err.message);
     }
   }
 
-  if (wasUsageAccessEnabled && !usageAccessEnabled) {
+  // Send a stronger warning only when usage access was previously enabled and then turned off
+  if (wasUsageAccessEnabled === true && usageAccessEnabled === false) {
     try {
       await notifyParent({
         parentId: device.parentId,
@@ -743,7 +888,7 @@ export async function handleDeviceHeartbeat({
         type: NotificationType.BYPASS_ATTEMPT,
         severity: NotificationSeverity.WARNING,
         title: "Limited Protection",
-        description: "Usage access permission was turned off"
+        description: "Usage access was turned off, so screen-time usage and remaining time may no longer update correctly."
       });
     } catch (err) {
       console.error("notifyParent failed in handleDeviceHeartbeat (usage):", err.message);

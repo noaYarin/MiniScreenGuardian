@@ -204,7 +204,7 @@ export default function ChildProfileScreen() {
       await dispatch(deleteChildThunk(childId)).unwrap();
       router.replace("/Parent/(tabs)/children");
     } catch (error: any) {
-      showAppToast(error?.message || "Could not delete the child.", "Error");
+      showAppToast(error?.message || "Could not delete the child.\n\n Please delete their devices first.", "Error");
     } finally {
       setIsDeleting(false);
     }

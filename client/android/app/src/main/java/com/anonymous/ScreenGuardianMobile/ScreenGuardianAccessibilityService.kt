@@ -6,52 +6,44 @@ package com.screenguardianmobile
  * This is the core enforcement engine of the application.
  * It runs as an Android AccessibilityService and is responsible for:
  * - Monitoring foreground app changes
- * - Tracking real-time usage
- * - Enforcing lock conditions
- * - Syncing with the backend periodically
+ * - Evaluating lock state in real time
+ * - Syncing policy from server
+ * - Sending usage + heartbeat back to server
+ * - Supporting realtime policy updates via socket
  *
  * Main responsibilities:
  *
  * 1. Real-time monitoring:
- *    - Listens to window/app changes (TYPE_WINDOW_STATE_CHANGED)
- *    - Updates usage immediately when the foreground app changes
+ *    - Listens to foreground app changes (TYPE_WINDOW_STATE_CHANGED)
+ *    - Re-evaluates lock state when the visible app changes
  *
  * 2. Periodic sync loop:
- *    - Fetch latest policy from server (DevicePolicySyncHelper)
- *    - Update usage stats (UsageStatsHelper)
- *    - Evaluate lock decision
- *    - Send usage + heartbeat to server (DeviceServerSyncHelper)
+ *    - Keeps a fallback sync from the backend
+ *    - Updates usage stats in one central place only
+ *    - Evaluates lock decision after latest data
+ *    - Sends usage (only if changed) + heartbeat to server
  *
- * 3. Lock enforcement:
+ * 3. Socket integration:
+ *    - Tries to stay connected for real-time policy updates
+ *    - Re-evaluates lock immediately when socket policy arrives
+ *
+ * 4. Lock enforcement:
  *    - Decides whether device should be locked using PolicyStore
  *    - Opens BlockScreenActivity if lock is required
  *
- * 4. Block logic:
+ * 5. Block logic:
  *    - Prevents blocking allowed/system apps (whitelist)
  *    - Uses debounce to avoid repeated lock triggers
  *    - Ensures only one blocking screen is shown at a time
  *
- * 5. Offline support:
+ * 6. Offline support:
  *    - Even without network, enforcement works using PolicyStore
- *    - Sync resumes when connection is restored
- *
- * Key concepts:
- *
- * - Event-driven logic (onAccessibilityEvent)
- * - Polling loop (Handler + Runnable)
- * - Local decision making (PolicyStore.shouldLockDevice)
- *
- * Lock conditions:
- * - Manual lock (lockNow)
- * - Server lock (serverLocked)
- * - Daily limit reached (remaining <= 0)
+ *    - Periodic sync remains as fallback if socket is unavailable
  *
  * Important notes:
- * - CHECK_INTERVAL_MS controls sync frequency
- * - LOCK_DEBOUNCE_MS prevents rapid multiple launches
- * - Allowed packages prevent blocking critical apps (dialer, own app)
- *
- * This class is the heart of the parental control enforcement system.
+ * - CHECK_INTERVAL_MS controls fallback sync frequency
+ * - Usage is updated only from the periodic loop (not from every event)
+ * - Socket does not replace local enforcement, it only updates policy faster
  */
 
 import android.accessibilityservice.AccessibilityService
@@ -61,20 +53,53 @@ import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import android.content.ComponentName
+import android.provider.Settings
+import android.content.Context
 
 class ScreenGuardianAccessibilityService : AccessibilityService() {
 
     companion object {
         private const val TAG = "ScreenGuardianService"
-        private const val CHECK_INTERVAL_MS = 5000L // Interval for periodic sync loop
-        private const val LOCK_DEBOUNCE_MS = 2000L // Prevent multiple lock triggers in short time
+
+        // Reduced polling frequency: keep fallback sync, but avoid aggressive 5-second loop
+        private const val CHECK_INTERVAL_MS = 15000L
+
+        // Prevent opening multiple lock screens in a very short time
+        private const val LOCK_DEBOUNCE_MS = 2000L
+
+        
+     // Checks whether this accessibility service is currently enabled in Android settings
+     fun isServiceEnabled(context: Context): Boolean {
+        val expectedComponent = ComponentName(
+            context,
+            ScreenGuardianAccessibilityService::class.java
+        ).flattenToString()
+
+        val enabledServices = Settings.Secure.getString(
+            context.contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: return false
+
+        return enabledServices
+            .split(':')
+            .any { it.equals(expectedComponent, ignoreCase = true)
+        }
     }
+ }
+    
+
+
+
 
     private val handler = Handler(Looper.getMainLooper())
 
     private var lastLockTime = 0L
 
-    // List of packages that should not be blocked (e.g. dialer, system UI, own app)
+    // Keep the last foreground package so we can re-evaluate lock after sync/socket updates
+    private var lastForegroundPackage: String? = null
+
+    // List of packages that should not be blocked
     private val allowedPackages = setOf(
         "com.screenguardianmobile",
         "com.google.android.dialer",
@@ -84,35 +109,57 @@ class ScreenGuardianAccessibilityService : AccessibilityService() {
         "com.android.incallui"
     )
 
-    // Main periodic loop responsible for:
-    // 1. Fetching latest policy from server
-    // 2. Updating usage stats
-    // 3. Evaluating lock state
-    // 4. Syncing data back to server
+    /**
+     * Main periodic loop responsible for:
+     * 1. Ensuring socket is connected (realtime path)
+     * 2. Fetching latest policy from server (fallback path)
+     * 3. Updating usage stats in one single place
+     * 4. Evaluating lock state
+     * 5. Syncing usage + heartbeat back to server
+     */
     private val lockChecker = object : Runnable {
         override fun run() {
             try {
+                // Reconnect socket if needed.
+                // Socket is the preferred real-time path for policy updates.
+                NativeSocketManager.ensureConnected(applicationContext) {
+                    handler.post {
+                        evaluateLock(lastForegroundPackage)
+                    }
+                }
+
+                // Keep HTTP policy sync as fallback in case socket is unavailable
                 DevicePolicySyncHelper.fetchAndSavePolicy(applicationContext) {
                     try {
-                        // Update today's usage from UsageStatsManager
-                        UsageStatsHelper.updateTodayUsage(applicationContext)
+                        // Do not keep recalculating usage while already blocked.
+                        // This prevents unnecessary updates and inflated usage while block screen is active.
+                        val shouldTrackUsage =
+                            !PolicyStore.shouldLockDevice(applicationContext) &&
+                            !BlockScreenActivity.isOpen
 
-                        // Evaluate lock decision after latest data
-                        evaluateLock(null)
+                        if (shouldTrackUsage) {
+                            UsageStatsHelper.updateTodayUsage(applicationContext)
+                        }
 
-                        // Sync usage and heartbeat to server
-                        DeviceServerSyncHelper.sendUsage(applicationContext)
+                        // Re-evaluate lock after latest policy + usage data
+                        evaluateLock(lastForegroundPackage)
+
+                        // Send usage only if it actually changed
+                        DeviceServerSyncHelper.sendUsageIfChanged(applicationContext, 1)
+
+                        // Heartbeat remains periodic
                         DeviceServerSyncHelper.sendHeartbeat(applicationContext)
 
                     } catch (e: Exception) {
                         Log.e(TAG, "Error after policy sync", e)
                     }
                 }
+
             } catch (e: Exception) {
                 Log.e(TAG, "Error in lockChecker", e)
             }
 
-            // Schedule next execution
+            // Schedule next fallback execution
             handler.postDelayed(this, CHECK_INTERVAL_MS)
         }
     }
@@ -121,7 +168,15 @@ class ScreenGuardianAccessibilityService : AccessibilityService() {
         super.onServiceConnected()
         Log.d(TAG, "Accessibility service connected")
 
-        // Start periodic loop
+        // Connect realtime socket once service starts.
+        // If a policy update arrives immediately, re-evaluate lock on main thread.
+        NativeSocketManager.ensureConnected(applicationContext) {
+            handler.post {
+                evaluateLock(lastForegroundPackage)
+            }
+        }
+
+        // Start fallback periodic loop
         handler.post(lockChecker)
     }
 
@@ -130,13 +185,13 @@ class ScreenGuardianAccessibilityService : AccessibilityService() {
         if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
 
         val currentPackage = event.packageName?.toString()
+        lastForegroundPackage = currentPackage
+
         Log.d(TAG, "Window changed: $currentPackage")
 
         try {
-            // Update usage immediately when app changes
-            UsageStatsHelper.updateTodayUsage(applicationContext)
-
-            // Evaluate lock based on current foreground app
+            // Do not update usage here.
+            // Usage should be updated only from the periodic loop to avoid duplicated calculations.
             evaluateLock(currentPackage)
 
         } catch (e: Exception) {
@@ -151,19 +206,25 @@ class ScreenGuardianAccessibilityService : AccessibilityService() {
     override fun onDestroy() {
         super.onDestroy()
 
-        // Stop periodic loop when service is destroyed
+        // Stop periodic loop
         handler.removeCallbacks(lockChecker)
+
+        // Disconnect socket when service is destroyed
+        NativeSocketManager.disconnect()
     }
 
-    // Centralized lock decision logic
-    // This method determines whether the device should be locked
+    /**
+     * Centralized lock decision logic.
+     *
+     * Important:
+     * - This method reads already-saved state from PolicyStore
+     * - It does NOT update usage itself anymore
+     * - This keeps lock evaluation pure and avoids duplicated usage calculations
+     */
     private fun evaluateLock(currentPackage: String?) {
-
         val now = SystemClock.elapsedRealtime()
 
-        // Retrieve current state from PolicyStore
-        UsageStatsHelper.updateTodayUsage(applicationContext)
-
+        // Read current state from PolicyStore
         val usedToday = PolicyStore.getUsedToday(applicationContext)
         val remaining = PolicyStore.getRemainingMinutes(applicationContext)
         val dailyLimit = PolicyStore.getDailyLimit(applicationContext)
@@ -180,10 +241,10 @@ class ScreenGuardianAccessibilityService : AccessibilityService() {
             else -> ""
         }
 
-        // Persist block reason for UI usage
+        // Persist block reason so BlockScreenActivity can show correct explanation
         PolicyStore.setBlockReason(applicationContext, blockReason)
 
-        // Final decision if device should be locked
+        // Final decision from PolicyStore
         val shouldLock = PolicyStore.shouldLockDevice(applicationContext)
 
         Log.d(
@@ -191,22 +252,22 @@ class ScreenGuardianAccessibilityService : AccessibilityService() {
             "used=$usedToday remaining=$remaining limit=$dailyLimit extra=$extraMinutes shouldLock=$shouldLock reason=$blockReason pkg=$currentPackage"
         )
 
-        // If no lock is required, exit early
+        // No lock needed
         if (!shouldLock) return
 
-        // Do not block allowed/system packages
+        // Do not block whitelisted/system/self packages
         if (currentPackage != null && isPackageAllowed(currentPackage)) {
             Log.d(TAG, "Allowed package: $currentPackage")
             return
         }
 
-        // Debounce to avoid rapid repeated launches
+        // Debounce repeated launches
         if (now - lastLockTime < LOCK_DEBOUNCE_MS) {
             Log.d(TAG, "Skipping lock (debounce)")
             return
         }
 
-        // Prevent opening multiple instances of block screen
+        // Avoid opening multiple block screens
         if (BlockScreenActivity.isOpen) {
             Log.d(TAG, "Block screen already open")
             return
@@ -214,13 +275,11 @@ class ScreenGuardianAccessibilityService : AccessibilityService() {
 
         lastLockTime = now
 
-        // Launch blocking UI
         val intent = Intent(this, BlockScreenActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
-            // Pass relevant data to UI
             putExtra("blockReason", blockReason)
             putExtra("usedTodayMinutes", usedToday)
             putExtra("dailyLimitMinutes", dailyLimit)
@@ -231,13 +290,13 @@ class ScreenGuardianAccessibilityService : AccessibilityService() {
         startActivity(intent)
     }
 
-    // Check if package is allowed (whitelisted)
+    /**
+     * Check whether a package is safe to allow even when device is blocked.
+     */
     private fun isPackageAllowed(packageName: String): Boolean {
-    val selfPackage = applicationContext.packageName
+        val selfPackage = applicationContext.packageName
 
-    return packageName == selfPackage ||
-           allowedPackages.contains(packageName)
-   }
-
-
+        return packageName == selfPackage ||
+            allowedPackages.contains(packageName)
+    }
 }
