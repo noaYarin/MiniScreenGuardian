@@ -343,7 +343,7 @@ export default function ExtendTimeRequestScreen() {
                   }}
                 />
               </View>
-              
+
               <Button
                 mode="contained"
                 onPress={onSend}
@@ -367,7 +367,7 @@ export default function ExtendTimeRequestScreen() {
                 icon="send"
               >
                 {hasPendingRequestForThisDevice
-                  ? "A pending extension request already exists for this device"
+                  ? "Pending request already sent"
                   : isSubmitting
                     ? "Sending..."
                     : "Send request to parent"}

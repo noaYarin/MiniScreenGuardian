@@ -368,7 +368,6 @@ export const styles = StyleSheet.create({
   sendBtn: {
     marginTop: 18,
     borderRadius: 20,
-    backgroundColor: "#16A34A",
   },
 
   sendBtnContent: {
