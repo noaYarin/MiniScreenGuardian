@@ -16,6 +16,8 @@ import { fetchParentHomeSummaryThunk } from "@/src/redux/thunks/parentHomeThunks
 import { getMyChildrenThunk } from "@/src/redux/thunks/childrenThunks";
 import { fetchParentNotificationsThunk } from "@/src/redux/thunks/notificationThunks";
 
+import InfoHint from "../../../components/InfoHint/InfoHint";
+
 type ChildCard = {
   id: string;
   name: string;
@@ -153,7 +155,7 @@ export default function HomeParentScreen() {
               </View>
 
               <AppText weight="extraBold" style={styles.bigHello}>
-                Hello {parentName}
+                Hello, {parentName}
               </AppText>
 
               <View style={styles.headerBellRight}>
@@ -207,6 +209,19 @@ export default function HomeParentScreen() {
                   </AppText>
                 </View>
               </View>
+            </View>
+
+            <View style={{ width: "100%", marginTop: 10, marginBottom: 6 }}>
+              <InfoHint
+                title="Info"
+                lines={[
+                  "This screen gives you a quick overview of your children’s screen time and device status.",
+                  "Usage Access on child's device is needed to show correct screen-time data.",
+                  "Accessibility access on child's device is needed for lock actions to work properly.",
+                  "If a device is offline or a required permission is turned off, the latest updates will appear here after the next sync.",
+                  "Open a child’s profile for deleting or editing child, watch child location, requests and screen time limits",
+                ]}
+              />
             </View>
 
             {isLoading ? (

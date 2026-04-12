@@ -31,6 +31,8 @@ import ConfirmDialog from "@/src/components/ConfirmDialog/ConfirmDialog";
 import { showAppToast } from "@/src/utils/appToast";
 import { emitEvent } from "@/src/services/socket";
 import { DELETE_DEVICE } from "@/src/constants/socketEvents";
+import InfoHint from "../../../components/InfoHint/InfoHint";
+
 
 type SelectedChildLike = {
   _id?: string;
@@ -160,7 +162,7 @@ export default function ChildDetailsScreen() {
     if (effectiveChildId) {
       await dispatch(fetchDevicesByChild(effectiveChildId))
         .unwrap()
-        .catch(() => {});
+        .catch(() => { });
     }
 
     setDevicesRefreshing(false);
@@ -368,6 +370,22 @@ export default function ChildDetailsScreen() {
             text={undefined}
             onOpenProfile={handleOpenChildProfile}
           />
+
+
+          <View style={{ marginTop: 10 }}>
+            <InfoHint
+              title="Device management information"
+              lines={[
+                "Manual lock and unlock works only while Accessibility access is enabled on the child’s device.",
+                "Manual lock and unlock only control the manual lock.",
+                "They do not turn the daily limit on or off.",
+                "Daily limits can be changed only on the daily limits screen.",
+                "When both are active, manual lock overrides the daily limit.",
+                "Even if the daily limit ends, the device stays locked until you unlock it manually.",
+                "If a device is offline, changes will apply when it reconnects.",
+              ]}
+            />
+          </View>
 
           <ChildDetailsDevicesSection
             expanded={isDevicesExpanded}

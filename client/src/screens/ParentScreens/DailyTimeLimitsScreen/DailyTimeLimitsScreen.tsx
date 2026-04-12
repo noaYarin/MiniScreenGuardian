@@ -21,6 +21,8 @@ import {
   fetchDevicesByChild,
   updateDeviceScreenTimeThunk,
 } from "@/src/redux/thunks/deviceThunks";
+import InfoHint from "../../../components/InfoHint/InfoHint";
+
 
 type ScreenLimitCard = {
   id: string;
@@ -140,11 +142,11 @@ export default function DailyTimeLimitsScreen() {
 
   const selectedDeviceName = selectedDevice
     ? String(
-        (selectedDevice as any).deviceName ??
-          (selectedDevice as any).model ??
-          (selectedDevice as any).name ??
-          ""
-      )
+      (selectedDevice as any).deviceName ??
+      (selectedDevice as any).model ??
+      (selectedDevice as any).name ??
+      ""
+    )
     : "";
 
   const selectedLimits: ScreenLimitCard[] = useMemo(() => {
@@ -318,6 +320,19 @@ export default function DailyTimeLimitsScreen() {
                 </AppText>
               </View>
             </View>
+
+
+            <InfoHint
+              title="Daily limit information"
+              lines={[
+                "The daily limit resets automatically at the start of each new day.",
+                "For the daily limit to work correctly, Usage Access and Accessibility must stay enabled on the child’s device.",
+                "If you want to give more time, approve an extension request or turn off the daily limit here.",
+                "Unlocking the device manually does not turn off the daily limit.",
+                "If the device is offline, changes will apply when it reconnects.",
+              ]}
+            />
+
           </View>
 
           <ChildDeviceSelector
@@ -489,8 +504,8 @@ export default function DailyTimeLimitsScreen() {
                       {isEnabled
                         ? isEditing
                           ? `Current limit is ${formatHoursToClock(
-                              effectiveMaxHours
-                            )} per day`
+                            effectiveMaxHours
+                          )} per day`
                           : limitCard.summary
                         : "This daily limit is turned off."}
                     </AppText>
