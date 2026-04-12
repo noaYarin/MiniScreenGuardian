@@ -75,8 +75,8 @@ export default function ExtensionRequestsScreen() {
   );
 
   const pendingRequestsRefreshKey = useSelector(
-  (state: RootState) => state.requests.pendingRequestsRefreshKey
-);
+    (state: RootState) => state.requests.pendingRequestsRefreshKey
+  );
 
   const [selectedChildId, setSelectedChildId] = useState("");
   const [selectedDeviceId, setSelectedDeviceId] = useState(ALL_DEVICE_ID);
@@ -186,7 +186,7 @@ export default function ExtensionRequestsScreen() {
             </AppText>
 
             <AppText weight="medium" style={styles.heroSubtitle}>
-              Manage pending requests from your children
+              Manage pending daily limit extension requests
             </AppText>
           </View>
 
