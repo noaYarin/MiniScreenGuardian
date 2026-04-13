@@ -43,37 +43,28 @@ export default function LocationDetailsCard({
 
     const fetchAddress = async () => {
       try {
-        const reversed = await Location.reverseGeocodeAsync({
-          latitude: deviceSnapshot.latitude,
-          longitude: deviceSnapshot.longitude,
-        });
+        // OpenStreetMap API
+        const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${deviceSnapshot.latitude}&lon=${deviceSnapshot.longitude}&accept-language=en`;    
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Screenguardian'
+      }
+    });
+    
+    const data = await response.json();
 
-        const res = reversed[0];
-
-        if (res) {
-          const street = res.street || "";
-          const city = res.city || "";
-          const streetNumber = res.streetNumber ? ` ${res.streetNumber}` : "";
-
-          const fullAddress = `${street}${streetNumber}${
-            street && city ? ", " : ""
-          }${city}`.trim();
-
-          setResolvedAddress(
-            fullAddress ||
-              `${deviceSnapshot.latitude.toFixed(4)}, ${deviceSnapshot.longitude.toFixed(4)}`
-          );
-          return;
-        }
-
-        setResolvedAddress(
-          `${deviceSnapshot.latitude.toFixed(4)}, ${deviceSnapshot.longitude.toFixed(4)}`
-        );
+        if (data && data.address) {
+          const street = data.address.road || data.address.pedestrian || "";
+          const houseNum = data.address.house_number ? ` ${data.address.house_number}` : "";
+          const city = data.address.city || data.address.town || data.address.village || "";
+          
+          const cleanAddress = `${street}${houseNum}${street && city ? ", " : ""}${city}`.trim();
+          setResolvedAddress(cleanAddress || data.display_name);
+        } else {
+          setResolvedAddress("No address found");
+        } 
       } catch (error) {
-        console.warn("Geocoding error:", error);
-        setResolvedAddress(
-          `${deviceSnapshot.latitude.toFixed(4)}, ${deviceSnapshot.longitude.toFixed(4)}`
-        );
+        setResolvedAddress(`No address found`);
       }
     };
 
