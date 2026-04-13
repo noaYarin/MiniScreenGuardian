@@ -10,6 +10,20 @@ import {
   apiUnlockDevice,
 } from "../../api/device";
 
+function normalizeLocationLastUpdated(value: unknown): string {
+  if (typeof value === "string" && value.trim()) return value.trim();
+
+  if (value instanceof Date && Number.isFinite(value.getTime())) {
+    return value.toISOString();
+  }
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return new Date(value).toISOString();
+  }
+
+  return new Date().toISOString();
+}
+
 function normalizeDevice(raw: unknown): Device {
   if (raw == null || typeof raw !== "object") {
     throw new Error("devices.fetch_device_failed");
@@ -22,14 +36,14 @@ function normalizeDevice(raw: unknown): Device {
   const rawLocation = rawDevice.location as
     | { lat?: unknown; lng?: unknown; lastUpdated?: unknown }
     | undefined;
+  const lastUpdated = normalizeLocationLastUpdated(rawLocation?.lastUpdated);
+
   const location = {
     lat: typeof rawLocation?.lat === "number" ? rawLocation.lat : 0,
     lng: typeof rawLocation?.lng === "number" ? rawLocation.lng : 0,
-    lastUpdated:
-      typeof rawLocation?.lastUpdated === "string"
-        ? rawLocation.lastUpdated
-        : new Date().toISOString(),
+    lastUpdated,
   };
+
   const screenTime = rawDevice.screenTime;
   return {
     _id: String(id),
@@ -175,7 +189,7 @@ export const updateDeviceLocation = createAsyncThunk(
   ) => {
     try {
       const response = await apiUpdateDeviceLocation(deviceId, location);
-      return response; 
+      return response;
     } catch (error) {
       const message = (error as Error)?.message ?? "devices.update_device_location_failed";
       return thunkAPI.rejectWithValue(message);

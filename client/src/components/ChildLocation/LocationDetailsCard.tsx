@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
-import * as Location from "expo-location";
+import moment from "moment-timezone";
 
 import AppText from "../AppText/AppText";
 import { styles } from "../../screens/ParentScreens/ChildLocationScreen/styles";
@@ -63,7 +63,7 @@ export default function LocationDetailsCard({
         } else {
           setResolvedAddress("No address found");
         } 
-      } catch (error) {
+      } catch {
         setResolvedAddress(`No address found`);
       }
     };
@@ -87,16 +87,9 @@ export default function LocationDetailsCard({
     let timeStr = "--:--";
 
     if (deviceSnapshot?.lastUpdated) {
-      const date = new Date(deviceSnapshot.lastUpdated);
-      const datePart = date.toLocaleDateString("en-US", {
-        day: "2-digit",
-        month: "2-digit",
-      });
-      const timePart = date.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      timeStr = `${datePart}, ${timePart}`;
+      const tz = "Asia/Jerusalem";
+      const m = moment(deviceSnapshot.lastUpdated as any).tz(tz);
+      timeStr = m.isValid() ? m.format("MM/DD, HH:mm") : "--:--";
     }
 
     return {

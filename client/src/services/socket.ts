@@ -9,8 +9,8 @@ export const connectSocket = (
   options?: { parentId?: string }
 ) => {
     if (!socket) {
-      console.log("Creating Singleton Socket...");
-      socket = io(API_BASE_URL);
+        console.log("Creating Singleton Socket...");
+        socket = io(API_BASE_URL);
     }
     const joinEvent = userType === "parent" ? JOIN_PARENT : JOIN_CHILD;
 
