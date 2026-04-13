@@ -741,6 +741,20 @@ export async function updateDeviceUsageByChild({
     } catch (err) {
       console.error("notifyParent failed in updateDeviceUsageByChild (ending):", err.message);
     }
+
+    try {
+      await notifyChild({
+        parentId: updatedDevice.parentId,
+        childId: updatedDevice.childId,
+        type: NotificationType.SCREEN_TIME_ENDING,
+        severity: NotificationSeverity.WARNING,
+        title: "Almost out of time",
+        description: `You have ${currentStatus.remainingMinutes} minute${currentStatus.remainingMinutes === 1 ? "" : "s"} left`
+      });
+    } catch (err) {
+      console.error("notifyChild failed in updateDeviceUsageByChild (ending):", err.message);
+    }
+
   }
 
   if (crossedEndedThreshold) {

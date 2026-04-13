@@ -128,7 +128,7 @@ export default function ExtendTimeRequestScreen() {
 
       if (!hasActiveLimit) {
         showAppToast(
-          "There is no active screen-time limit on this device",
+          "No screen-time limit is active right now",
           "Error"
         );
         return;
