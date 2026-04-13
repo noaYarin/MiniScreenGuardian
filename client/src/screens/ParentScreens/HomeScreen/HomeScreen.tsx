@@ -15,7 +15,7 @@ import type { AppDispatch, RootState } from "@/src/redux/store/types";
 import { fetchParentHomeSummaryThunk } from "@/src/redux/thunks/parentHomeThunks";
 import { getMyChildrenThunk } from "@/src/redux/thunks/childrenThunks";
 import { fetchParentNotificationsThunk } from "@/src/redux/thunks/notificationThunks";
-
+import EmptyStateCard from "../../../components/EmptyStateCard/EmptyStateCard";
 import InfoHint from "../../../components/InfoHint/InfoHint";
 
 type ChildCard = {
@@ -231,23 +231,13 @@ export default function HomeParentScreen() {
             ) : error ? (
               <AppText style={styles.sectionSub}>{error}</AppText>
             ) : childCards.length === 0 ? (
-              <View style={styles.emptyState}>
-                <AppText>No children yet</AppText>
-
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.btnSecondary,
-                    pressed ? styles.buttonPressed : null,
-                  ]}
-                  onPress={onPressAddChild}
-                  accessibilityRole="button"
-                  accessibilityLabel="Add child"
-                >
-                  <AppText weight="extraBold" style={styles.btnSecondaryText}>
-                    Add Child
-                  </AppText>
-                </Pressable>
-              </View>
+              <EmptyStateCard
+                icon="account-child-outline"
+                title="No children yet"
+                subtitle="Add your first child to start tracking screen time, limits, and device status."
+                buttonLabel="Add Child"
+                onPressButton={onPressAddChild}
+              />
             ) : (
               <View style={styles.cardsWrap}>
                 {childCards.map((c) => {

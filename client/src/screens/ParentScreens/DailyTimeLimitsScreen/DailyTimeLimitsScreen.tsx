@@ -11,6 +11,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 
 import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
+import EmptyStateCard from "../../../components/EmptyStateCard/EmptyStateCard";
 import AppText from "../../../components/AppText/AppText";
 import ChildDeviceSelector from "../../../components/ChildDeviceSelector/ChildDeviceSelector";
 import { styles } from "./styles";
@@ -283,12 +284,16 @@ export default function DailyTimeLimitsScreen() {
     return (
       <ScreenLayout>
         <View style={styles.container}>
-          <AppText>No children yet. Add a child to get started</AppText>
+          <EmptyStateCard
+            icon="account-child-outline"
+            title="No children yet"
+            subtitle="Add a child to get started."
+          />
         </View>
       </ScreenLayout>
     );
   }
-
+  
   return (
     <ScreenLayout>
       <ScrollView

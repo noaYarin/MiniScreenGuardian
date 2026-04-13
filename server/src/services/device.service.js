@@ -450,8 +450,8 @@ export async function deleteDeviceForParent(parentId, childId, deviceId) {
   ensureChildBelongsToParent(childList, childId);
   const device = await validateDeviceAccess({ deviceId, parentId, childId });
   const deviceLabel =
-    device?.deviceName != null && String(device.deviceName).trim() !== ""
-      ? String(device.deviceName).trim()
+    device?.name != null && String(device.name).trim() !== ""
+      ? String(device.name).trim()
       : "A device";
 
   await deleteDeviceById(deviceId);

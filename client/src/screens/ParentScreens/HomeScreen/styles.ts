@@ -25,26 +25,26 @@ export const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 8,
   },
-header: {
-  position: "relative",
-  minHeight: 56,
-  alignItems: "center",
-  justifyContent: "center",
-  paddingTop: 8,
-  paddingBottom: 6,
-},
+  header: {
+    position: "relative",
+    minHeight: 56,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 8,
+    paddingBottom: 6,
+  },
 
-headerMenuLeft: {
-  position: "absolute",
-  left: 0,
-  top: 8,
-},
+  headerMenuLeft: {
+    position: "absolute",
+    left: 0,
+    top: 8,
+  },
 
-headerBellRight: {
-  position: "absolute",
-  right: 0,
-  top: 8,
-},
+  headerBellRight: {
+    position: "absolute",
+    right: 0,
+    top: 8,
+  },
 
   headerLeftActions: {
     position: "absolute",
@@ -174,6 +174,50 @@ headerBellRight: {
     alignItems: "center",
     gap: 12,
     paddingVertical: 20,
+  },
+
+  emptyStateCard: {
+    marginTop: 18,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#E7EFFA",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 20,
+    paddingVertical: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+  },
+
+  emptyIconBox: {
+    width: 60,
+    height: 60,
+    borderRadius: 18,
+    backgroundColor: "#EFF6FF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  emptyTitle: {
+    fontSize: 18,
+    color: "#0F172A",
+    textAlign: "center",
+  },
+
+  emptySubtitle: {
+    fontSize: 14,
+    color: "#64748B",
+    textAlign: "center",
+    lineHeight: 20,
+  },
+
+  emptyButton: {
+    marginTop: 6,
   },
 
   cardsWrap: {

@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
 import AppText from "../../../components/AppText/AppText";
+import EmptyStateCard from "../../../components/EmptyStateCard/EmptyStateCard";
 import ChildDeviceSelector from "../../../components/ChildDeviceSelector/ChildDeviceSelector";
 import { styles } from "./styles";
 
@@ -334,23 +335,11 @@ export default function ActivityHistoryScreen() {
                 showDevices={false}
               />
             ) : (
-              <View style={styles.emptyState}>
-                <View style={styles.emptyIconWrap}>
-                  <MaterialCommunityIcons
-                    name="account-child-outline"
-                    size={26}
-                    color="#4F46E5"
-                  />
-                </View>
-
-                <AppText weight="bold" style={styles.emptyTitle}>
-                  No children found
-                </AppText>
-
-                <AppText weight="medium" style={styles.emptySubtitle}>
-                  There are no children linked to this account yet.
-                </AppText>
-              </View>
+              <EmptyStateCard
+                icon="account-child-outline"
+                title="No children yet"
+                subtitle="There are no children linked to this account yet."
+              />
             )}
           </View>
 
@@ -414,23 +403,11 @@ export default function ActivityHistoryScreen() {
                 </AppText>
               </View>
             ) : filteredActivities.length === 0 ? (
-              <View style={styles.emptyState}>
-                <View style={styles.emptyIconWrap}>
-                  <MaterialCommunityIcons
-                    name="clipboard-text-clock-outline"
-                    size={26}
-                    color="#4F46E5"
-                  />
-                </View>
-
-                <AppText weight="bold" style={styles.emptyTitle}>
-                  No activity found
-                </AppText>
-
-                <AppText weight="medium" style={styles.emptySubtitle}>
-                  Try selecting another child or changing the filter
-                </AppText>
-              </View>
+              <EmptyStateCard
+                icon="clipboard-text-clock-outline"
+                title="No activity yet"
+                subtitle="Try selecting another child or changing the filter."
+              />
             ) : (
               filteredActivities.map((item) => {
                 const child = childrenList.find(

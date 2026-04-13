@@ -25,6 +25,7 @@ import {
   decideRequestThunk,
 } from "@/src/redux/thunks/requestThunks";
 import { showAppToast } from "@/src/utils/appToast";
+import EmptyStateCard from "../../../components/EmptyStateCard/EmptyStateCard";
 
 function getDeviceIconName(deviceType?: string) {
   return deviceType === "tablet" ? "tablet-dashboard" : "cellphone";
@@ -209,7 +210,11 @@ export default function ExtensionRequestsScreen() {
           ) : requestsError ? (
             <AppText>Error: {requestsError}</AppText>
           ) : visibleRequests.length === 0 ? (
-            <AppText>No pending requests</AppText>
+            <EmptyStateCard
+              icon="clock-outline"
+              title="No pending requests"
+              subtitle="New extension requests will appear here."
+            />
           ) : (
             <View style={styles.cardsWrap}>
               {visibleRequests.map((request) => {

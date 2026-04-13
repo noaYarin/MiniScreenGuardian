@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
 import AppText from "../../../components/AppText/AppText";
+import EmptyStateCard from "../../../components/EmptyStateCard/EmptyStateCard";
 import { styles, ALERT_COLORS } from "./styles";
 
 import type { AppDispatch, RootState } from "@/src/redux/store/types";
@@ -182,7 +183,7 @@ export default function SystemAlertsScreen() {
         <View style={styles.heroTopRow}>
           <View style={styles.heroTextWrap}>
             <AppText weight="extraBold" style={styles.heroTitle}>
-              System Alerts
+              Notifications
             </AppText>
 
             <AppText weight="medium" style={styles.heroSubtitle}>
@@ -234,7 +235,7 @@ export default function SystemAlertsScreen() {
       </View>
 
       <AppText weight="bold" style={styles.sectionTitle}>
-        Filter Alerts
+        Filter Notifications
       </AppText>
 
       <View style={styles.filtersRow}>
@@ -265,7 +266,7 @@ export default function SystemAlertsScreen() {
 
       <View style={styles.listTitleRow}>
         <AppText weight="bold" style={styles.sectionTitle}>
-          Recent Alerts
+          Recent Notifications
         </AppText>
 
         {unreadCount > 0 && (
@@ -433,19 +434,11 @@ export default function SystemAlertsScreen() {
         }
         ListEmptyComponent={
           status !== "loading" ? (
-            <View style={styles.emptyState}>
-              <MaterialCommunityIcons
-                name="bell-outline"
-                size={28}
-                color="#9CA3AF"
-              />
-              <AppText weight="bold" style={styles.emptyTitle}>
-                No alerts to display
-              </AppText>
-              <AppText weight="medium" style={styles.emptySubtitle}>
-                New alerts will appear here
-              </AppText>
-            </View>
+            <EmptyStateCard
+              icon="bell-outline"
+              title="No Notifications yet"
+              subtitle="New Notifications will appear here."
+            />
           ) : null
         }
       />

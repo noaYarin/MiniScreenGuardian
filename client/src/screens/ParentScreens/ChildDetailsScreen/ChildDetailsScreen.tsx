@@ -26,6 +26,7 @@ import { ChildDetailsProfileCard } from "@/src/components/ChildDetails/ChildDeta
 import { ChildDetailsDevicesSection } from "@/src/components/ChildDetails/ChildDetailsDevicesSection";
 import { mapDevicesToRows } from "@/src/components/ChildDetails/mapDevicesToRows";
 import { childDetailsStyles as styles } from "@/src/components/ChildDetails/childDetails.styles";
+import EmptyStateCard from "../../../components/EmptyStateCard/EmptyStateCard";
 import { parseRouteParam } from "./childDetailsRouteParams";
 import ConfirmDialog from "@/src/components/ConfirmDialog/ConfirmDialog";
 import { showAppToast } from "@/src/utils/appToast";
@@ -316,9 +317,11 @@ export default function ChildDetailsScreen() {
     return (
       <ScreenLayout>
         <View style={[styles.container, { paddingTop: 24 }]}>
-          <AppText style={styles.childMeta}>
-            No children yet. Add a child to get started
-          </AppText>
+          <EmptyStateCard
+            icon="account-child-outline"
+            title="No children yet"
+            subtitle="Add a child to get started."
+          />
         </View>
       </ScreenLayout>
     );

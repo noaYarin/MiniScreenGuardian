@@ -52,3 +52,5 @@ obj/
 *.user
 *.suo
 *.log
+
+.idea/

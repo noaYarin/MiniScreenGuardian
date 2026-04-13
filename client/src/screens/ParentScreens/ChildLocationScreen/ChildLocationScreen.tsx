@@ -10,7 +10,7 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import { Href, router } from "expo-router";
 import Toast from "react-native-root-toast";
-
+import EmptyStateCard from "../../../components/EmptyStateCard/EmptyStateCard";
 import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
 import ChildSelector from "../../../components/ChildSelector/ChildSelector";
 import LocationMapCard from "../../../components/ChildLocation/LocationMapCard";
@@ -29,8 +29,8 @@ import { emitEvent } from "@/src/services/socket";
 
 const getAccent = (id: string) =>
   CHILD_ACCENT_COLORS[
-    [...id].reduce((a, c) => a + c.charCodeAt(0), 0) %
-      CHILD_ACCENT_COLORS.length
+  [...id].reduce((a, c) => a + c.charCodeAt(0), 0) %
+  CHILD_ACCENT_COLORS.length
   ];
 
 export default function ChildLocationScreen() {
@@ -90,7 +90,7 @@ export default function ChildLocationScreen() {
       );
       return;
     }
-  
+
     const { latitude, longitude } = deviceSnapshot;
     const label = selectedChild?.name || "Child";
 
@@ -124,15 +124,11 @@ export default function ChildLocationScreen() {
           <View
             style={[styles.container, width >= 900 && styles.containerTablet]}
           >
-            <View style={styles.emptyState}>
-              <AppText weight="bold" style={styles.emptyTitle}>
-                No children found
-              </AppText>
-
-              <AppText style={styles.emptySubtitle}>
-                There are no children linked to this account yet.
-              </AppText>
-            </View>
+            <EmptyStateCard
+              icon="account-child-outline"
+              title="No children yet"
+              subtitle="There are no children linked to this account yet."
+            />
           </View>
         </ScrollView>
       </ScreenLayout>
