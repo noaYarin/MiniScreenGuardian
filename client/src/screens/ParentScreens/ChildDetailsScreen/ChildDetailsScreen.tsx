@@ -268,6 +268,7 @@ export default function ChildDetailsScreen() {
             name: newName,
           })
         ).unwrap();
+        showAppToast("Device name updated successfully", "Success");
       } catch {
         showAppToast("Could not update the device name. Please try again.", "Error");
         throw new Error("rename_failed");

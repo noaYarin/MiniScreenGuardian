@@ -60,6 +60,48 @@ function getActivityMeta(actionType: AuditActionType) {
         iconColor: "#7C3AED",
       };
 
+    case "CHILD_ADDED":
+      return {
+        icon: "account-plus-outline" as const,
+        iconBg: "#DCFCE7",
+        iconColor: "#16A34A",
+      };
+
+    case "CHILD_DELETED":
+      return {
+        icon: "account-remove-outline" as const,
+        iconBg: "#FEE2E2",
+        iconColor: "#DC2626",
+      };
+
+    case "CHILD_PROFILE_UPDATED":
+      return {
+        icon: "account-edit-outline" as const,
+        iconBg: "#EDE9FE",
+        iconColor: "#7C3AED",
+      };
+
+    case "DEVICE_RENAMED":
+      return {
+        icon: "rename-outline" as const,
+        iconBg: "#E0F2FE",
+        iconColor: "#0284C7",
+      };
+
+    case "DEVICE_DELETED":
+      return {
+        icon: "cellphone-remove" as const,
+        iconBg: "#FEE2E2",
+        iconColor: "#DC2626",
+      };
+
+    case "DEVICE_ADDED":
+      return {
+        icon: "cellphone-link" as const,
+        iconBg: "#DCFCE7",
+        iconColor: "#16A34A",
+      };
+
     default:
       return {
         icon: "history" as const,
@@ -81,6 +123,18 @@ function getActivityTitle(actionType: AuditActionType) {
       return "Request rejected";
     case "UPDATE_SCREEN_TIME":
       return "Screen time updated";
+    case "CHILD_ADDED":
+      return "Child added";
+    case "CHILD_DELETED":
+      return "Child deleted";
+    case "CHILD_PROFILE_UPDATED":
+      return "Child profile updated";
+    case "DEVICE_RENAMED":
+      return "Device renamed";
+    case "DEVICE_DELETED":
+      return "Device deleted";
+    case "DEVICE_ADDED":
+      return "Device added";
     default:
       return "Activity";
   }
@@ -101,6 +155,18 @@ function getActivityDescription(
       return `Screen time extension request rejected for ${childName}`;
     case "UPDATE_SCREEN_TIME":
       return `Screen time settings updated for ${childName}`;
+    case "CHILD_ADDED":
+      return `A new child profile was added for ${childName}`;
+    case "CHILD_DELETED":
+      return `${childName}'s profile was deleted`;
+    case "CHILD_PROFILE_UPDATED":
+      return `${childName}'s profile details were updated`;
+    case "DEVICE_RENAMED":
+      return `A device name was updated for ${childName}`;
+    case "DEVICE_DELETED":
+      return `A device was removed from ${childName}'s profile`;
+    case "DEVICE_ADDED":
+      return `A device was linked to ${childName}`;
     default:
       return `A new activity was recorded for ${childName}`;
   }

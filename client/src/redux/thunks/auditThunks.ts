@@ -19,6 +19,12 @@ function normalizeAuditLog(raw: unknown): AuditLog {
     "UPDATE_SCREEN_TIME",
     "APPROVE_REQUEST",
     "REJECT_REQUEST",
+    "CHILD_ADDED",
+    "CHILD_DELETED",
+    "CHILD_PROFILE_UPDATED",
+    "DEVICE_RENAMED",
+    "DEVICE_DELETED",
+    "DEVICE_ADDED",
   ];
 
   if (!allowedActionTypes.includes(actionType)) {

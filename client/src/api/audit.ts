@@ -5,7 +5,13 @@ export type AuditActionType =
   | "UNLOCK_DEVICE"
   | "UPDATE_SCREEN_TIME"
   | "APPROVE_REQUEST"
-  | "REJECT_REQUEST";
+  | "REJECT_REQUEST"
+  | "CHILD_ADDED"
+  | "CHILD_DELETED"
+  | "CHILD_PROFILE_UPDATED"
+  | "DEVICE_RENAMED"
+  | "DEVICE_DELETED"
+  | "DEVICE_ADDED";
 
 export type AuditLog = {
   _id: string;

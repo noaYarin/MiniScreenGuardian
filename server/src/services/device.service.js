@@ -275,18 +275,13 @@ export async function updateDeviceName(parentId, childId, deviceId, name) {
   const updated = await updateDeviceById(deviceId, { name: newName });
 
   try {
-    await notifyParent({
+    await sendAuditLog({
       parentId,
       childId,
-      type: NotificationType.DEVICE_RENAMED,
-      severity: NotificationSeverity.INFO,
-      title: "Device Renamed",
-      description: previousName
-        ? `"${previousName}" was renamed to "${newName}"`
-        : `A device was renamed to "${newName}"`
+      actionType: AuditActionType.DEVICE_RENAMED,
     });
   } catch (err) {
-    console.error("notifyParent failed in updateDeviceName:", err.message);
+    console.error("sendAuditLog failed in updateDeviceName:", err.message);
   }
 
   return updated;
@@ -342,19 +337,6 @@ export async function updateDeviceScreenTime(parentId, deviceId, body) {
     });
   } catch (err) {
     console.error("notifyChild failed in updateDeviceScreenTime:", err.message);
-  }
-
-  try {
-    await notifyParent({
-      parentId,
-      childId: device.childId,
-      type: NotificationType.SCREEN_TIME_UPDATED,
-      severity: NotificationSeverity.INFO,
-      title: "Screen Time Updated",
-      description: "You updated the screen time settings for your child"
-    });
-  } catch (err) {
-    console.error("notifyParent failed in updateDeviceScreenTime:", err.message);
   }
 
   try {
@@ -467,6 +449,16 @@ export async function deleteDeviceForParent(parentId, childId, deviceId) {
     });
   } catch (err) {
     console.error("notifyParent failed in deleteDeviceForParent:", err.message);
+  }
+
+  try {
+    await sendAuditLog({
+      parentId,
+      childId,
+      actionType: AuditActionType.DEVICE_DELETED,
+    });
+  } catch (err) {
+    console.error("sendAuditLog failed in deleteDeviceForParent:", err.message);
   }
 }
 

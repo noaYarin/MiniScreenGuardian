@@ -53,7 +53,7 @@ export default function ChildDeviceSelector({
   }, [width]);
 
   const getFallbackDeviceName = (device: any) => {
-    const rawName = device?.deviceName || device?.model || "";
+    const rawName = device?.deviceName || device?.model|| device?.name || "";
     const trimmedName = String(rawName).trim();
 
     if (trimmedName.length > 0) {

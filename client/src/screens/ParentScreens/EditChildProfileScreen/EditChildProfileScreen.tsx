@@ -124,6 +124,7 @@ export default function EditChildProfileScreen() {
           gender,
         })
       ).unwrap();
+      showAppToast("Child profile updated successfully", "Success");
 
       router.back();
     } catch (error) {
