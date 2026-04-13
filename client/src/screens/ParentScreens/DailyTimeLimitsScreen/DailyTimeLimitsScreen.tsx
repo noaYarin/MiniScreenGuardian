@@ -293,7 +293,7 @@ export default function DailyTimeLimitsScreen() {
       </ScreenLayout>
     );
   }
-  
+
   return (
     <ScreenLayout>
       <ScrollView
@@ -385,21 +385,16 @@ export default function DailyTimeLimitsScreen() {
                 </AppText>
               </View>
             )}
-
           {!isLoading &&
             !devicesError &&
             selectedChildId &&
             devicesStatus !== "loading" &&
             currentChildDevices.length === 0 && (
-              <View style={styles.emptyState}>
-                <AppText weight="bold" style={styles.emptyTitle}>
-                  No devices found
-                </AppText>
-
-                <AppText weight="medium" style={styles.emptySubtitle}>
-                  There are no connected devices for this child yet.
-                </AppText>
-              </View>
+              <EmptyStateCard
+                icon="cellphone-link-off"
+                title="No devices yet"
+                subtitle="There are no connected devices for this child yet."
+              />
             )}
 
           {!isLoading &&
@@ -407,17 +402,12 @@ export default function DailyTimeLimitsScreen() {
             selectedDeviceId &&
             currentChildDevices.length > 0 &&
             selectedLimits.length === 0 && (
-              <View style={styles.emptyState}>
-                <AppText weight="bold" style={styles.emptyTitle}>
-                  No limits yet
-                </AppText>
-
-                <AppText weight="medium" style={styles.emptySubtitle}>
-                  No screen-time limits were found for this device yet.
-                </AppText>
-              </View>
+              <EmptyStateCard
+                icon="clock-outline"
+                title="No limits yet"
+                subtitle="No screen-time limits were set for this device yet."
+              />
             )}
-
           {selectedLimits.length > 0 && (
             <View style={styles.cardsList}>
               {selectedLimits.map((limitCard) => {

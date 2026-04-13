@@ -157,36 +157,18 @@ export default function ChildLocationScreen() {
               selectedChildId={selectedChildId}
               onSelectChild={setSelectedChildId}
             />
-
-            <View style={styles.emptyState}>
-              <AppText weight="bold" style={styles.emptyTitle}>
-                No devices found
-              </AppText>
-
-              <AppText style={styles.emptySubtitle}>
-                The child has not added any devices yet. Add a device to start
-                tracking location.
-              </AppText>
-
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Add device"
-                onPress={() =>
-                  router.push({
-                    pathname: "/Parent/(tabs)/children" as Href,
-                    params: { id: selectedChildId, name: selectedChild.name },
-                  } as never)
-                }
-                style={({ pressed }) => [
-                  styles.emptyActionButton,
-                  pressed ? styles.buttonPressed : null,
-                ]}
-              >
-                <AppText weight="bold" style={styles.emptyActionButtonText}>
-                  Add device
-                </AppText>
-              </Pressable>
-            </View>
+            <EmptyStateCard
+              icon="cellphone-link-off"
+              title="No devices yet"
+              subtitle="Add a device to start tracking location."
+              buttonLabel="Add device"
+              onPressButton={() =>
+                router.push({
+                  pathname: "/Parent/(tabs)/children" as Href,
+                  params: { id: selectedChildId, name: selectedChild.name },
+                } as never)
+              }
+            />
           </View>
         </ScrollView>
       </ScreenLayout>
