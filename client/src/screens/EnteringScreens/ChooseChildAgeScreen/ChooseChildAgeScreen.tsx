@@ -52,6 +52,11 @@ export default function ChooseChildAgeScreen() {
   function handleSelectAge(age: number) {
     setSelectedAge(age);
     setIsAgeModalVisible(false);
+
+
+    setRecommendation(null);
+    setRecommendationError(null);
+    setHasCheckedRecommendation(false);
   }
 
   async function handleCheckRecommendation() {
@@ -107,7 +112,7 @@ export default function ChooseChildAgeScreen() {
                 </Pressable>
 
                 <AppText weight="bold" style={styles.ageLabel}>
-                  Selected age
+                  Years old
                 </AppText>
 
                 <Pressable
@@ -164,7 +169,7 @@ export default function ChooseChildAgeScreen() {
                 ]}
               >
                 <AppText weight="bold" style={styles.recommendationButtonText}>
-                  {isRecommendationLoading ? "Loading..." : "Check Recommendation"}
+                  {isRecommendationLoading ? "Loading..." : "See Recommendation"}
                 </AppText>
               </Pressable>
 
@@ -186,7 +191,7 @@ export default function ChooseChildAgeScreen() {
                       recommendationVariant === "teen" && styles.recommendationTitleTeen,
                     ]}
                   >
-                    Recommended Screen Time
+                    Recommended Daily Screen Time
                   </AppText>
 
                   {isRecommendationLoading ? (
@@ -241,7 +246,7 @@ export default function ChooseChildAgeScreen() {
         onRequestClose={handleCloseAgeModal}
       >
         <Pressable style={styles.modalOverlay} onPress={handleCloseAgeModal}>
-          <Pressable style={styles.modalCard} onPress={() => {}}>
+          <Pressable style={styles.modalCard} onPress={() => { }}>
             <View style={styles.modalHeader}>
               <AppText weight="extraBold" style={styles.modalTitle}>
                 Choose Age

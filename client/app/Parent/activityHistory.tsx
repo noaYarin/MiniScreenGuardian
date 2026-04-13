@@ -8,7 +8,7 @@ export default function ActivityHistoryRoute() {
     <>
       <Stack.Screen
         options={{
-          title: "activity History",
+          title: "Activity History",
           headerTitleAlign: "center",
           headerShadowVisible: false,
         }}
