@@ -17,6 +17,7 @@ import { createDevice, findDeviceByDeviceId, updateDeviceActivation, findDevices
 import { notifyParent } from "./notification.service.js";
 import { NotificationType } from "../constants/notificationType.js";
 import { NotificationSeverity } from "../constants/severity.js";
+import { formatJerusalemOffsetIsoNow } from "../utils/time.js";
 
 const MAX_DEVICES_PER_CHILD = 8;
 
@@ -145,7 +146,7 @@ export async function linkByCodeOrToken({ code = "", barcodeToken = "", deviceNa
       platform,
       isLocked: false,
       code: sessionCode || "",
-      location: { lat: 0, lng: 0, lastUpdated: new Date() },
+      location: { lat: 0, lng: 0, lastUpdated: formatJerusalemOffsetIsoNow() },
       isActive: true,
       barcodeToken: sessionBarcode || "",
       applications: [],

@@ -12,7 +12,7 @@ import {
   DEVICE_STATUS_UPDATED
 } from "./constants/socketEvents.js";
 
-
+import { formatJerusalemOffsetIsoNow } from "./utils/time.js";
 let io = null;
 
 export function initSocket(httpServer) {
@@ -59,13 +59,18 @@ export function initSocket(httpServer) {
   
     // Child sending location to parent
     socket.on(REQUEST_CHILD_LOCATION, (data) => {
-      const { parentId, location, childId, lastUpdated } = data;
+      const { parentId, location, childId, lastUpdated } = data ?? {};
       console.log(`[LocationUpdate] Child ${childId} sending location to parent ${parentId}`);
+
+      const effectiveLastUpdated =
+        lastUpdated != null
+          ? formatJerusalemOffsetIsoNow(new Date(lastUpdated))
+          : formatJerusalemOffsetIsoNow();
       
       io.to(`parent_${parentId}`).emit(LOCATION_LIVE_UPDATE, {
         childId,
         location,
-        lastUpdated
+        lastUpdated: effectiveLastUpdated
       });
     });
 

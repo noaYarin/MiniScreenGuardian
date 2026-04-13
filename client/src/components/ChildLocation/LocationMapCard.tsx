@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 import { View, StyleSheet } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { useSelector } from "react-redux";
+import moment from "moment-timezone";
 
 import AppText from "../AppText/AppText";
 import { styles } from "../../screens/ParentScreens/ChildLocationScreen/styles";
@@ -52,7 +53,9 @@ export default function LocationMapCard({
       onDeviceLocation({
         latitude: coords.latitude,
         longitude: coords.longitude,
-        lastUpdated: deviceInRedux?.location?.lastUpdated || Date.now(),
+        lastUpdated:
+          deviceInRedux?.location?.lastUpdated ||
+          moment().tz("Asia/Jerusalem").format(),
       });
 
       mapRef.current?.animateToRegion(

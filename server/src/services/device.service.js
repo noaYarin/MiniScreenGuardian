@@ -21,6 +21,7 @@ import {
 } from "../dal/device.dal.js";
 import { getChildrenByParentId } from "../dal/parent.dal.js";
 import { emitPolicyUpdated, emitDeviceStatusUpdated } from "../socketHandler.js";
+import { formatJerusalemOffsetIsoNow } from "../utils/time.js";
 
 function assertDailyLimitMinutes(value) {
   const n = Number(value);
@@ -645,7 +646,7 @@ export async function updateDeviceLocation(deviceId, location, parentId, childId
     location: {
       lat: location.lat,
       lng: location.lng,
-      lastUpdated: new Date()
+      lastUpdated: formatJerusalemOffsetIsoNow()
     }
   };
 

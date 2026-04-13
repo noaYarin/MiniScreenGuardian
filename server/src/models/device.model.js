@@ -3,6 +3,7 @@ import { DeviceType } from "../constants/deviceType.js";
 import { ApplicationSchema } from "./application.schema.js"
 import { ScreenTimeSchema } from "./screenTime.schema.js"
 import { DevicePlatform } from "../constants/devicePlatform.js";
+import { formatJerusalemOffsetIsoNow } from "../utils/time.js";
 
 export const DeviceSchema = new mongoose.Schema(
     {
@@ -21,7 +22,7 @@ export const DeviceSchema = new mongoose.Schema(
         location: {
             lat: { type: Number, default: 0 },
             lng: { type: Number, default: 0 },
-            lastUpdated: { type: Date, default: Date.now },
+            lastUpdated: { type: String, default: () => formatJerusalemOffsetIsoNow() },
         },
         barcodeToken: { type: String, default: "" },
         lastSeenAt: { type: Date, default: null },

@@ -99,10 +99,13 @@ export default function HomeScreen() {
         accuracy: Location.Accuracy.Balanced,
       });
 
+      const lastUpdated = new Date().toISOString();
       const locationData = {
         lat: loc.coords.latitude,
         lng: loc.coords.longitude,
       };
+
+      const resolvedDeviceId = deviceId && String(deviceId).trim();
 
       const targetParentId = requestData?.parentId || parentId;
 
@@ -110,18 +113,29 @@ export default function HomeScreen() {
         emitEvent(REQUEST_CHILD_LOCATION, {
           parentId: targetParentId,
           childId: String(activeChildId),
-          location: locationData,
-          lastUpdated: new Date().toISOString(),
+          location: {
+            lat: locationData.lat,
+            lng: locationData.lng,
+          },
+          lastUpdated,
         });
       }
 
-      if (deviceId) {
-        dispatch(
+      if (resolvedDeviceId) {
+        await dispatch(
           updateDeviceLocation({
             childId: String(activeChildId),
-            deviceId,
+            deviceId: resolvedDeviceId,
             location: locationData,
           })
+        ).unwrap();
+      } else {
+        Toast.show(
+          "Device not linked\nPlease re-link this device so location can be saved.",
+          {
+            duration: Toast.durations.LONG,
+            position: Toast.positions.TOP,
+          }
         );
       }
     } catch (error) {
