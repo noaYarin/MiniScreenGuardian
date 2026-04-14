@@ -236,8 +236,9 @@ class ScreenGuardianAccessibilityService : AccessibilityService() {
 
         // Determine block reason based on priority
         val blockReason = when {
-            isLockNow || isServerLocked -> "LOCK_NOW"
+            isLockNow -> "LOCK_NOW"
             isLimitEnabled && remaining <= 0 -> "DAILY_LIMIT_REACHED"
+            isServerLocked -> "LOCK_NOW"
             else -> ""
         }
 

@@ -384,7 +384,7 @@ export default function ChildDetailsScreen() {
                 "Manual lock and unlock only control the manual lock",
                 "They do not turn the daily limit on or off",
                 "Daily limits can be changed only on the daily limits screen",
-                "When both are active, manual lock overrides the daily limit",
+                "When both are active, manual lock takes priority over the daily limit",
                 "Even if the daily limit ends, the device stays locked until you unlock it manually",
                 "If a device is offline, changes will apply when it reconnects",
               ]}

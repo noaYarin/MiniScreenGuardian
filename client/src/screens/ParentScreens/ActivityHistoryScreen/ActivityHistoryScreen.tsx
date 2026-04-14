@@ -185,6 +185,19 @@ function formatTime(dateString: string) {
   });
 }
 
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+  });
+}
+
 export default function ActivityHistoryScreen() {
   const dispatch = useDispatch<AppDispatch>();
   const { width } = useWindowDimensions();
@@ -488,7 +501,7 @@ export default function ActivityHistoryScreen() {
                   childName
                 );
                 const time = formatTime(item.createdAt);
-
+                const date = formatDate(item.createdAt);
                 return (
                   <Pressable
                     key={item._id}
@@ -541,6 +554,10 @@ export default function ActivityHistoryScreen() {
                       <View style={styles.timeWrap}>
                         <AppText weight="bold" style={styles.timeText}>
                           {time}
+                        </AppText>
+
+                        <AppText weight="medium" style={styles.timeText}>
+                          {date}
                         </AppText>
                       </View>
                     </View>
