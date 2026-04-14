@@ -208,19 +208,20 @@ export default function HomeParentScreen() {
                       ? "Refreshing..."
                       : "Daily screen time overview"}
                   </AppText>
+                  
                 </View>
               </View>
             </View>
 
             <View style={{ width: "100%", marginTop: 10, marginBottom: 6 }}>
               <InfoHint
-                title="Info"
+                title="How this screen works"
                 lines={[
-                  "This screen gives you a quick overview of your children’s screen time and device status.",
-                  "Usage Access on child's device is needed to show correct screen-time data.",
-                  "Accessibility access on child's device is needed for lock actions to work properly.",
-                  "If a device is offline or a required permission is turned off, the latest updates will appear here after the next sync.",
-                  "Open a child’s profile for deleting or editing child, watch child location, requests and screen time limits",
+                  "This screen gives you a quick overview of your children’s screen time and device status",
+                  "Usage Access on child's device is needed to show correct screen-time data",
+                  "Accessibility access on child's device is needed for lock actions to work properly",
+                  "If a device is offline or a required permission is turned off, the latest updates will appear here after it reconnects",
+                  "Open a child’s profile for deleting or editing child details and photo, watch child location, requests and screen time limits",
                 ]}
               />
             </View>

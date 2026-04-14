@@ -328,13 +328,13 @@ export default function DailyTimeLimitsScreen() {
 
 
             <InfoHint
-              title="Daily limit information"
+              title="How daily limits work"
               lines={[
-                "The daily limit resets automatically at the start of each new day.",
-                "For the daily limit to work correctly, Usage Access and Accessibility must stay enabled on the child’s device.",
-                "If you want to give more time, approve an extension request or turn off the daily limit here.",
-                "Unlocking the device manually does not turn off the daily limit.",
-                "If the device is offline, changes will apply when it reconnects.",
+                "The daily limit resets automatically at the start of each new day",
+                "For the daily limit to work correctly, Usage Access and Accessibility must stay enabled on the child’s device",
+                "If you want to give more time, approve an extension request or turn off the daily limit here",
+                "Unlocking the device manually does not turn off the daily limit",
+                "If the device is offline, changes will apply when it reconnects",
               ]}
             />
 

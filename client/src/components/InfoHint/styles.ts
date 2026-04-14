@@ -33,6 +33,15 @@ export const styles = StyleSheet.create({
     title: {
         fontSize: 14,
         color: "#1E3A8A",
+        textAlign: "center",
+        alignSelf: "center",
+    },
+    
+    titleSeparator: {
+        marginTop: 8,
+        marginBottom: 2,
+        borderBottomWidth: 1,
+        borderBottomColor: "#E2E8F0",
     },
 
     linesWrap: {
@@ -76,5 +85,15 @@ export const styles = StyleSheet.create({
     triggerButtonText: {
         fontSize: 13,
         color: "#2563EB",
+    },
+    separator: {
+        marginTop: 8,
+        marginLeft: 14,
+        borderBottomWidth: 1,
+        borderBottomColor: "#E2E8F0",
+    },
+    lineItemLtr: {
+        direction: "ltr",
+        width: "100%",
     },
 });

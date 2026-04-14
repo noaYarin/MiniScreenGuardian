@@ -378,15 +378,15 @@ export default function ChildDetailsScreen() {
 
           <View style={{ marginTop: 10 }}>
             <InfoHint
-              title="Device management information"
+              title="How device controls work"
               lines={[
-                "Manual lock and unlock works only while Accessibility access is enabled on the child’s device.",
-                "Manual lock and unlock only control the manual lock.",
-                "They do not turn the daily limit on or off.",
-                "Daily limits can be changed only on the daily limits screen.",
-                "When both are active, manual lock overrides the daily limit.",
-                "Even if the daily limit ends, the device stays locked until you unlock it manually.",
-                "If a device is offline, changes will apply when it reconnects.",
+                "Manual lock and unlock works only while Accessibility access is enabled on the child’s device",
+                "Manual lock and unlock only control the manual lock",
+                "They do not turn the daily limit on or off",
+                "Daily limits can be changed only on the daily limits screen",
+                "When both are active, manual lock overrides the daily limit",
+                "Even if the daily limit ends, the device stays locked until you unlock it manually",
+                "If a device is offline, changes will apply when it reconnects",
               ]}
             />
           </View>
