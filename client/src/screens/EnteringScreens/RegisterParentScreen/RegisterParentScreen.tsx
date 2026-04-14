@@ -17,6 +17,7 @@ import { AppDispatch } from "@/src/redux/store/types";
 import { registerParent } from "@/src/redux/thunks/authThunks";
 import { setError } from "@/src/redux/slices/auth-slice";
 import { enteringFormStyles as styles } from "@/src/components/AuthFormCard/AuthFormCard.styles";
+import { showAppToast } from "@/src/utils/appToast";
 
 const ICON = {
   email: "email-outline",
@@ -49,6 +50,8 @@ export default function RegisterParentScreen() {
       }
 
       await dispatch(registerParent({ email, password })).unwrap();
+      showAppToast("Account created successfully!");
+
       router.replace("/Entering/loginParent" as any);
     } catch (err: any) {
       if (typeof err === "string") {
@@ -92,12 +95,12 @@ export default function RegisterParentScreen() {
                   style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
                 >
 
-                <AppText style={styles.bottomText}>
-                  Already have an account? {""}
-                                    <AppText weight="bold" style={styles.bottomLink}>
-                    Log In
+                  <AppText style={styles.bottomText}>
+                    Already have an account? {""}
+                    <AppText weight="bold" style={styles.bottomLink}>
+                      Log In
+                    </AppText>
                   </AppText>
-                </AppText>
 
                 </Pressable>
 
