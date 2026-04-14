@@ -67,21 +67,20 @@ export const styles = StyleSheet.create({
   },
 
   bellWrap: {
-    width: 24,
-    height: 24,
+    width: 25,
+    height: 25,
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
+    overflow: "visible",
   },
-
   bellBadge: {
     position: "absolute",
-    top: -7,
-    right: -6,
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    paddingHorizontal: 5,
+    top: -8,
+    right: -11,
+    width: 28,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: "#EF4444",
     alignItems: "center",
     justifyContent: "center",
@@ -91,8 +90,10 @@ export const styles = StyleSheet.create({
 
   bellBadgeText: {
     fontSize: 10,
-    lineHeight: 12,
+    fontWeight: "800",
     color: "#FFFFFF",
+    textAlign: "center",
+    includeFontPadding: false,
   },
 
   bigHello: {

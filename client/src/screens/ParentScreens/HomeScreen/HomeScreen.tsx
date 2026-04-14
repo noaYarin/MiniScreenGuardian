@@ -177,10 +177,11 @@ export default function HomeParentScreen() {
 
                     {unreadNotificationsCount > 0 ? (
                       <View style={styles.bellBadge}>
-                        <AppText weight="extraBold" style={styles.bellBadgeText}>
-                          {unreadNotificationsCount > 99
-                            ? "99+"
-                            : String(unreadNotificationsCount)}
+                        <AppText
+                          weight="extraBold"
+                          style={styles.bellBadgeText}
+                        >
+                          {unreadNotificationsCount > 99 ? "99+" : String(unreadNotificationsCount)}
                         </AppText>
                       </View>
                     ) : null}
