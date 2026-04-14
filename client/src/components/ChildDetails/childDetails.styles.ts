@@ -258,7 +258,7 @@ export const childDetailsStyles = StyleSheet.create({
     marginTop: 12,
     borderRadius: 14,
     backgroundColor: "#FFFFFF",
-  
+
     paddingVertical: 14,
     alignItems: "stretch",
   },
@@ -309,16 +309,22 @@ export const childDetailsStyles = StyleSheet.create({
     marginHorizontal: 2,
     alignSelf: "stretch",
   },
-
   deviceLockActionButton: {
-    marginTop: 6,
+    marginTop: 8,
+    direction: "ltr",
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 14,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
   },
-
   deviceLockActionButtonRed: {
     backgroundColor: "#FEE2E2",
     borderWidth: 1,
@@ -341,6 +347,17 @@ export const childDetailsStyles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
     color: "#16A34A",
+  },
+
+  deviceLockActionButtonLimit: {
+    backgroundColor: "#FFF7ED",
+    borderWidth: 1.5,
+    borderColor: "#FDBA74",
+  },
+
+  deviceLockActionTextLimit: {
+    fontSize: 15,
+    color: "#C2410C",
   },
 
   infoMiniRow: {

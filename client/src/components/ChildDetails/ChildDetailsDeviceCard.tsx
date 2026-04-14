@@ -18,6 +18,7 @@ import {
 
 const DEVICE_NAME_MAX_LEN = 20;
 
+
 type DeviceDetailRowProps = {
   icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
   label: string;
@@ -153,6 +154,13 @@ export function ChildDetailsDeviceCard({
 
   const linkColor = device.active ? "#16A34A" : "#64748B";
 
+  const looksLikeDailyLimitLock =
+    device.isLocked &&
+    device.isLimitEnabled &&
+    device.remainingMinutes === 0;
+
+  const showUnlock = device.isLocked && !looksLikeDailyLimitLock;
+
   return (
     <View style={styles.deviceCard}>
       <View style={[styles.deviceHeaderRow, row]}>
@@ -218,30 +226,62 @@ export function ChildDetailsDeviceCard({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={
-                device.isLocked
-                  ? `Unlock device ${device.name}`
-                  : `Lock device ${device.name}`
+                looksLikeDailyLimitLock
+                  ? `Daily limit reached for ${device.name}`
+                  : showUnlock
+                    ? `Unlock device ${device.name}`
+                    : `Lock device ${device.name}`
               }
-              disabled={lockDisabled}
-              onPress={() => onSetDeviceLocked(device.id, !device.isLocked)}
+              disabled={lockDisabled || looksLikeDailyLimitLock}
+              onPress={() => {
+                if (!looksLikeDailyLimitLock) {
+                  onSetDeviceLocked(device.id, showUnlock ? false : true);
+                }
+              }}
               style={({ pressed }) => [
                 styles.deviceLockActionButton,
-                device.isLocked
-                  ? styles.deviceLockActionButtonGreen
-                  : styles.deviceLockActionButtonRed,
-                lockDisabled && { opacity: 0.45 },
-                pressed && !lockDisabled && { opacity: 0.85 },
+                looksLikeDailyLimitLock
+                  ? styles.deviceLockActionButtonLimit
+                  : showUnlock
+                    ? styles.deviceLockActionButtonGreen
+                    : styles.deviceLockActionButtonRed,
+                (lockDisabled || looksLikeDailyLimitLock) && { opacity: 0.45 },
+                pressed && !lockDisabled && !looksLikeDailyLimitLock && { opacity: 0.85 },
               ]}
             >
+              <MaterialCommunityIcons
+                name={
+                  looksLikeDailyLimitLock
+                    ? "timer-off-outline"
+                    : showUnlock
+                      ? "lock-open-outline"
+                      : "lock-outline"
+                }
+                size={18}
+                color={
+                  looksLikeDailyLimitLock
+                    ? "#C2410C"
+                    : showUnlock
+                      ? "#15803D"
+                      : "#B91C1C"
+                }
+              />
+
               <AppText
-                weight="bold"
+                weight="extraBold"
                 style={
-                  device.isLocked
-                    ? styles.deviceLockActionTextGreen
-                    : styles.deviceLockActionTextRed
+                  looksLikeDailyLimitLock
+                    ? styles.deviceLockActionTextLimit
+                    : showUnlock
+                      ? styles.deviceLockActionTextGreen
+                      : styles.deviceLockActionTextRed
                 }
               >
-                {device.isLocked ? "Unlock" : "Lock"}
+                {looksLikeDailyLimitLock
+                  ? "Daily limit reached"
+                  : showUnlock
+                    ? "Unlock"
+                    : "Lock"}
               </AppText>
             </Pressable>
           </View>
