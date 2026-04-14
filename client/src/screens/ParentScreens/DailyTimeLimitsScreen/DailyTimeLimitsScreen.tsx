@@ -11,6 +11,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 
 import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
+import EmptyStateCard from "../../../components/EmptyStateCard/EmptyStateCard";
 import AppText from "../../../components/AppText/AppText";
 import ChildDeviceSelector from "../../../components/ChildDeviceSelector/ChildDeviceSelector";
 import { styles } from "./styles";
@@ -283,7 +284,11 @@ export default function DailyTimeLimitsScreen() {
     return (
       <ScreenLayout>
         <View style={styles.container}>
-          <AppText>No children yet. Add a child to get started</AppText>
+          <EmptyStateCard
+            icon="account-child-outline"
+            title="No children yet"
+            subtitle="Add a child to get started."
+          />
         </View>
       </ScreenLayout>
     );
@@ -323,13 +328,13 @@ export default function DailyTimeLimitsScreen() {
 
 
             <InfoHint
-              title="Daily limit information"
+              title="How daily limits work"
               lines={[
-                "The daily limit resets automatically at the start of each new day.",
-                "For the daily limit to work correctly, Usage Access and Accessibility must stay enabled on the child’s device.",
-                "If you want to give more time, approve an extension request or turn off the daily limit here.",
-                "Unlocking the device manually does not turn off the daily limit.",
-                "If the device is offline, changes will apply when it reconnects.",
+                "The daily limit resets automatically at the start of each new day",
+                "For the daily limit to work correctly, Usage Access and Accessibility must stay enabled on the child’s device",
+                "If you want to give more time, approve an extension request or turn off the daily limit here",
+                "Unlocking the device manually does not turn off the daily limit",
+                "If the device is offline, changes will apply when it reconnects",
               ]}
             />
 
@@ -380,21 +385,16 @@ export default function DailyTimeLimitsScreen() {
                 </AppText>
               </View>
             )}
-
           {!isLoading &&
             !devicesError &&
             selectedChildId &&
             devicesStatus !== "loading" &&
             currentChildDevices.length === 0 && (
-              <View style={styles.emptyState}>
-                <AppText weight="bold" style={styles.emptyTitle}>
-                  No devices found
-                </AppText>
-
-                <AppText weight="medium" style={styles.emptySubtitle}>
-                  There are no connected devices for this child yet.
-                </AppText>
-              </View>
+              <EmptyStateCard
+                icon="cellphone-link-off"
+                title="No devices yet"
+                subtitle="There are no connected devices for this child yet."
+              />
             )}
 
           {!isLoading &&
@@ -402,17 +402,12 @@ export default function DailyTimeLimitsScreen() {
             selectedDeviceId &&
             currentChildDevices.length > 0 &&
             selectedLimits.length === 0 && (
-              <View style={styles.emptyState}>
-                <AppText weight="bold" style={styles.emptyTitle}>
-                  No limits yet
-                </AppText>
-
-                <AppText weight="medium" style={styles.emptySubtitle}>
-                  No screen-time limits were found for this device yet.
-                </AppText>
-              </View>
+              <EmptyStateCard
+                icon="clock-outline"
+                title="No limits yet"
+                subtitle="No screen-time limits were set for this device yet."
+              />
             )}
-
           {selectedLimits.length > 0 && (
             <View style={styles.cardsList}>
               {selectedLimits.map((limitCard) => {

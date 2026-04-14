@@ -6,10 +6,8 @@ import {
   updateCurrentChildProfileByParentId,
   updateChildProfileImgByParentId,
 } from "../dal/parent.dal.js";
-import { notifyParent } from "./notification.service.js";
-import { NotificationType } from "../constants/notificationType.js";
-import { NotificationSeverity } from "../constants/severity.js";
-
+import { sendAuditLog } from "./audit.service.js";
+import { AuditActionType } from "../constants/auditActionType.js";
 
 const MIN_CHILD_AGE = 6;
 const MAX_CHILD_AGE = 17;
@@ -144,16 +142,13 @@ export async function updateCurrentChildProfile(parentId, childId, birthDate, ge
   }
 
   try {
-    await notifyParent({
+    await sendAuditLog({
       parentId,
       childId,
-      type: NotificationType.CHILD_PROFILE_UPDATED,
-      severity: NotificationSeverity.INFO,
-      title: "Child Profile Updated",
-      description: "Child profile details were updated"
+      actionType: AuditActionType.CHILD_PROFILE_UPDATED,
     });
   } catch (err) {
-    console.error("notifyParent failed in updateCurrentChildProfile:", err.message);
+    console.error("sendAuditLog failed in updateCurrentChildProfile:", err.message);
   }
 
   return { child: updated };
@@ -179,19 +174,14 @@ export async function updateChildProfileImageByParent(parentId, childId, img) {
   if (!updated) {
     throw new AppError(CommonErrors.CHILD_NOT_FOUND);
   }
-
   try {
-    await notifyParent({
+    await sendAuditLog({
       parentId,
       childId,
-      type: NotificationType.CHILD_PROFILE_UPDATED,
-      severity: NotificationSeverity.INFO,
-      title: "Child Profile Updated",
-      description: "Child profile image was updated",
+      actionType: AuditActionType.CHILD_PROFILE_UPDATED,
     });
   } catch (err) {
-    console.error("notifyParent failed in updateChildProfileImageByParent:", err.message);
+    console.error("sendAuditLog failed in updateChildProfileImageByParent:", err.message);
   }
-
   return { child: updated };
 }

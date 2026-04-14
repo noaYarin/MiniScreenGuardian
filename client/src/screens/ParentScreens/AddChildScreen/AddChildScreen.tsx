@@ -28,13 +28,13 @@ const GENDER_OPTIONS: {
   label: string;
   accessibilityLabel: string;
 }[] = [
-  { key: "boy", icon: "human-male", label: "Boy", accessibilityLabel: "Select boy" },
-  { key: "girl", icon: "human-female", label: "Girl", accessibilityLabel: "Select girl" },
-  { key: "other", icon: "human-greeting-variant", label: "Other", accessibilityLabel: "Select other" },
-];
+    { key: "boy", icon: "human-male", label: "Boy", accessibilityLabel: "Select boy" },
+    { key: "girl", icon: "human-female", label: "Girl", accessibilityLabel: "Select girl" },
+    { key: "other", icon: "human-greeting-variant", label: "Other", accessibilityLabel: "Select other" },
+  ];
 
 function formatDateForDisplay(date: Date) {
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",

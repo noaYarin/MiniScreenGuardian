@@ -25,6 +25,8 @@ import {
   decideRequestThunk,
 } from "@/src/redux/thunks/requestThunks";
 import { showAppToast } from "@/src/utils/appToast";
+import EmptyStateCard from "../../../components/EmptyStateCard/EmptyStateCard";
+import InfoHint from "../../../components/InfoHint/InfoHint";
 
 function getDeviceIconName(deviceType?: string) {
   return deviceType === "tablet" ? "tablet-dashboard" : "cellphone";
@@ -188,8 +190,21 @@ export default function ExtensionRequestsScreen() {
             <AppText weight="medium" style={styles.heroSubtitle}>
               Manage pending daily limit extension requests
             </AppText>
+
+            <InfoHint
+              title="How requests work"
+              lines={[
+                "This screen shows pending requests for extra time on the daily limit",
+                "Approving a request adds extra minutes for the current day only",
+                "Approved extra time stays until the daily reset, even if the daily limit is turned off and on again",
+                "Requests on this screen affect only the daily limit and do not control manual lock or unlock actions",
+                "If the device is offline or Usage Access is off, the remaining time shown here may update after it reconnects sync",
+              ]}
+            />                
+
           </View>
 
+       
           {!!selectedChildId && (
             <ChildDeviceSelector
               selectedChildId={selectedChildId}
@@ -209,7 +224,11 @@ export default function ExtensionRequestsScreen() {
           ) : requestsError ? (
             <AppText>Error: {requestsError}</AppText>
           ) : visibleRequests.length === 0 ? (
-            <AppText>No pending requests</AppText>
+            <EmptyStateCard
+              icon="clock-outline"
+              title="No pending requests"
+              subtitle="New extension requests will appear here."
+            />
           ) : (
             <View style={styles.cardsWrap}>
               {visibleRequests.map((request) => {

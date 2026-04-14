@@ -26,6 +26,7 @@ import { ChildDetailsProfileCard } from "@/src/components/ChildDetails/ChildDeta
 import { ChildDetailsDevicesSection } from "@/src/components/ChildDetails/ChildDetailsDevicesSection";
 import { mapDevicesToRows } from "@/src/components/ChildDetails/mapDevicesToRows";
 import { childDetailsStyles as styles } from "@/src/components/ChildDetails/childDetails.styles";
+import EmptyStateCard from "../../../components/EmptyStateCard/EmptyStateCard";
 import { parseRouteParam } from "./childDetailsRouteParams";
 import ConfirmDialog from "@/src/components/ConfirmDialog/ConfirmDialog";
 import { showAppToast } from "@/src/utils/appToast";
@@ -267,6 +268,7 @@ export default function ChildDetailsScreen() {
             name: newName,
           })
         ).unwrap();
+        showAppToast("Device name updated successfully", "Success");
       } catch {
         showAppToast("Could not update the device name. Please try again.", "Error");
         throw new Error("rename_failed");
@@ -316,9 +318,11 @@ export default function ChildDetailsScreen() {
     return (
       <ScreenLayout>
         <View style={[styles.container, { paddingTop: 24 }]}>
-          <AppText style={styles.childMeta}>
-            No children yet. Add a child to get started
-          </AppText>
+          <EmptyStateCard
+            icon="account-child-outline"
+            title="No children yet"
+            subtitle="Add a child to get started."
+          />
         </View>
       </ScreenLayout>
     );
@@ -374,15 +378,15 @@ export default function ChildDetailsScreen() {
 
           <View style={{ marginTop: 10 }}>
             <InfoHint
-              title="Device management information"
+              title="How device controls work"
               lines={[
-                "Manual lock and unlock works only while Accessibility access is enabled on the child’s device.",
-                "Manual lock and unlock only control the manual lock.",
-                "They do not turn the daily limit on or off.",
-                "Daily limits can be changed only on the daily limits screen.",
-                "When both are active, manual lock overrides the daily limit.",
-                "Even if the daily limit ends, the device stays locked until you unlock it manually.",
-                "If a device is offline, changes will apply when it reconnects.",
+                "Manual lock and unlock works only while Accessibility access is enabled on the child’s device",
+                "Manual lock and unlock only control the manual lock",
+                "They do not turn the daily limit on or off",
+                "Daily limits can be changed only on the daily limits screen",
+                "Manual lock and the daily limit are handled separately.",
+                "If the daily limit has already been reached and you press Lock, the button may remain in the daily-limit state until the limit is reset or turned off.\nOnce the daily limit is no longer active, you can unlock the manual lock.",
+                "If a device is offline, changes will apply when it reconnects",
               ]}
             />
           </View>

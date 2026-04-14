@@ -9,7 +9,7 @@ export default function SettingsRoute() {
     <>
       <Stack.Screen
         options={{
-          title: "settings",
+          title: "Settings",
           headerTitleAlign: "center",
           headerShadowVisible: false,
         }}

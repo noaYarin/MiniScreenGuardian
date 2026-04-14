@@ -18,6 +18,8 @@ import { notifyParent } from "./notification.service.js";
 import { NotificationType } from "../constants/notificationType.js";
 import { NotificationSeverity } from "../constants/severity.js";
 import { formatJerusalemOffsetIsoNow } from "../utils/time.js";
+import { sendAuditLog } from "./audit.service.js";
+import { AuditActionType } from "../constants/auditActionType.js";
 
 const MAX_DEVICES_PER_CHILD = 8;
 
@@ -129,8 +131,8 @@ export async function linkByCodeOrToken({ code = "", barcodeToken = "", deviceNa
 
     await updateDeviceActivation(deviceId, { childId, parentId, deviceName });
 
-    currentDevice = await findDeviceByDeviceId(deviceId); 
-    
+    currentDevice = await findDeviceByDeviceId(deviceId);
+
   } else {
     const devices = await findDevicesByChildId(childId);
     const activeDevices = devices.filter(d => d.isActive);
@@ -175,6 +177,16 @@ export async function linkByCodeOrToken({ code = "", barcodeToken = "", deviceNa
     console.error("notifyParent failed in linkByCodeOrToken:", err.message);
   }
 
+  try {
+    await sendAuditLog({
+      parentId,
+      childId,
+      actionType: AuditActionType.DEVICE_ADDED,
+    });
+  } catch (err) {
+    console.error("sendAuditLog failed in linkByCodeOrToken:", err.message);
+  }
+  
   return {
     ...tokenData,
     deviceId: mongoDeviceId,

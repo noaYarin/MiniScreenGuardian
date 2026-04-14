@@ -8,7 +8,7 @@ export default function ChooseChildAgeRoute() {
     <>
       <Stack.Screen
         options={{
-          title:"choose Child Age",
+          title:"Choose Child Age",
           headerTitleAlign: "center",
           headerShadowVisible: false,
         }}

@@ -10,7 +10,7 @@ export default function LinkDeviceRoute() {
           headerShown: true,
           headerTitleAlign: "center",
           headerShadowVisible: false,
-          title: "link Device",
+          title: "Link Device",
         }}
       />
       <LinkDeviceScreen />

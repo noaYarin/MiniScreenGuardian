@@ -9,7 +9,7 @@ export default function ChildLocationRoute() {
     <>
       <Stack.Screen
         options={{
-          title: "child Location",
+          title: "Child Location",
           headerTitleAlign: "center",
           headerShadowVisible: false,
         }}

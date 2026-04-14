@@ -15,7 +15,7 @@ import type { AppDispatch, RootState } from "@/src/redux/store/types";
 import { fetchParentHomeSummaryThunk } from "@/src/redux/thunks/parentHomeThunks";
 import { getMyChildrenThunk } from "@/src/redux/thunks/childrenThunks";
 import { fetchParentNotificationsThunk } from "@/src/redux/thunks/notificationThunks";
-
+import EmptyStateCard from "../../../components/EmptyStateCard/EmptyStateCard";
 import InfoHint from "../../../components/InfoHint/InfoHint";
 
 type ChildCard = {
@@ -177,10 +177,11 @@ export default function HomeParentScreen() {
 
                     {unreadNotificationsCount > 0 ? (
                       <View style={styles.bellBadge}>
-                        <AppText weight="extraBold" style={styles.bellBadgeText}>
-                          {unreadNotificationsCount > 99
-                            ? "99+"
-                            : String(unreadNotificationsCount)}
+                        <AppText
+                          weight="extraBold"
+                          style={styles.bellBadgeText}
+                        >
+                          {unreadNotificationsCount > 99 ? "99+" : String(unreadNotificationsCount)}
                         </AppText>
                       </View>
                     ) : null}
@@ -207,19 +208,20 @@ export default function HomeParentScreen() {
                       ? "Refreshing..."
                       : "Daily screen time overview"}
                   </AppText>
+                  
                 </View>
               </View>
             </View>
 
             <View style={{ width: "100%", marginTop: 10, marginBottom: 6 }}>
               <InfoHint
-                title="Info"
+                title="How this screen works"
                 lines={[
-                  "This screen gives you a quick overview of your children’s screen time and device status.",
-                  "Usage Access on child's device is needed to show correct screen-time data.",
-                  "Accessibility access on child's device is needed for lock actions to work properly.",
-                  "If a device is offline or a required permission is turned off, the latest updates will appear here after the next sync.",
-                  "Open a child’s profile for deleting or editing child, watch child location, requests and screen time limits",
+                  "This screen gives you a quick overview of your children’s screen time and device status",
+                  "Usage Access on child's device is needed to show correct screen-time data",
+                  "Accessibility access on child's device is needed for lock actions to work properly",
+                  "If a device is offline or a required permission is turned off, the latest updates will appear here after it reconnects",
+                  "Open a child’s profile for deleting or editing child details and photo, watch child location, requests and screen time limits",
                 ]}
               />
             </View>
@@ -231,23 +233,13 @@ export default function HomeParentScreen() {
             ) : error ? (
               <AppText style={styles.sectionSub}>{error}</AppText>
             ) : childCards.length === 0 ? (
-              <View style={styles.emptyState}>
-                <AppText>No children yet</AppText>
-
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.btnSecondary,
-                    pressed ? styles.buttonPressed : null,
-                  ]}
-                  onPress={onPressAddChild}
-                  accessibilityRole="button"
-                  accessibilityLabel="Add child"
-                >
-                  <AppText weight="extraBold" style={styles.btnSecondaryText}>
-                    Add Child
-                  </AppText>
-                </Pressable>
-              </View>
+              <EmptyStateCard
+                icon="account-child-outline"
+                title="No children yet"
+                subtitle="Add your first child to start tracking screen time, limits, and device status."
+                buttonLabel="Add Child"
+                onPressButton={onPressAddChild}
+              />
             ) : (
               <View style={styles.cardsWrap}>
                 {childCards.map((c) => {

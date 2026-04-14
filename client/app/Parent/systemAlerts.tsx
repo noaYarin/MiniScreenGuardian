@@ -8,7 +8,7 @@ export default function SystemAlertsRoute() {
     <>
       <Stack.Screen
         options={{
-          title: "System Alerts",
+          title: "Notifications",
           headerTitleAlign: "center",
           headerShadowVisible: false,
         }}

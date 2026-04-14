@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
 import AppText from "../../../components/AppText/AppText";
+import EmptyStateCard from "../../../components/EmptyStateCard/EmptyStateCard";
 import ChildDeviceSelector from "../../../components/ChildDeviceSelector/ChildDeviceSelector";
 import { styles } from "./styles";
 
@@ -59,6 +60,48 @@ function getActivityMeta(actionType: AuditActionType) {
         iconColor: "#7C3AED",
       };
 
+    case "CHILD_ADDED":
+      return {
+        icon: "account-plus-outline" as const,
+        iconBg: "#DCFCE7",
+        iconColor: "#16A34A",
+      };
+
+    case "CHILD_DELETED":
+      return {
+        icon: "account-remove-outline" as const,
+        iconBg: "#FEE2E2",
+        iconColor: "#DC2626",
+      };
+
+    case "CHILD_PROFILE_UPDATED":
+      return {
+        icon: "account-edit-outline" as const,
+        iconBg: "#EDE9FE",
+        iconColor: "#7C3AED",
+      };
+
+    case "DEVICE_RENAMED":
+      return {
+        icon: "rename-outline" as const,
+        iconBg: "#E0F2FE",
+        iconColor: "#0284C7",
+      };
+
+    case "DEVICE_DELETED":
+      return {
+        icon: "cellphone-remove" as const,
+        iconBg: "#FEE2E2",
+        iconColor: "#DC2626",
+      };
+
+    case "DEVICE_ADDED":
+      return {
+        icon: "cellphone-link" as const,
+        iconBg: "#DCFCE7",
+        iconColor: "#16A34A",
+      };
+
     default:
       return {
         icon: "history" as const,
@@ -80,6 +123,18 @@ function getActivityTitle(actionType: AuditActionType) {
       return "Request rejected";
     case "UPDATE_SCREEN_TIME":
       return "Screen time updated";
+    case "CHILD_ADDED":
+      return "Child added";
+    case "CHILD_DELETED":
+      return "Child deleted";
+    case "CHILD_PROFILE_UPDATED":
+      return "Child profile updated";
+    case "DEVICE_RENAMED":
+      return "Device renamed";
+    case "DEVICE_DELETED":
+      return "Device deleted";
+    case "DEVICE_ADDED":
+      return "Device added";
     default:
       return "Activity";
   }
@@ -100,6 +155,18 @@ function getActivityDescription(
       return `Screen time extension request rejected for ${childName}`;
     case "UPDATE_SCREEN_TIME":
       return `Screen time settings updated for ${childName}`;
+    case "CHILD_ADDED":
+      return `A new child profile was added for ${childName}`;
+    case "CHILD_DELETED":
+      return `${childName}'s profile was deleted`;
+    case "CHILD_PROFILE_UPDATED":
+      return `${childName}'s profile details were updated`;
+    case "DEVICE_RENAMED":
+      return `A device name was updated for ${childName}`;
+    case "DEVICE_DELETED":
+      return `A device was removed from ${childName}'s profile`;
+    case "DEVICE_ADDED":
+      return `A device was linked to ${childName}`;
     default:
       return `A new activity was recorded for ${childName}`;
   }
@@ -115,6 +182,19 @@ function formatTime(dateString: string) {
   return date.toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
+  });
+}
+
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
   });
 }
 
@@ -334,23 +414,11 @@ export default function ActivityHistoryScreen() {
                 showDevices={false}
               />
             ) : (
-              <View style={styles.emptyState}>
-                <View style={styles.emptyIconWrap}>
-                  <MaterialCommunityIcons
-                    name="account-child-outline"
-                    size={26}
-                    color="#4F46E5"
-                  />
-                </View>
-
-                <AppText weight="bold" style={styles.emptyTitle}>
-                  No children found
-                </AppText>
-
-                <AppText weight="medium" style={styles.emptySubtitle}>
-                  There are no children linked to this account yet.
-                </AppText>
-              </View>
+              <EmptyStateCard
+                icon="account-child-outline"
+                title="No children yet"
+                subtitle="There are no children linked to this account yet."
+              />
             )}
           </View>
 
@@ -414,23 +482,11 @@ export default function ActivityHistoryScreen() {
                 </AppText>
               </View>
             ) : filteredActivities.length === 0 ? (
-              <View style={styles.emptyState}>
-                <View style={styles.emptyIconWrap}>
-                  <MaterialCommunityIcons
-                    name="clipboard-text-clock-outline"
-                    size={26}
-                    color="#4F46E5"
-                  />
-                </View>
-
-                <AppText weight="bold" style={styles.emptyTitle}>
-                  No activity found
-                </AppText>
-
-                <AppText weight="medium" style={styles.emptySubtitle}>
-                  Try selecting another child or changing the filter
-                </AppText>
-              </View>
+              <EmptyStateCard
+                icon="clipboard-text-clock-outline"
+                title="No activity yet"
+                subtitle="Try selecting another child or changing the filter."
+              />
             ) : (
               filteredActivities.map((item) => {
                 const child = childrenList.find(
@@ -445,7 +501,7 @@ export default function ActivityHistoryScreen() {
                   childName
                 );
                 const time = formatTime(item.createdAt);
-
+                const date = formatDate(item.createdAt);
                 return (
                   <Pressable
                     key={item._id}
@@ -498,6 +554,10 @@ export default function ActivityHistoryScreen() {
                       <View style={styles.timeWrap}>
                         <AppText weight="bold" style={styles.timeText}>
                           {time}
+                        </AppText>
+
+                        <AppText weight="medium" style={styles.timeText}>
+                          {date}
                         </AppText>
                       </View>
                     </View>

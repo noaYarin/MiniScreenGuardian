@@ -17,6 +17,8 @@ import { findDevicesByChildId } from "../dal/device.dal.js";
 import { notifyParent } from "./notification.service.js";
 import { NotificationType } from "../constants/notificationType.js";
 import { NotificationSeverity } from "../constants/severity.js";
+import { sendAuditLog } from "./audit.service.js";
+import { AuditActionType } from "../constants/auditActionType.js";
 
 export async function addChild(parentId, body) {
   const childDoc = validateAndBuildChildDoc(body);
@@ -34,6 +36,16 @@ export async function addChild(parentId, body) {
     });
   } catch (err) {
     console.error("notifyParent failed in addChild:", err.message);
+  }
+
+  try {
+    await sendAuditLog({
+      parentId,
+      childId: addedChild?._id,
+      actionType: AuditActionType.CHILD_ADDED,
+    });
+  } catch (err) {
+    console.error("sendAuditLog failed in addChild:", err.message);
   }
 
   return { child: addedChild };
@@ -256,6 +268,16 @@ export async function deleteChild(parentId, childId) {
     });
   } catch (err) {
     console.error("notifyParent failed in deleteChild:", err.message);
+  }
+
+  try {
+    await sendAuditLog({
+      parentId,
+      childId,
+      actionType: AuditActionType.CHILD_DELETED,
+    });
+  } catch (err) {
+    console.error("sendAuditLog failed in deleteChild:", err.message);
   }
 
   return {

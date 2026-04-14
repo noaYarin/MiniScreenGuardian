@@ -43,11 +43,18 @@ export default function InfoHint({
                         {title}
                     </AppText>
 
+                    <View style={styles.titleSeparator} />
+
+
                     <View style={styles.linesWrap}>
                         {lines.map((line, index) => (
-                            <View key={`${line}-${index}`} style={styles.lineRow}>
-                                <View style={styles.dot} />
-                                <AppText style={styles.lineText}>{line}</AppText>
+                            <View key={`${title}-${index}`} style={styles.lineItemLtr}>
+                                <View style={styles.lineRow}>
+                                    <View style={styles.dot} />
+                                    <AppText style={styles.lineText}>{line}</AppText>
+                                </View>
+
+                                {index < lines.length - 1 ? <View style={styles.separator} /> : null}
                             </View>
                         ))}
                     </View>

@@ -18,6 +18,13 @@ export const styles = StyleSheet.create({
     textAlign: "center",
   },
 
+    subtitle: {
+    fontSize: 15,
+    color: "#6B7280",
+    textAlign: "center",
+    marginTop: 6,
+  },
+
   cardsContainer: {
     width: "100%",
     justifyContent: "center",

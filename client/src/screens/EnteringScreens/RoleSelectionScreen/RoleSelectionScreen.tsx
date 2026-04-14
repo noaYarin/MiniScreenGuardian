@@ -26,6 +26,11 @@ export const RoleSelectionScreen: React.FC = () => {
           Welcome
         </AppText>
 
+
+        <AppText style={styles.subtitle}>
+          Choose who is using the app
+        </AppText>
+
         <View style={styles.cardsContainer}>
           <RoleCard
             title="Child"

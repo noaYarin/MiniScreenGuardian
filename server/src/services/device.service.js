@@ -275,18 +275,13 @@ export async function updateDeviceName(parentId, childId, deviceId, name) {
   const updated = await updateDeviceById(deviceId, { name: newName });
 
   try {
-    await notifyParent({
+    await sendAuditLog({
       parentId,
       childId,
-      type: NotificationType.DEVICE_RENAMED,
-      severity: NotificationSeverity.INFO,
-      title: "Device Renamed",
-      description: previousName
-        ? `"${previousName}" was renamed to "${newName}"`
-        : `A device was renamed to "${newName}"`
+      actionType: AuditActionType.DEVICE_RENAMED,
     });
   } catch (err) {
-    console.error("notifyParent failed in updateDeviceName:", err.message);
+    console.error("sendAuditLog failed in updateDeviceName:", err.message);
   }
 
   return updated;
@@ -342,19 +337,6 @@ export async function updateDeviceScreenTime(parentId, deviceId, body) {
     });
   } catch (err) {
     console.error("notifyChild failed in updateDeviceScreenTime:", err.message);
-  }
-
-  try {
-    await notifyParent({
-      parentId,
-      childId: device.childId,
-      type: NotificationType.SCREEN_TIME_UPDATED,
-      severity: NotificationSeverity.INFO,
-      title: "Screen Time Updated",
-      description: "You updated the screen time settings for your child"
-    });
-  } catch (err) {
-    console.error("notifyParent failed in updateDeviceScreenTime:", err.message);
   }
 
   try {
@@ -450,8 +432,8 @@ export async function deleteDeviceForParent(parentId, childId, deviceId) {
   ensureChildBelongsToParent(childList, childId);
   const device = await validateDeviceAccess({ deviceId, parentId, childId });
   const deviceLabel =
-    device?.deviceName != null && String(device.deviceName).trim() !== ""
-      ? String(device.deviceName).trim()
+    device?.name != null && String(device.name).trim() !== ""
+      ? String(device.name).trim()
       : "A device";
 
   await deleteDeviceById(deviceId);
@@ -467,6 +449,16 @@ export async function deleteDeviceForParent(parentId, childId, deviceId) {
     });
   } catch (err) {
     console.error("notifyParent failed in deleteDeviceForParent:", err.message);
+  }
+
+  try {
+    await sendAuditLog({
+      parentId,
+      childId,
+      actionType: AuditActionType.DEVICE_DELETED,
+    });
+  } catch (err) {
+    console.error("sendAuditLog failed in deleteDeviceForParent:", err.message);
   }
 }
 
@@ -741,6 +733,20 @@ export async function updateDeviceUsageByChild({
     } catch (err) {
       console.error("notifyParent failed in updateDeviceUsageByChild (ending):", err.message);
     }
+
+    try {
+      await notifyChild({
+        parentId: updatedDevice.parentId,
+        childId: updatedDevice.childId,
+        type: NotificationType.SCREEN_TIME_ENDING,
+        severity: NotificationSeverity.WARNING,
+        title: "Almost out of time",
+        description: `You have ${currentStatus.remainingMinutes} minute${currentStatus.remainingMinutes === 1 ? "" : "s"} left`
+      });
+    } catch (err) {
+      console.error("notifyChild failed in updateDeviceUsageByChild (ending):", err.message);
+    }
+
   }
 
   if (crossedEndedThreshold) {
