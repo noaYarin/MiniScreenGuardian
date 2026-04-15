@@ -41,7 +41,7 @@ export const OnboardingScreen: React.FC = () => {
         id: "1",
         icon: "shield",
         title: "Monitor & Protect",
-        description: "Track screen time and block apps instantly",
+        description: "Track screen time and block device instantly",
       },
       {
         id: "2",
