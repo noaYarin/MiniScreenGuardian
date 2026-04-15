@@ -6,7 +6,7 @@ import {
   ActivityIndicator,
   Switch,
 } from "react-native";
-import { showErrorToast, showSuccessToast } from "@/src/utils/appToast";
+import { showErrorToast, showSuccessToast, showInfoToast } from "@/src/utils/appToast";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -235,7 +235,7 @@ export default function DailyTimeLimitsScreen() {
         })
       ).unwrap();
 
-      showSuccessToast(
+      showInfoToast(
         "The new limit was saved and sent to the child device.");
       setEditingCardId(null);
 
