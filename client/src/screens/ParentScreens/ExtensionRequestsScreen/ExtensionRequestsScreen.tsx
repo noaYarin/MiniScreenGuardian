@@ -194,13 +194,12 @@ export default function ExtensionRequestsScreen() {
             </AppText>
 
             <AppText weight="medium" style={styles.heroSubtitle}>
-              "Review and manage pending requests for extra daily screen time"
+              Review and manage pending requests for extra daily screen time
             </AppText>
 
             <InfoHint
               title="How requests work"
               lines={[
-                "This screen shows pending requests for extra time on the daily limit",
                 "Approving a request adds extra minutes for the current day only",
                 "Approved extra time stays until the daily reset, even if the daily limit is turned off and on again",
                 "Requests on this screen affect only the daily limit and do not control manual lock or unlock actions",

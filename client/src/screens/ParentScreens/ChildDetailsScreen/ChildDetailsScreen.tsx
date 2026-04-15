@@ -246,9 +246,8 @@ export default function ChildDetailsScreen() {
 
         showInfoToast(
           locked
-            ? "The lock command was sent to the child device."
-            : "The unlock command was sent to the child device.",
-          locked ? "Device lock updated" : "Device unlock updated"
+            ? "Lock command sent to the child device."
+            : "Unlock command sent to the child device."
         );
       } catch {
         showErrorToast("Failed to update the device lock state.", "Error");
