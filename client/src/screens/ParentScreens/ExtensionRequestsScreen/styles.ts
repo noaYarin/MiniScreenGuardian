@@ -36,7 +36,7 @@ export const styles = StyleSheet.create({
   },
 
   heroTitle: {
-    fontSize: 26,
+    fontSize: 22,
     color: "#FFFFFF",
   },
 

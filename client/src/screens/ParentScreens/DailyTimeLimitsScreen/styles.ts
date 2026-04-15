@@ -16,18 +16,13 @@ export const styles = StyleSheet.create({
   },
 
   heroCard: {
-    width: "100%",
+    position: "relative",
+    overflow: "hidden",
     borderRadius: 28,
-    paddingHorizontal: 18,
-    paddingVertical: 18,
-    backgroundColor: "#F7FAFF",
-    borderWidth: 1,
-    borderColor: "#E5EEFF",
-    shadowColor: "#AFC6F9",
-    shadowOpacity: 0.08,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 3,
+    paddingHorizontal: 20,
+    paddingVertical: 22,
+    backgroundColor: "#315BFF",
+    gap: 10,
   },
 
   heroHeader: {
@@ -60,15 +55,15 @@ export const styles = StyleSheet.create({
     gap: 4,
   },
 
-  heroTitle: {
-    fontSize: 20,
-    color: "#1C274C",
+ heroTitle: {
+    fontSize: 22,
+    color: "#ffffff",
   },
 
   heroSubtitle: {
-    fontSize: 14,
-    color: "#6B7890",
-    lineHeight: 20,
+    fontSize: 15,
+    lineHeight: 22,
+    color: "rgba(255,255,255,0.88)",
   },
 
   cardsList: {

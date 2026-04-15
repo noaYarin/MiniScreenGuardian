@@ -302,19 +302,6 @@ export default function DailyTimeLimitsScreen() {
       >
         <View style={styles.container}>
           <View style={styles.heroCard}>
-            <View style={styles.heroHeader}>
-              <View
-                style={[
-                  styles.heroAvatar,
-                  { backgroundColor: heroAccent },
-                ]}
-              >
-                <AppText weight="extraBold" style={styles.heroAvatarText}>
-                  {heroInitial}
-                </AppText>
-              </View>
-
-              <View style={styles.heroTextBlock}>
                 <AppText weight="extraBold" style={styles.heroTitle}>
                   Manage screen time by child and device
                 </AppText>
@@ -322,10 +309,6 @@ export default function DailyTimeLimitsScreen() {
                 <AppText weight="medium" style={styles.heroSubtitle}>
                   Choose a child and device, then set or update the daily screen-time limit.
                 </AppText>
-              </View>
-            </View>
-
-
             <InfoHint
               title="How daily limits work"
               lines={[
