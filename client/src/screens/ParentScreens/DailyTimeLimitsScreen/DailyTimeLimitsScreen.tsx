@@ -494,15 +494,6 @@ export default function DailyTimeLimitsScreen() {
                       />
                     </View>
 
-                    <AppText weight="medium" style={styles.summaryText}>
-                      {isEnabled
-                        ? isEditing
-                          ? `Current limit is ${formatHoursToClock(
-                            effectiveMaxHours
-                          )} per day`
-                          : limitCard.summary
-                        : "This daily limit is turned off."}
-                    </AppText>
 
                     <View style={styles.actionsRow}>
                       <View
@@ -566,46 +557,18 @@ export default function DailyTimeLimitsScreen() {
                         <View style={styles.editorWrap}>
                           <View style={styles.editorHeaderRow}>
                             <AppText weight="bold" style={styles.editorTitle}>
-                              Edit Limit
+                              Edit Daily Limit
                             </AppText>
 
-                            <Pressable
-                              onPress={() => handleSavePress(limitCard.id)}
-                              accessibilityRole="button"
-                              accessibilityLabel="Save edited limit"
-                              style={({ pressed }) => [
-                                styles.saveButtonStrong,
-                                pressed && styles.saveButtonStrongPressed,
-                              ]}
-                            >
-                              <MaterialCommunityIcons
-                                name="content-save-outline"
-                                size={18}
-                                color="#FFFFFF"
-                              />
-                              <AppText
-                                weight="extraBold"
-                                style={styles.saveButtonStrongText}
-                              >
-                                Save
-                              </AppText>
-                            </Pressable>
                           </View>
 
-                          <AppText weight="medium" style={styles.editorHint}>
-                            Changes are applied only after you tap Save
-                          </AppText>
 
                           <View style={styles.switchRow}>
                             <View style={styles.switchTextWrap}>
-                              <AppText weight="medium">
-                                Daily limit enabled
-                              </AppText>
 
                               <AppText weight="medium" style={styles.switchHint}>
-                                {isEnabled
-                                  ? "Turn off the switch to remove the daily limit"
-                                  : "Turn on the switch to set a daily limit"}
+                                {isEnabled ? "Daily limit is on" : " Daily limit is off"}
+
                               </AppText>
                             </View>
 
@@ -627,6 +590,8 @@ export default function DailyTimeLimitsScreen() {
                               !isEnabled && { opacity: 0.5 },
                             ]}
                           >
+
+
                             <Pressable
                               onPress={() =>
                                 updateLimitByStep(limitCard.id, -STEP_HOURS)
@@ -653,7 +618,7 @@ export default function DailyTimeLimitsScreen() {
                                   !canDecrease && styles.stepButtonTextDisabled,
                                 ]}
                               >
-                                5-
+                                5
                               </AppText>
                             </Pressable>
 
@@ -662,7 +627,7 @@ export default function DailyTimeLimitsScreen() {
                                 weight="medium"
                                 style={styles.currentValueLabel}
                               >
-                                Current limit
+                                Limit
                               </AppText>
 
                               <AppText
@@ -701,10 +666,34 @@ export default function DailyTimeLimitsScreen() {
                                   !isEnabled && styles.stepButtonTextDisabled,
                                 ]}
                               >
-                                5+
+                                5
                               </AppText>
                             </Pressable>
                           </View>
+
+                          <Pressable
+                            onPress={() => handleSavePress(limitCard.id)}
+                            accessibilityRole="button"
+                            accessibilityLabel="Save edited limit"
+                            style={({ pressed }) => [
+                              styles.saveButtonStrong,
+                              styles.saveButtonStrongBottom,
+                              pressed && styles.saveButtonStrongPressed,
+                            ]}
+                          >
+                            <MaterialCommunityIcons
+                              name="content-save-outline"
+                              size={18}
+                              color="#FFFFFF"
+                            />
+                            <AppText
+                              weight="extraBold"
+                              style={styles.saveButtonStrongText}
+                            >
+                              Save
+                            </AppText>
+                          </Pressable>
+
                         </View>
                       )}
                     </View>

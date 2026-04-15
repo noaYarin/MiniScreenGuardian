@@ -1,6 +1,6 @@
 import Feather from "@expo/vector-icons/Feather";
 import { useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   View,
   Image,
@@ -8,7 +8,7 @@ import {
   ScrollView,
   NativeSyntheticEvent,
   NativeScrollEvent,
-  useWindowDimensions,
+  LayoutChangeEvent,
 } from "react-native";
 
 import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
@@ -29,38 +29,41 @@ type OnboardingSlide = {
 
 export const OnboardingScreen: React.FC = () => {
   const router = useRouter();
-  const { width: pageWidth } = useWindowDimensions();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const indexRef = useRef(0);
   const scrollRef = useRef<ScrollView | null>(null);
+  const indexRef = useRef(0);
 
-  const slides: OnboardingSlide[] = [
-    {
-      id: "1",
-      icon: "shield",
-      title: "Monitor & Protect",
-      description: "Track screen time and block apps instantly.",
-    },
-    {
-      id: "2",
-      icon: "map-pin",
-      title: "Real-time Location",
-      description: "Get your child's GPS location anytime.",
-      image: require("../../../../assets/images/map.png"),
-    },
-    {
-      id: "3",
-      icon: "cpu",
-      title: "AI Analysis",
-      description: "AI-based recommendations for other activities.",
-    },
-  ];
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [pageWidth, setPageWidth] = useState(0);
 
-  //Prevent index that not exist
+  const slides: OnboardingSlide[] = useMemo(
+    () => [
+      {
+        id: "1",
+        icon: "shield",
+        title: "Monitor & Protect",
+        description: "Track screen time and block apps instantly.",
+      },
+      {
+        id: "2",
+        icon: "map-pin",
+        title: "Real-time Location",
+        description: "Get your child's GPS location anytime.",
+        image: require("../../../../assets/images/map.png"),
+      },
+      {
+        id: "3",
+        icon: "cpu",
+        title: "AI Analysis",
+        description: "AI-based recommendations for other activities.",
+      },
+    ],
+    []
+  );
+
   const clampIndex = (index: number) =>
     Math.max(0, Math.min(slides.length - 1, index));
 
-  const isLastSlide = currentIndex >= slides.length - 1;
+  const isLastSlide = currentIndex === slides.length - 1;
 
   const goToChooseChildAge = () => {
     router.push(CHOOSE_CHILD_AGE as any);
@@ -70,11 +73,32 @@ export const OnboardingScreen: React.FC = () => {
     goToChooseChildAge();
   };
 
+  const handleLayout = (event: LayoutChangeEvent) => {
+    const width = Math.round(event.nativeEvent.layout.width);
+
+    if (!width || width === pageWidth) return;
+
+    setPageWidth(width);
+
+    const safeIndex = clampIndex(indexRef.current);
+
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({
+        x: safeIndex * width,
+        animated: false,
+      });
+    });
+  };
+
   const syncIndexFromOffset = (offsetX: number) => {
-    if (pageWidth <= 0) return;
-    const idx = clampIndex(Math.round(offsetX / pageWidth));
-    indexRef.current = idx;
-    setCurrentIndex(idx);
+    if (!pageWidth) return;
+
+    const nextIndex = clampIndex(Math.round(offsetX / pageWidth));
+
+    if (nextIndex !== indexRef.current) {
+      indexRef.current = nextIndex;
+      setCurrentIndex(nextIndex);
+    }
   };
 
   const handleMomentumScrollEnd = (
@@ -83,38 +107,50 @@ export const OnboardingScreen: React.FC = () => {
     syncIndexFromOffset(event.nativeEvent.contentOffset.x);
   };
 
+  const scrollToIndex = (index: number) => {
+    if (!pageWidth) return;
+
+    const safeIndex = clampIndex(index);
+
+    indexRef.current = safeIndex;
+    setCurrentIndex(safeIndex);
+
+    scrollRef.current?.scrollTo({
+      x: safeIndex * pageWidth,
+      animated: true,
+    });
+  };
+
   const handlePrimaryPress = () => {
-    const i = indexRef.current;
-    if (i >= slides.length - 1) {
+    if (indexRef.current >= slides.length - 1) {
       goToChooseChildAge();
       return;
     }
-    const next = i + 1;
-    indexRef.current = next;
-    setCurrentIndex(next);
-    if (pageWidth > 0) {
-      scrollRef.current?.scrollTo({
-        x: next * pageWidth,
-        animated: true,
-      });
-    }
+
+    scrollToIndex(indexRef.current + 1);
   };
 
   return (
-    <ScreenLayout scrollable={false}>
-      <View style={styles.safeArea}>
+    <ScreenLayout>
+      <View style={styles.safeArea} onLayout={handleLayout}>
         <View style={styles.slideWrapper}>
           <ScrollView
             ref={scrollRef}
             style={styles.slideScroll}
             horizontal
             pagingEnabled
+            snapToInterval={pageWidth || undefined}
+            snapToAlignment="start"
+            decelerationRate="fast"
+            disableIntervalMomentum
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={handleMomentumScrollEnd}
+            scrollEventThrottle={16}
             keyboardShouldPersistTaps="handled"
+            contentOffset={{ x: 0, y: 0 }}
           >
             {slides.map((slide) => (
-              <View key={slide.id} style={{ width: pageWidth }}>
+              <View key={slide.id} style={{ width: pageWidth || "100%" }}>
                 <View style={styles.slideContainer}>
                   <View style={styles.iconContainer}>
                     <Feather
@@ -161,7 +197,7 @@ export const OnboardingScreen: React.FC = () => {
                 key={index}
                 style={[
                   styles.stepDot,
-                  index === currentIndex && styles.stepDotActive,
+                  index === currentIndex ? styles.stepDotActive : null,
                 ]}
               />
             ))}
