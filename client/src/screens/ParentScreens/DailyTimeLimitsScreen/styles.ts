@@ -456,4 +456,13 @@ export const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 14,
   },
+  saveButtonStrongBottom: {
+    marginTop: 16,
+    alignSelf: "stretch",
+    justifyContent: "center",
+  },
+  editorHintBottom: {
+  marginTop: 14,
+  marginBottom: 10,
+},
 });
