@@ -326,9 +326,11 @@ export const childDetailsStyles = StyleSheet.create({
     elevation: 2,
   },
   deviceLockActionButtonRed: {
-    backgroundColor: "#FEE2E2",
-    borderWidth: 1,
-    borderColor: "#FECACA",
+    backgroundColor: "#E45454",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 18,
+    shadowColor: "#E45454",
   },
 
   deviceLockActionButtonGreen: {
@@ -340,7 +342,7 @@ export const childDetailsStyles = StyleSheet.create({
   deviceLockActionTextRed: {
     fontSize: 15,
     fontWeight: "700",
-    color: "#DC2626",
+    color: "#ffffff",
   },
 
   deviceLockActionTextGreen: {
