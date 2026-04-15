@@ -14,7 +14,7 @@ import { styles } from "./styles";
 import { NativeModules } from "react-native";
 import * as Location from "expo-location";
 import { updateDeviceLocation } from "../../../redux/thunks/deviceThunks";
-import { showAppToast } from "@/src/utils/appToast";
+import { showErrorToast } from "@/src/utils/appToast";
 
 /** After a failed link, wait before re-enabling scan so the camera does not instantly re-read the same QR. */
 const ERROR_RELEASE_DELAY = 750;
@@ -79,7 +79,6 @@ export default function LinkChildrenScreen() {
       }
 
       // Fetch the latest policy right after pairing so the child device starts with the current server rules
-
       try {
         await NativeModules.DeviceControl.syncPolicyNow();
       } catch (e) {
@@ -106,9 +105,9 @@ export default function LinkChildrenScreen() {
         params: { initialName: res.childName ?? "" },
       });
     } catch (err: any) {
-      showAppToast(
-        err?.error?.message ?? "The action failed. Please try again.",
-        "Something went wrong"
+      showErrorToast(
+        err?.error?.message ?? "Could not connect to the parent account. Please try again.",
+        "Error"
       );
       scheduleFinishLinkAfterError();
       router.replace("Entering/roleSelectionRoute" as any);

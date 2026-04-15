@@ -16,7 +16,7 @@ import { AppDispatch } from "@/src/redux/store/types";
 import { resetPassword } from "@/src/redux/thunks/authThunks";
 import { setError } from "@/src/redux/slices/auth-slice";
 import { enteringFormStyles as styles } from "@/src/components/AuthFormCard/AuthFormCard.styles";
-import { showAppToast } from "@/src/utils/appToast";
+import { showSuccessToast } from "@/src/utils/appToast";
 
 const ICON = {
   lock: "lock-reset",
@@ -61,10 +61,7 @@ export default function ResetPasswordScreen() {
         })
       ).unwrap();
 
-      showAppToast(
-        "Your password has been reset successfully.",
-        "Password updated"
-      );
+      showSuccessToast("Your password has been reset successfully.");
 
       dispatch(setError(null));
 

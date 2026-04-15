@@ -6,7 +6,7 @@ import {
   ActivityIndicator,
   Switch,
 } from "react-native";
-import { showAppToast } from "@/src/utils/appToast";
+import { showErrorToast, showSuccessToast } from "@/src/utils/appToast";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -235,8 +235,8 @@ export default function DailyTimeLimitsScreen() {
         })
       ).unwrap();
 
-      showAppToast("Limit updated successfully");
-
+      showSuccessToast(
+        "The new limit was saved and sent to the child device.");
       setEditingCardId(null);
 
       setTempLimits((prev) => {
@@ -251,7 +251,7 @@ export default function DailyTimeLimitsScreen() {
         return updated;
       });
     } catch {
-      showAppToast("Failed to update limit");
+      showErrorToast("Could not update the daily limit. Please try again.", "Error");
     }
   };
 
@@ -316,12 +316,11 @@ export default function DailyTimeLimitsScreen() {
 
               <View style={styles.heroTextBlock}>
                 <AppText weight="extraBold" style={styles.heroTitle}>
-                  Manage screen time per child and device
+                  Manage screen time by child and device
                 </AppText>
 
                 <AppText weight="medium" style={styles.heroSubtitle}>
-                  Choose a child and device, then define a daily screen-time
-                  rule.
+                  Choose a child and device, then set or update the daily screen-time limit.
                 </AppText>
               </View>
             </View>
@@ -404,8 +403,8 @@ export default function DailyTimeLimitsScreen() {
             selectedLimits.length === 0 && (
               <EmptyStateCard
                 icon="clock-outline"
-                title="No limits yet"
-                subtitle="No screen-time limits were set for this device yet."
+                title="No daily limit yet"
+                subtitle="No daily screen-time limit was set for this device yet."
               />
             )}
           {selectedLimits.length > 0 && (
@@ -534,7 +533,7 @@ export default function DailyTimeLimitsScreen() {
                           {!isEnabled
                             ? "Off"
                             : progress >= 1
-                              ? "Time's up"
+                              ? "Limit reached"
                               : progress >= 0.8
                                 ? "Almost reached"
                                 : "OK"}

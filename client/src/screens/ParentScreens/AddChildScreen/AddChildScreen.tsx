@@ -18,7 +18,8 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch } from "@/src/redux/store/types";
 import { addChildThunk } from "@/src/redux/thunks/childrenThunks";
 import { clearChildrenError } from "@/src/redux/slices/children-slice";
-import { showAppToast } from "@/src/utils/appToast";
+import { showErrorToast } from "@/src/utils/appToast";
+
 
 type GenderOption = "boy" | "girl" | "other";
 
@@ -89,14 +90,14 @@ export default function AddChildScreen() {
       dispatch(clearChildrenError());
 
       if (!childName.trim()) {
-        showAppToast("Please enter a name", "Error");
+        showErrorToast("Please enter a name", "Error");
         return;
       }
 
       const age = calculateAge(birthDate);
 
       if (age < 6 || age > 17) {
-        showAppToast("Age must be between 6 and 17", "Error");
+        showErrorToast("Age must be between 6 and 17", "Error");
         return;
       }
 
@@ -110,7 +111,7 @@ export default function AddChildScreen() {
 
       router.back();
     } catch (err: any) {
-      showAppToast(
+      showErrorToast(
         typeof err === "string" ? err : "Something went wrong. Please try again.",
         "Error"
       );

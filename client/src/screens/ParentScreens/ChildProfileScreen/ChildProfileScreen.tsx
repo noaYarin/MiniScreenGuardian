@@ -25,7 +25,7 @@ import {
   updateChildProfileImageThunk,
 } from "@/src/redux/thunks/childrenThunks";
 import ConfirmDialog from "@/src/components/ConfirmDialog/ConfirmDialog";
-import { showAppToast } from "@/src/utils/appToast";
+import { showErrorToast, showSuccessToast } from "@/src/utils/appToast";
 import { getChildProfileImageUri } from "@/src/utils/childProfileImage";
 
 type ActionCard = {
@@ -103,7 +103,7 @@ export default function ChildProfileScreen() {
         if (mode === "camera") {
           const cam = await ImagePicker.requestCameraPermissionsAsync();
           if (cam.status !== "granted") {
-            showAppToast(
+            showErrorToast(
               "Permission is required to use the camera or photo library.",
               "Error"
             );
@@ -112,7 +112,7 @@ export default function ChildProfileScreen() {
         } else {
           const lib = await ImagePicker.requestMediaLibraryPermissionsAsync();
           if (lib.status !== "granted") {
-            showAppToast(
+            showErrorToast(
               "Permission is required to use the camera or photo library.",
               "Error"
             );
@@ -139,15 +139,14 @@ export default function ChildProfileScreen() {
         const mime = asset.mimeType ?? "image/jpeg";
 
         if (!asset.base64) {
-          showAppToast("Could not read the image. Try another photo.", "Error");
-          return;
+          showErrorToast("Could not read the image. Try another photo.", "Error"); return;
         }
 
         const dataUrl = `data:${mime};base64,${asset.base64}`;
 
         setUploadingAvatar(true);
         await dispatch(updateChildProfileImageThunk({ childId, img: dataUrl })).unwrap();
-        showAppToast("Profile photo updated");
+        showSuccessToast("Profile photo updated successfully.");
       } catch (err: unknown) {
         const rejected =
           typeof err === "string"
@@ -161,7 +160,7 @@ export default function ChildProfileScreen() {
             ? "Could not update the profile photo."
             : "Could not upload the photo";
 
-        showAppToast(message, "Error");
+        showErrorToast(message, "Error");
       } finally {
         setUploadingAvatar(false);
       }
@@ -204,7 +203,10 @@ export default function ChildProfileScreen() {
       await dispatch(deleteChildThunk(childId)).unwrap();
       router.replace("/Parent/(tabs)/children");
     } catch (error: any) {
-      showAppToast(error?.message || "Could not delete the child.\n\n Please delete their devices first.", "Error");
+      showErrorToast(
+        error?.message || "To delete this child, please remove their devices first.",
+        "Error"
+      );
     } finally {
       setIsDeleting(false);
     }

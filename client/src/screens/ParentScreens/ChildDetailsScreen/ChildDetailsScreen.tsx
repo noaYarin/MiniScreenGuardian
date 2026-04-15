@@ -29,7 +29,7 @@ import { childDetailsStyles as styles } from "@/src/components/ChildDetails/chil
 import EmptyStateCard from "../../../components/EmptyStateCard/EmptyStateCard";
 import { parseRouteParam } from "./childDetailsRouteParams";
 import ConfirmDialog from "@/src/components/ConfirmDialog/ConfirmDialog";
-import { showAppToast } from "@/src/utils/appToast";
+import { showErrorToast, showInfoToast, showSuccessToast } from "@/src/utils/appToast";
 import { emitEvent } from "@/src/services/socket";
 import { DELETE_DEVICE } from "@/src/constants/socketEvents";
 import InfoHint from "../../../components/InfoHint/InfoHint";
@@ -225,7 +225,7 @@ export default function ChildDetailsScreen() {
 
       emitEvent(DELETE_DEVICE, { deviceId, childId: effectiveChildId });
     } catch {
-      showAppToast("Could not remove the device. Please try again.", "Error");
+      showErrorToast("Could not remove the device. Please try again.", "Error");
     } finally {
       setDeletingDeviceId(null);
     }
@@ -244,11 +244,14 @@ export default function ChildDetailsScreen() {
           })
         ).unwrap();
 
-        showAppToast(
-          locked ? "Device locked successfully" : "Device unlocked successfully"
+        showInfoToast(
+          locked
+            ? "The lock command was sent to the child device."
+            : "The unlock command was sent to the child device.",
+          locked ? "Device lock updated" : "Device unlock updated"
         );
       } catch {
-        showAppToast("Failed to update device lock state", "Error");
+        showErrorToast("Failed to update the device lock state.", "Error");
       }
     },
     [dispatch, effectiveChildId, deletingDeviceId]
@@ -268,9 +271,9 @@ export default function ChildDetailsScreen() {
             name: newName,
           })
         ).unwrap();
-        showAppToast("Device name updated successfully", "Success");
+        showSuccessToast("The device name was updated successfully.");
       } catch {
-        showAppToast("Could not update the device name. Please try again.", "Error");
+        showErrorToast("Could not update the device name. Please try again.", "Error");
         throw new Error("rename_failed");
       }
     },
@@ -380,12 +383,12 @@ export default function ChildDetailsScreen() {
             <InfoHint
               title="How device controls work"
               lines={[
-                "Manual lock and unlock works only while Accessibility access is enabled on the child’s device",
-                "Manual lock and unlock only control the manual lock",
+                "Manual lock and unlock work only when Accessibility access is enabled on the child’s device",
+                "Manual lock and unlock affect only the manual lock state",
                 "They do not turn the daily limit on or off",
                 "Daily limits can be changed only on the daily limits screen",
-                "Manual lock and the daily limit are handled separately.",
-                "If the daily limit has already been reached and you press Lock, the button may remain in the daily-limit state until the limit is reset or turned off.\nOnce the daily limit is no longer active, you can unlock the manual lock.",
+                "Manual lock and daily limits are handled separately",
+                "If the daily limit has already been reached and you press Lock, the device may stay in the daily-limit state until the limit is reset or turned off.\nOnce the daily limit is no longer active, the manual lock can be removed",
                 "If a device is offline, changes will apply when it reconnects",
               ]}
             />

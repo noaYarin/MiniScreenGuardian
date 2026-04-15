@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { Href, router } from "expo-router";
-import Toast from "react-native-root-toast";
+import { showInfoToast } from "@/src/utils/appToast";
 import EmptyStateCard from "../../../components/EmptyStateCard/EmptyStateCard";
 import ScreenLayout from "../../../layouts/ScreenLayout/ScreenLayout";
 import ChildSelector from "../../../components/ChildSelector/ChildSelector";
@@ -81,12 +81,9 @@ export default function ChildLocationScreen() {
 
   const onNavigate = async () => {
     if (!deviceSnapshot || !deviceSnapshot.latitude || !deviceSnapshot.longitude) {
-      Toast.show(
-        "No location yet\nAllow location in Settings, then refresh. If it still fails, check the system location permission for the app.",
-        {
-          duration: Toast.durations.SHORT,
-          position: Toast.positions.TOP,
-        }
+      showInfoToast(
+        "Allow location in Settings, then refresh. If it still fails, check the app location permission.",
+        "No location yet"
       );
       return;
     }
