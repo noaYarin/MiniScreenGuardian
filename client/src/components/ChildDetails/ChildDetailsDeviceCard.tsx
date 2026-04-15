@@ -263,7 +263,7 @@ export function ChildDetailsDeviceCard({
                     ? "#C2410C"
                     : showUnlock
                       ? "#15803D"
-                      : "#B91C1C"
+                      : "#ffffff"
                 }
               />
 
