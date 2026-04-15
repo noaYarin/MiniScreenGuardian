@@ -24,7 +24,7 @@ import {
   fetchPendingRequestsThunk,
   decideRequestThunk,
 } from "@/src/redux/thunks/requestThunks";
-import { showAppToast } from "@/src/utils/appToast";
+import { showErrorToast, showSuccessToast } from "@/src/utils/appToast";
 import EmptyStateCard from "../../../components/EmptyStateCard/EmptyStateCard";
 import InfoHint from "../../../components/InfoHint/InfoHint";
 
@@ -157,9 +157,12 @@ export default function ExtensionRequestsScreen() {
         })
       ).unwrap();
 
-      showAppToast("Request approved", "Success");
+      showSuccessToast("The request was approved and extra time was added.");
     } catch (error: any) {
-      showAppToast(error?.message ?? "Something went wrong", "Error");
+      showErrorToast(
+        error?.message ?? "Could not update the request. Please try again.",
+        "Error"
+      );
     }
   };
 
@@ -172,9 +175,12 @@ export default function ExtensionRequestsScreen() {
         })
       ).unwrap();
 
-      showAppToast("Request declined", "Success");
+      showSuccessToast("The request was declined.");
     } catch (error: any) {
-      showAppToast(error?.message ?? "Something went wrong", "Error");
+      showErrorToast(
+        error?.message ?? "Could not update the request. Please try again.",
+        "Error"
+      );
     }
   };
 
@@ -188,7 +194,7 @@ export default function ExtensionRequestsScreen() {
             </AppText>
 
             <AppText weight="medium" style={styles.heroSubtitle}>
-              Manage pending daily limit extension requests
+              "Review and manage pending requests for extra daily screen time"
             </AppText>
 
             <InfoHint
@@ -198,13 +204,13 @@ export default function ExtensionRequestsScreen() {
                 "Approving a request adds extra minutes for the current day only",
                 "Approved extra time stays until the daily reset, even if the daily limit is turned off and on again",
                 "Requests on this screen affect only the daily limit and do not control manual lock or unlock actions",
-                "If the device is offline or Usage Access is off, the remaining time shown here may update after it reconnects sync",
+                "If the device is offline or Usage Access is turned off, the remaining time shown here may update after the device reconnects and syncs",
               ]}
-            />                
+            />
 
           </View>
 
-       
+
           {!!selectedChildId && (
             <ChildDeviceSelector
               selectedChildId={selectedChildId}
@@ -268,7 +274,7 @@ export default function ExtensionRequestsScreen() {
                           color="#315BFF"
                         />
                         <AppText weight="bold" style={styles.infoChipText}>
-                          Requested: {request.requestedMinutes} minutes
+                          Requested extra time: {request.requestedMinutes} minutes
                         </AppText>
                       </View>
                     </View>

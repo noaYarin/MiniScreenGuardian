@@ -12,7 +12,7 @@ import { router, useLocalSearchParams, type Href } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import Toast from "react-native-root-toast";
+import { showErrorToast, showInfoToast } from "@/src/utils/appToast";
 import * as Location from "expo-location";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -130,19 +130,13 @@ export default function HomeScreen() {
           })
         ).unwrap();
       } else {
-        Toast.show(
-          "Device not linked\nPlease re-link this device so location can be saved.",
-          {
-            duration: Toast.durations.LONG,
-            position: Toast.positions.TOP,
-          }
+        showInfoToast(
+          "Please ask your parent to reconnect this device so location can be saved.",
+          "Device not linked"
         );
       }
     } catch (error) {
-      Toast.show("Error\nFailed to sync location", {
-        duration: Toast.durations.LONG,
-        position: Toast.positions.TOP,
-      });
+      showErrorToast("Could not to sync location.", "Error");
     }
   };
 
@@ -290,7 +284,7 @@ export default function HomeScreen() {
                   }
                 >
                   <AppText weight="bold" style={styles.statsToggleText}>
-                    {isStatsOpen ? "hide stats" : "show stats"}
+                    {isStatsOpen ? "Hide stats" : "Show stats"}
                   </AppText>
                   <MaterialCommunityIcons
                     name={isStatsOpen ? ICON.statsOpen : ICON.statsClosed}
@@ -338,7 +332,7 @@ export default function HomeScreen() {
               </View>
 
               <AppText weight="extraBold" style={styles.cardTitle}>
-                time left
+                Time left
               </AppText>
             </View>
           </View>
@@ -362,7 +356,7 @@ export default function HomeScreen() {
           <AppText weight="bold" style={styles.timerSub}>
             {!screenTime.limitEnabled
               ? "There is no active limit right now"
-              : "You're close to the limit"}
+              : "Your time is almost over"}
           </AppText>
         </View>
 
@@ -380,7 +374,7 @@ export default function HomeScreen() {
           <Tile iconName={ICON.tasks} label="Tasks" colorKey="tasks" disabled />
           <Tile
             iconName={ICON.achievements}
-            label="Achieves"
+            label="Achievements"
             colorKey="achievements"
             disabled
           />
@@ -395,28 +389,28 @@ export default function HomeScreen() {
           <Tile iconName={ICON.help} label="Help" colorKey="help" disabled />
         </View>
 
-<Pressable
-  disabled
-  style={({ pressed }) => [
-    styles.panicBtn,
-    styles.panicDisabled, // 👈 חדש
-    pressed && styles.panicPressed,
-  ]}
-  accessibilityRole="button"
-  accessibilityLabel="SOS disabled"
-  accessibilityState={{ disabled: true }}
->
-  <View style={styles.panicContent}>
-    {/* 👇 האייקון לפני הטקסט */}
-    <View style={styles.panicIconBadge}>
-      <MaterialCommunityIcons name={ICON.panic} size={18} color="#fff" />
-    </View>
+        <Pressable
+          disabled
+          style={({ pressed }) => [
+            styles.panicBtn,
+            styles.panicDisabled, 
+            pressed && styles.panicPressed,
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel="SOS disabled"
+          accessibilityState={{ disabled: true }}
+        >
+          <View style={styles.panicContent}>
+           
+            <View style={styles.panicIconBadge}>
+              <MaterialCommunityIcons name={ICON.panic} size={18} color="#fff" />
+            </View>
 
-    <AppText weight="extraBold" style={styles.panicText}>
-      SOS
-    </AppText>
-  </View>
-</Pressable>
+            <AppText weight="extraBold" style={styles.panicText}>
+              SOS
+            </AppText>
+          </View>
+        </Pressable>
       </View>
     </ScreenLayout>
   );

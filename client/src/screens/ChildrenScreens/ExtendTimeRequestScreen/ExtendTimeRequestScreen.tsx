@@ -21,8 +21,9 @@ import {
   createRequestThunk,
   fetchMyRequestsThunk,
 } from "@/src/redux/thunks/requestThunks";
-import { showAppToast } from "@/src/utils/appToast";
+import { showErrorToast, showSuccessToast } from "@/src/utils/appToast";
 
+// Native module for device control actions and current screen-time status
 const { DeviceControl } = NativeModules;
 
 type MinuteOption = {
@@ -105,17 +106,17 @@ export default function ExtendTimeRequestScreen() {
 
     try {
       if (!deviceId) {
-        showAppToast("No linked device found", "Error");
+        showErrorToast("No linked device found", "Error");
         return;
       }
 
       if (!selectedMinutes || selectedMinutes < 1 || selectedMinutes > 120) {
-        showAppToast("Invalid number of minutes", "Error");
+        showErrorToast("Invalid number of minutes", "Error");
         return;
       }
 
       if (!DeviceControl?.getRemainingTime || !DeviceControl?.syncPolicyNow) {
-        showAppToast("Device control is not available on this device", "Error");
+        showErrorToast("Device control is not available on this device", "Error");
         return;
       }
 
@@ -127,7 +128,7 @@ export default function ExtendTimeRequestScreen() {
         Number(nativeState?.dailyLimitMinutes ?? 0) > 0;
 
       if (!hasActiveLimit) {
-        showAppToast(
+        showErrorToast(
           "No screen-time limit is active right now",
           "Error"
         );
@@ -135,8 +136,8 @@ export default function ExtendTimeRequestScreen() {
       }
 
       if (hasPendingRequestForThisDevice) {
-        showAppToast(
-          "A pending extension request already exists for this device",
+        showErrorToast(
+          "You already have a pending request for more time.",
           "Error"
         );
         return;
@@ -152,11 +153,11 @@ export default function ExtendTimeRequestScreen() {
         })
       ).unwrap();
 
-      showAppToast("Extension request sent successfully", "Success");
+      showSuccessToast("Extension request sent successfully.");
 
       router.back();
     } catch (error) {
-      showAppToast(getErrorMessage((error as Error)?.message), "Error");
+      showErrorToast(getErrorMessage((error as Error)?.message), "Error");
     } finally {
       setIsSubmitting(false);
     }

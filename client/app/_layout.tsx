@@ -2,13 +2,13 @@ import "react-native-gesture-handler";
 import React, { useEffect } from "react";
 import { Href, Stack, useRouter, useSegments } from "expo-router";
 import { Provider as ReduxProvider, useDispatch, useSelector } from "react-redux";
-import Toast from "react-native-root-toast";
+import { showInfoToast } from "@/src/utils/appToast";
 import { RootSiblingParent } from "react-native-root-siblings";
 
 import store from "../src/redux/store";
 import { COLORS } from "@/constants/theme";
 import Initializer from "../src/components/Initializer";
-
+import { showToastFromSocketNotification } from "@/src/utils/socketNotificationToast";
 import { connectSocket, onEvent, disconnectSocket } from "@/src/services/socket";
 import { LOCATION_LIVE_UPDATE, FORCE_CHILD_LOGOUT, NOTIFICATION_CREATED, DEVICE_STATUS_UPDATED } from "@/src/constants/socketEvents";
 import { clearAllDevices, updateDeviceFromSocket, updateDeviceStatusFromSocket } from "@/src/redux/slices/device-slice";
@@ -50,12 +50,9 @@ function AppStack() {
           return;
         }
 
-        Toast.show(
-          "System Message\nThe device has been disconnected by the parent",
-          {
-            duration: Toast.durations.LONG,
-            position: Toast.positions.TOP,
-          }
+        showInfoToast(
+          "The device has been disconnected by the parent",
+          "System message"
         );
 
         dispatch(logoutChildReducer());
@@ -100,13 +97,7 @@ function AppStack() {
           dispatch(bumpPendingRequestsRefreshKey());
         }
 
-        const title = data?.title ? String(data.title) : "New notification";
-        const description = data?.description ? String(data.description) : "";
-
-        Toast.show(description ? `${title}\n${description}` : title, {
-          duration: Toast.durations.SHORT,
-          position: Toast.positions.TOP,
-        });
+        showToastFromSocketNotification(data);
       });
 
       return () => {

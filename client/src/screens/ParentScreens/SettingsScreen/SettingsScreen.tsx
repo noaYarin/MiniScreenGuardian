@@ -24,7 +24,7 @@ import {
 import { disconnectSocket, emitEvent } from "../../../services/socket";
 import { PARENT_LOGOUT } from "@/src/constants/socketEvents";
 import { removeParentToken } from "@/src/services/authStorage";
-import { showAppToast } from "@/src/utils/appToast";
+import { showErrorToast, showInfoToast } from "@/src/utils/appToast";
 import { getAppInviteDownloadUrl } from "@/src/constants/appLinks";
 
 export default function SettingsScreen() {
@@ -41,7 +41,7 @@ export default function SettingsScreen() {
     try {
       await Linking.openSettings();
     } catch {
-      showAppToast("Could not open settings");
+      showErrorToast("Could not open settings.", "Error");
     }
   };
 
@@ -49,7 +49,7 @@ export default function SettingsScreen() {
     const url = getAppInviteDownloadUrl();
 
     if (!url) {
-      showAppToast("Download link is not available");
+      showInfoToast("The download link is not available right now.", "Unavailable");
       return;
     }
 
@@ -62,7 +62,7 @@ export default function SettingsScreen() {
           : { message }
       );
     } catch {
-      showAppToast("Could not share");
+      showErrorToast("Could not share the invite link.", "Error");
     }
   };
 
@@ -80,7 +80,10 @@ export default function SettingsScreen() {
       await (dispatch as any)(logoutParent()).unwrap();
     } catch (error) {
       const message = (error as Error)?.message ?? "Logout failed";
-      showAppToast(message === "settings.logout.failed" ? "Logout failed" : message);
+      showErrorToast(
+        message === "settings.logout.failed" ? "Logout failed." : message,
+        "Error"
+      );
     } finally {
       dispatch(logoutParentReducer());
       await removeParentToken();

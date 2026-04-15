@@ -21,8 +21,7 @@ import {
   markAllParentNotificationsReadThunk,
   deleteParentNotificationThunk,
 } from "@/src/redux/thunks/notificationThunks";
-import { showAppToast } from "@/src/utils/appToast";
-
+import { showErrorToast } from "@/src/utils/appToast";
 type AlertFilter = "all" | "unread" | "critical";
 type AlertSeverity = "critical" | "warning" | "info" | "success";
 
@@ -123,7 +122,7 @@ export default function SystemAlertsScreen() {
     try {
       await dispatch(markAllParentNotificationsReadThunk()).unwrap();
     } catch {
-      showAppToast("Could not mark all notifications as read");
+      showErrorToast("Could not mark all notifications as read.", "Error");
     } finally {
       setMarkAllReadBusy(false);
     }
@@ -136,7 +135,7 @@ export default function SystemAlertsScreen() {
           deleteParentNotificationThunk({ notificationId })
         ).unwrap();
       } catch {
-        showAppToast("Could not delete the notification");
+        showErrorToast("Could not delete the notification.", "Error");
       }
     },
     [dispatch]
@@ -187,7 +186,7 @@ export default function SystemAlertsScreen() {
             </AppText>
 
             <AppText weight="medium" style={styles.heroSubtitle}>
-              Track important updates and unusual activity
+              Stay updated on important activity and unusual events
             </AppText>
           </View>
 
@@ -235,7 +234,7 @@ export default function SystemAlertsScreen() {
       </View>
 
       <AppText weight="bold" style={styles.sectionTitle}>
-        Filter Notifications
+        Filter notifications
       </AppText>
 
       <View style={styles.filtersRow}>
@@ -266,7 +265,7 @@ export default function SystemAlertsScreen() {
 
       <View style={styles.listTitleRow}>
         <AppText weight="bold" style={styles.sectionTitle}>
-          Recent Notifications
+          Recent notifications
         </AppText>
 
         {unreadCount > 0 && (
@@ -436,8 +435,8 @@ export default function SystemAlertsScreen() {
           status !== "loading" ? (
             <EmptyStateCard
               icon="bell-outline"
-              title="No Notifications yet"
-              subtitle="New Notifications will appear here."
+              title="No notifications yet"
+              subtitle="New notifications will appear here."
             />
           ) : null
         }

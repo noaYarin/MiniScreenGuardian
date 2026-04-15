@@ -18,7 +18,7 @@ import { styles } from "./styles";
 
 import type { RootState, AppDispatch } from "@/src/redux/store/types";
 import { updateCurrentChildProfileThunk } from "@/src/redux/thunks/childrenThunks";
-import { showAppToast } from "@/src/utils/appToast";
+import { showErrorToast, showSuccessToast } from "@/src/utils/appToast";
 
 type GenderValue = "boy" | "girl" | "other";
 
@@ -112,7 +112,7 @@ export default function EditChildProfileScreen() {
     const age = calculateAge(birthDate);
 
     if (age < 6 || age > 17) {
-      showAppToast("Age must be between 6 and 17", "Error");
+      showErrorToast("Age must be between 6 and 17", "Error");
       return;
     }
 
@@ -124,12 +124,11 @@ export default function EditChildProfileScreen() {
           gender,
         })
       ).unwrap();
-      showAppToast("Child profile updated successfully", "Success");
-
+      showSuccessToast("Child profile updated successfully.");
       router.back();
     } catch (error) {
-      showAppToast(
-        typeof error === "string" ? error : "The action failed. Please try again.",
+      showErrorToast(
+        typeof error === "string" ? error : "Could not update the child profile. Please try again.",
         "Error"
       );
     }
