@@ -194,7 +194,7 @@ export default function ExtensionRequestsScreen() {
             </AppText>
 
             <AppText weight="medium" style={styles.heroSubtitle}>
-              "Review and manage pending requests for extra daily screen time"
+              Review and manage pending requests for extra daily screen time
             </AppText>
 
             <InfoHint

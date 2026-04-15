@@ -2,7 +2,7 @@ import { StyleSheet } from "react-native";
 import { APP_COLORS, COLORS } from "@/constants/theme";
 
 export const childDetailsIconColors = {
-  deleteTrash: "#DC2626",
+  deleteTrash: "#ffffff",
   detailAccent: APP_COLORS.primaryBlue,
 } as const;
 
@@ -310,6 +310,7 @@ export const childDetailsStyles = StyleSheet.create({
     alignSelf: "stretch",
   },
   deviceLockActionButton: {
+
     marginTop: 8,
     direction: "ltr",
     borderRadius: 12,
@@ -334,9 +335,9 @@ export const childDetailsStyles = StyleSheet.create({
   },
 
   deviceLockActionButtonGreen: {
-    backgroundColor: "#DCFCE7",
+    backgroundColor: "#16A34A",
     borderWidth: 1,
-    borderColor: "#86EFAC",
+    borderColor: "#16A34A",
   },
 
   deviceLockActionTextRed: {
@@ -348,7 +349,7 @@ export const childDetailsStyles = StyleSheet.create({
   deviceLockActionTextGreen: {
     fontSize: 15,
     fontWeight: "700",
-    color: "#16A34A",
+    color: "#ffffff",
   },
 
   deviceLockActionButtonLimit: {
@@ -379,9 +380,9 @@ export const childDetailsStyles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FEE2E2",
+    backgroundColor: "#E45454",
     borderWidth: 1,
-    borderColor: "#FECACA",
+    borderColor: "#E45454",
   },
 
   bottomSpacer: {

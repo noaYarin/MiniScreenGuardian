@@ -22,8 +22,11 @@ export default function ParentTabsLayout() {
             backgroundColor: COLORS.light.background,
           },
           headerStyle: {
-            backgroundColor: COLORS.light.tint,
+            backgroundColor: COLORS.light.primary,
           },
+          headerTitleStyle: {
+  color: "#FFFFFF",
+},
           title,
           tabBarShowLabel: true,
           tabBarStyle: {
@@ -37,6 +40,7 @@ export default function ParentTabsLayout() {
           tabBarLabelStyle: {
             fontSize: 12,
           },
+
           tabBarActiveTintColor: COLORS.light.primary,
           tabBarInactiveTintColor: COLORS.light.tabIconDefault,
           headerTitleAlign: "center",

@@ -262,7 +262,7 @@ export function ChildDetailsDeviceCard({
                   looksLikeDailyLimitLock
                     ? "#C2410C"
                     : showUnlock
-                      ? "#15803D"
+                      ? "#ffffff"
                       : "#ffffff"
                 }
               />
