@@ -12,12 +12,9 @@ export default function ParentRootLayout() {
         contentStyle: {
           backgroundColor: COLORS.light.background,
         },
-          headerStyle: {
-            backgroundColor: COLORS.light.primary,
-          },
-          headerTitleStyle: {
-  color: "#FFFFFF",
-},
+        headerStyle: {
+          backgroundColor: COLORS.light.tint,
+        },
       }}
     >
       <Stack.Screen

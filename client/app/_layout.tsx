@@ -126,14 +126,8 @@ function AppStack() {
     <Stack
       screenOptions={{
         contentStyle: { backgroundColor: COLORS.light.background },
-                  headerStyle: {
-                    backgroundColor: COLORS.light.primary,
-                  },
-                  headerTitleStyle: {
-          color: "#FFFFFF",
-        },
+        headerStyle: { backgroundColor: COLORS.light.tint },
         headerTitleAlign: "center",
-
       }}
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
